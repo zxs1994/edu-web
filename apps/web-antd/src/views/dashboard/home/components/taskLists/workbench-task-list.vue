@@ -23,7 +23,7 @@ const props = withDefaults(defineProps<Props>(), {
 type TabKey = 'copy' | 'done' | 'myBill' | 'todo';
 
 // 当前激活的Tab
-const activeTab = ref<TabKey>('myBill');
+const activeTab = ref<TabKey>('todo');
 
 // 加载状态
 const loading = ref(false);
@@ -41,8 +41,8 @@ const statistics = ref({
 
 // Tab配置
 const tabs = computed(() => [
-  { key: 'myBill', label: '我的单据', count: statistics.value.myBill },
   { key: 'todo', label: '待办任务', count: statistics.value.todo },
+  { key: 'myBill', label: '我的单据', count: statistics.value.myBill },
   { key: 'done', label: '已办任务', count: statistics.value.done },
   { key: 'copy', label: '抄送我的', count: statistics.value.copy },
 ]);
@@ -128,12 +128,13 @@ const columns = computed(() => {
         }
 
         const statusMap: Record<number, string> = {
+          [-1]: '未提交',
           1: '审批中',
           2: '已通过',
           3: '未通过',
           4: '已取消',
         };
-        return statusMap[status] || '-';
+        return statusMap[status] ?? '-';
       },
     },
     {
@@ -376,10 +377,10 @@ function handleBillCodeClick(record: any) {
       break;
     }
     case 'myBill': {
-      // 我的单据：跳转到流程实例详情
+      // 我的单据：跳转到流程实例详情（带 isTodo=false）
       router.push({
         name: 'BpmProcessInstanceDetail',
-        query: { id: record.id },
+        query: { id: record.id, isTodo: 'false' },
       });
 
       break;
@@ -402,35 +403,31 @@ function handleBillCodeClick(record: any) {
   }
 }
 
-// 办理任务（我的单据、待办任务）
+// 办理任务（待办任务）
 function handleProcess(record: any) {
-  const tab = activeTab.value;
-
-  if (tab === 'myBill') {
-    // 我的单据：跳转到流程实例详情
-    router.push({
-      name: 'BpmProcessInstanceDetail',
-      query: { id: record.id },
-    });
-  } else if (tab === 'todo') {
-    // 待办任务：跳转到待办办理页
-    router.push({
-      name: 'BpmProcessInstanceTodoDetail',
-      query: {
-        id: record.processInstance?.id,
-        taskId: record.id,
-        isTodo: 'true',
-        nodeKey: record.taskDefinitionKey,
-      },
-    });
-  }
+  // 待办任务：跳转到待办办理页
+  router.push({
+    name: 'BpmProcessInstanceTodoDetail',
+    query: {
+      id: record.processInstance?.id,
+      taskId: record.id,
+      isTodo: 'true',
+      nodeKey: record.taskDefinitionKey,
+    },
+  });
 }
 
-// 查看详情（已办、抄送）
+// 查看详情（我的单据、已办、抄送）
 function handleDetail(record: any) {
   const tab = activeTab.value;
 
-  if (tab === 'done') {
+  if (tab === 'myBill') {
+    // 我的单据：跳转到流程实例详情（参考"我的流程"页面，带 isTodo=false）
+    router.push({
+      name: 'BpmProcessInstanceDetail',
+      query: { id: record.id, isTodo: 'false' },
+    });
+  } else if (tab === 'done') {
     // 已办任务：跳转到流程实例详情
     router.push({
       name: 'BpmProcessInstanceDetail',
@@ -567,8 +564,8 @@ onMounted(async () => {
             <span v-else>-</span>
           </template>
           <template v-else-if="column.key === 'action'">
-            <!-- 我的单据和待办任务：显示办理按钮 -->
-            <template v-if="activeTab === 'myBill' || activeTab === 'todo'">
+            <!-- 待办任务：显示办理按钮 -->
+            <template v-if="activeTab === 'todo'">
               <TableAction
                 :actions="[
                   {
@@ -580,7 +577,7 @@ onMounted(async () => {
                 ]"
               />
             </template>
-            <!-- 已办和抄送：显示详情按钮 -->
+            <!-- 我的单据、已办和抄送：显示详情按钮 -->
             <template v-else>
               <TableAction
                 :actions="[

@@ -18,6 +18,8 @@ import { onMounted, ref, watch } from 'vue';
 import { Page } from '@vben/common-ui';
 import { BpmProcessInstanceStatus } from '@vben/constants';
 
+import { Spin } from 'ant-design-vue';
+
 import { useVbenForm } from '#/adapter/form';
 import {
   getApprovalDetail,
@@ -37,6 +39,9 @@ interface Props {
   timelineDirection?: 'horizontal' | 'vertical'; // 时间轴方向
   activityNodes?: any[]; // 审批节点信息
   hideFooter?: boolean; // 是否隐藏底部
+  hideSubmit?: boolean; // 是否隐藏提交按钮
+  hideSave?: boolean; // 是否隐藏保存按钮
+  showReCreate?: boolean; // 是否显示再次提交按钮
   // 表单相关props
   formData?: Record<string, any>; // 表单数据
   formSchema?: VbenFormSchema[]; // 表单schema
@@ -55,12 +60,15 @@ const props = withDefaults(defineProps<Props>(), {
   timelineDirection: 'horizontal',
   activityNodes: () => [],
   hideFooter: false,
+  hideSubmit: false,
+  hideSave: false,
+  showReCreate: false,
   formData: () => ({}),
   formSchema: () => [],
   disabled: false,
 });
 
-const emit = defineEmits(['close', 'save', 'submit', 'revoke']);
+const emit = defineEmits(['close', 'save', 'submit', 'revoke', 'reCreate']);
 
 const processInstanceLoading = ref(false); // 流程实例的加载中
 const processModelView = ref<any>({}); // 流程模型视图
@@ -198,6 +206,10 @@ const submitForm = () => {
 const revokeForm = (reason?: string) => {
   emit('revoke', reason);
 };
+// 再次提交
+const reCreateForm = () => {
+  emit('reCreate');
+};
 
 /** 手动刷新所有数据 */
 function refreshAllData() {
@@ -319,11 +331,10 @@ defineExpose({
               v-if="approvalDetailLoading"
               class="flex items-center justify-center py-20"
             >
-              <a-spin size="large" />
+              <Spin size="large" />
             </div>
             <div v-else>
               <CardContainer :title="$t('common.approvalProgress')">
-                {{ console.log('props.activityNodes:', props.activityNodes) }}
                 <BpmProcessInstanceTimeline
                   :activity-nodes="
                     activityNodes && activityNodes.length > 0
@@ -376,7 +387,11 @@ defineExpose({
           @close="closeForm"
           @save="saveForm"
           @revoke="revokeForm"
+          @re-create="reCreateForm"
           :process-status="props.headerData.processStatus"
+          :hide-submit="props.hideSubmit"
+          :hide-save="props.hideSave"
+          :show-re-create="props.showReCreate"
         />
       </a-layout-footer>
     </a-layout>

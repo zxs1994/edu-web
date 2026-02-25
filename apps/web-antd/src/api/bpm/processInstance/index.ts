@@ -37,7 +37,6 @@ export namespace BpmProcessInstanceApi {
     billCode?: string;
     companyName?: string;
     deptName?: string;
-    summary?: Array<{ key: string; value: string }>;
   }
 
   /** 流程实例的任务 */
@@ -190,6 +189,17 @@ export async function updateProcessInstance(
 ) {
   return requestClient.put<BpmProcessInstanceApi.ProcessInstance>(
     '/bpm/process-instance/update',
+    data,
+  );
+}
+
+/** 重新提交流程实例（撤回后重新提交流程表单） */
+export async function resubmitProcessInstance(data: {
+  processInstanceId: string;
+  variables?: Record<string, any>;
+}) {
+  return requestClient.put<boolean>(
+    '/bpm/process-instance/resubmit',
     data,
   );
 }

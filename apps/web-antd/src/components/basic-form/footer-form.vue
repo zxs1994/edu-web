@@ -23,16 +23,39 @@ const props = defineProps({
     default: '',
   },
   processStatus: {
-    type: String as any,
+    type: [String, Number] as any,
     default: BpmProcessInstanceStatus.NOT_START,
   },
   submitText: {
     type: String,
     default: '提交',
   },
+  /** 是否隐藏提交按钮 */
+  hideSubmit: {
+    type: Boolean,
+    default: false,
+  },
+  /** 是否隐藏保存按钮 */
+  hideSave: {
+    type: Boolean,
+    default: false,
+  },
+  /** 是否显示再次提交按钮（流程已结束时使用） */
+  showReCreate: {
+    type: Boolean,
+    default: false,
+  },
 });
-const emit = defineEmits(['close', 'save', 'submit', 'revoke']);
-console.warn(props);
+const emit = defineEmits(['close', 'save', 'submit', 'revoke', 'reCreate']);
+
+/** 流程是否已结束 */
+const isEndStatus = computed(() => {
+  return (
+    props.processStatus === BpmProcessInstanceStatus.APPROVE ||
+    props.processStatus === BpmProcessInstanceStatus.REJECT ||
+    props.processStatus === BpmProcessInstanceStatus.CANCEL
+  );
+});
 
 // 撤回弹窗相关
 const revokePopoverVisible = ref(false);
@@ -57,6 +80,10 @@ const saveForm = () => {
 // 提交
 const submitForm = () => {
   emit('submit');
+};
+// 再次提交
+const reCreateForm = () => {
+  emit('reCreate');
 };
 
 // 打开撤回弹窗
@@ -92,6 +119,7 @@ const confirmRevoke = async () => {
       type="primary"
       @click="submitForm"
       v-if="
+        !hideSubmit &&
         processStatus &&
         BpmProcessInstanceStatusEditValue.includes(processStatus)
       "
@@ -102,6 +130,7 @@ const confirmRevoke = async () => {
     <Button
       @click="saveForm"
       v-if="
+        !hideSave &&
         processStatus &&
         BpmProcessInstanceStatusEditValue.includes(processStatus)
       "
@@ -155,6 +184,13 @@ const confirmRevoke = async () => {
         </div>
       </template>
     </Popover>
+    <!-- 【再次提交】按钮 -->
+    <Button
+      @click="reCreateForm"
+      v-if="showReCreate && isEndStatus"
+    >
+      再次提交
+    </Button>
     <!-- 【关闭】按钮 -->
     <Button @click="closeForm">{{ $t('common.close') }}</Button>
   </Space>

@@ -2,42 +2,30 @@
 import type { BpmProcessInstanceApi } from '#/api/bpm/processInstance';
 import type { SystemUserApi } from '#/api/system/user';
 
-// TODO @jason：业务表单审批时，读取不到界面，参见 https://t.zsxq.com/eif2e
-import { computed, nextTick, onMounted, ref, shallowRef, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, shallowRef } from 'vue';
 import { useRoute } from 'vue-router';
 
-import { Page } from '@vben/common-ui';
+import { Loading } from '@vben/common-ui';
 import {
   BpmModelFormType,
-  BpmModelType,
   BpmProcessInstanceStatus,
-  DICT_TYPE,
-  BpmNodeIdEnum,
-  BpmTaskStatusEnum,
 } from '@vben/constants';
+import { useTabs } from '@vben/hooks';
 import { useUserStore } from '@vben/stores';
 
-import { Card, Col, message, Row, TabPane, Tabs } from 'ant-design-vue';
+import { message } from 'ant-design-vue';
 
 import {
   getApprovalDetail as getApprovalDetailApi,
-  getProcessInstanceBpmnModelView,
+  resubmitProcessInstance,
 } from '#/api/bpm/processInstance';
+import { withdrawProcessToStart } from '#/api/bpm/task';
 import { getSimpleUserList } from '#/api/system/user';
+import { BasicForm } from '#/components/basic-form';
 import { setConfAndFields2 } from '#/components/form-create';
 import { registerComponent } from '#/utils';
-import {
-  SvgBpmApproveIcon,
-  SvgBpmCancelIcon,
-  SvgBpmRejectIcon,
-  SvgBpmRunningIcon,
-} from '@vben/icons';
 
-import ProcessInstanceBpmnViewer from './modules/bpm-viewer.vue';
 import ProcessInstanceOperationButton from './modules/operation-button.vue';
-import ProcessInstanceSimpleViewer from './modules/simple-bpm-viewer.vue';
-import BpmProcessInstanceTaskList from './modules/task-list.vue';
-import ProcessInstanceTimeline from './modules/time-line.vue';
 
 defineOptions({ name: 'BpmProcessInstanceDetail' });
 
@@ -57,9 +45,28 @@ const props = withDefaults(
   },
 );
 
+enum FieldPermissionType {
+  /**
+   * 隐藏
+   */
+  // eslint-disable-next-line no-unused-vars
+  NONE = '3',
+  /**
+   * 只读
+   */
+  // eslint-disable-next-line no-unused-vars
+  READ = '1',
+  /**
+   * 编辑
+   */
+  // eslint-disable-next-line no-unused-vars
+  WRITE = '2',
+}
+
 // 处理路由参数中的 isMy（可能是字符串）
 const route = useRoute();
 const userStore = useUserStore();
+const { closeCurrentTab } = useTabs();
 
 const isApproval = computed(() => {
   const queryApproval = route.query.isTodo;
@@ -79,10 +86,10 @@ const isApproval = computed(() => {
     // 1. 当前任务状态为-1（未提交）
     // 2. 当前登录人等于制单人
     if (
-      nodeKey.value === BpmNodeIdEnum.START_USER_NODE_ID &&
       startUser?.id &&
       currentUserId &&
-      String(startUser.id) === String(currentUserId)
+      String(startUser.id) === String(currentUserId) &&
+      processInstance.value?.status !== BpmProcessInstanceStatus.RUNNING
     ) {
       return false;
     }
@@ -91,46 +98,15 @@ const isApproval = computed(() => {
   return props.isTodo;
 });
 
-enum FieldPermissionType {
-  /**
-   * 隐藏
-   */
-  // eslint-disable-next-line no-unused-vars
-  NONE = '3',
-  /**
-   * 只读
-   */
-  // eslint-disable-next-line no-unused-vars
-  READ = '1',
-  /**
-   * 编辑
-   */
-  // eslint-disable-next-line no-unused-vars
-  WRITE = '2',
-}
-
 const processInstanceLoading = ref(false); // 流程实例的加载中
 const processInstance = ref<BpmProcessInstanceApi.ProcessInstance>(); // 流程实例
 const processDefinition = ref<any>({}); // 流程定义
 // 使用 props 中的 nodeKey 或者从 route.query 获取
 const nodeKey = computed(
   () => props.nodeKey || (route.query.nodeKey as string),
-); // 节点key
+);
 const nodeKeyName = ref<string>(); // 节点名称
-const processModelView = ref<any>({}); // 流程模型视图
 const operationButtonRef = ref(); // 操作按钮组件 ref
-const auditIconsMap: {
-  [key: string]:
-    | typeof SvgBpmApproveIcon
-    | typeof SvgBpmCancelIcon
-    | typeof SvgBpmRejectIcon
-    | typeof SvgBpmRunningIcon;
-} = {
-  [BpmProcessInstanceStatus.RUNNING]: SvgBpmRunningIcon,
-  [BpmProcessInstanceStatus.APPROVE]: SvgBpmApproveIcon,
-  [BpmProcessInstanceStatus.REJECT]: SvgBpmRejectIcon,
-  [BpmProcessInstanceStatus.CANCEL]: SvgBpmCancelIcon,
-};
 
 // ========== 申请信息 ==========
 const fApi = ref<any>(); //
@@ -146,13 +122,44 @@ const writableFields: Array<string> = []; // 表单可以编辑的字段
 const BusinessFormComponent = shallowRef<any>(null); // 异步组件
 const businessFormRef = ref(); // 业务表单组件引用
 
+// BasicForm组件引用（用于流程表单）
+const basicFormRef = ref();
+
+// 审批节点信息
+const activityNodes = ref<BpmProcessInstanceApi.ApprovalNodeInfo[]>([]);
+
+// 当前待办任务（用于撤回后重新提交）
+const todoTask = ref<any>(null);
+
+/** 是否处于可编辑状态（撤回后的 NOT_START 且有待办任务） */
+const isEditable = computed(() => {
+  return processInstance.value?.status === BpmProcessInstanceStatus.NOT_START
+    && !!todoTask.value;
+});
+
+/** 构建流程表单的 headerData */
+const normalFormHeaderData = computed(() => {
+  if (!processInstance.value) {
+    return {
+      billName: processDefinition.value?.name || '',
+      processStatus: BpmProcessInstanceStatus.NOT_START,
+    };
+  }
+  return {
+    billName: processDefinition.value?.name || processInstance.value?.name || '',
+    processStatus: processInstance.value.status,
+    billCode: String(processInstance.value.id),
+    creatorName: processInstance.value.startUser?.nickname,
+    createTime: processInstance.value.startTime,
+    deptName: processInstance.value.startUser?.deptName,
+    companyName: (processInstance.value.startUser as any)?.companyName || '',
+    processInstanceId: String(processInstance.value.id),
+  };
+});
+
 /** 获取详情 */
 async function getDetail() {
-  // 获得审批详情
   getApprovalDetail();
-
-  // 获得流程模型视图
-  getProcessModelView();
 }
 
 async function getApprovalDetail() {
@@ -175,6 +182,7 @@ async function getApprovalDetail() {
 
     processInstance.value = data.processInstance;
     processDefinition.value = data.processDefinition;
+    todoTask.value = data.todoTask; // 保存待办任务引用
     nodeKeyName.value = data.todoTask?.name;
 
     // 设置表单信息
@@ -197,12 +205,25 @@ async function getApprovalDetail() {
       nextTick().then(() => {
         fApi.value?.btn.show(false);
         fApi.value?.resetBtn.show(false);
-        fApi.value?.disabled(true);
+        // 撤回后可编辑，否则禁用
+        fApi.value?.disabled(!isEditable.value);
         // 设置表单字段权限
         if (formFieldsPermission) {
-          Object.keys(data.formFieldsPermission).forEach((item) => {
-            setFieldPermission(item, formFieldsPermission[item]);
-          });
+          if (isEditable.value) {
+            // 可编辑状态：所有字段可写，仍隐藏 NONE 权限字段
+            Object.keys(data.formFieldsPermission).forEach((item) => {
+              if (formFieldsPermission[item] === FieldPermissionType.NONE) {
+                fApi.value?.hidden(true, item);
+              } else {
+                fApi.value?.disabled(false, item);
+                writableFields.push(item);
+              }
+            });
+          } else {
+            Object.keys(data.formFieldsPermission).forEach((item) => {
+              setFieldPermission(item, formFieldsPermission[item]);
+            });
+          }
         }
       });
     } else {
@@ -215,8 +236,12 @@ async function getApprovalDetail() {
     // 获取审批节点，显示 Timeline 的数据
     activityNodes.value = data.activityNodes;
 
-    // 获取待办任务显示操作按钮
-    operationButtonRef.value?.loadTodoTask(data.todoTask);
+    // 获取待办任务显示操作按钮（需要等待 DOM 更新后 operationButtonRef 才可用）
+    nextTick(() => {
+      operationButtonRef.value?.loadTodoTask(data.todoTask);
+      // 刷新 BasicForm 内部的审批信息、流程图和任务列表（与业务表单保持一致）
+      basicFormRef.value?.refreshAllData();
+    });
   } catch {
     message.error('获取审批详情失败！');
   } finally {
@@ -224,22 +249,6 @@ async function getApprovalDetail() {
   }
 }
 
-/** 获取流程模型视图*/
-async function getProcessModelView() {
-  if (BpmModelType.BPMN === processDefinition.value?.modelType) {
-    // 重置，解决 BPMN 流程图刷新不会重新渲染问题
-    processModelView.value = {
-      bpmnXml: '',
-    };
-  }
-  const data = await getProcessInstanceBpmnModelView(props.id);
-  if (data) {
-    processModelView.value = data;
-  }
-}
-
-// 审批节点信息
-const activityNodes = ref<BpmProcessInstanceApi.ApprovalNodeInfo[]>([]);
 /**
  * 设置表单权限
  */
@@ -256,14 +265,6 @@ function setFieldPermission(field: string, permission: string) {
     fApi.value?.hidden(true, field);
   }
 }
-
-/**
- * 操作成功后刷新
- */
-// const refresh = () => {
-//   // 重新获取详情
-//   getDetail();
-// };
 
 /**
  * 审批前的业务表单处理
@@ -287,22 +288,53 @@ async function handleBeforeApproval(): Promise<boolean> {
   }
 }
 
-/** 当前的Tab */
-const activeTab = ref('form');
-const taskListRef = ref();
+/** 流程表单 - 关闭 */
+function handleClose() {
+  closeCurrentTab();
+}
 
-/** 监听 Tab 切换，当切换到 "record" 标签时刷新任务列表 */
-watch(
-  () => activeTab.value,
-  (newVal) => {
-    if (newVal === 'record') {
-      // 如果切换到流转记录标签，刷新任务列表
-      nextTick(() => {
-        taskListRef.value?.refresh();
-      });
-    }
-  },
-);
+/** 流程表单 - 撤回（退回到开始节点，可重新编辑提交） */
+async function handleRevoke(reason?: string) {
+  if (!processInstance.value?.id) return;
+  try {
+    processInstanceLoading.value = true;
+    await withdrawProcessToStart({
+      processInstanceId: String(processInstance.value.id),
+      reason: reason || '发起人撤回',
+    });
+    message.success('撤回成功');
+    await getDetail();
+  } catch (error) {
+    console.error('撤回失败:', error);
+  } finally {
+    processInstanceLoading.value = false;
+  }
+}
+
+/** 流程表单 - 提交（撤回后重新提交） */
+async function handleSubmit() {
+  if (!processInstance.value?.id) {
+    message.error('没有找到流程实例，无法提交');
+    return;
+  }
+  try {
+    processInstanceLoading.value = true;
+    // 收集所有表单字段的值作为流程变量（撤回后重新提交需要全量提交）
+    const variables: Record<string, any> = { ...(detailForm.value.value || {}) };
+    // 调用后端重新提交接口（更新状态为审批中 + 审批发起人任务）
+    await resubmitProcessInstance({
+      processInstanceId: String(processInstance.value.id),
+      variables,
+    });
+    message.success('提交成功');
+    // 刷新详情页以更新状态
+    await getDetail();
+  } catch (error) {
+    console.error('提交失败:', error);
+  } finally {
+    processInstanceLoading.value = false;
+  }
+}
 
 /** 初始化 */
 const userOptions = ref<SystemUserApi.User[]>([]); // 用户列表
@@ -314,138 +346,53 @@ onMounted(async () => {
 </script>
 
 <template>
-  <Page
-    auto-content-height
-    v-if="processDefinition?.formType === BpmModelFormType.NORMAL"
-  >
-    <Card
-      :body-style="{
-        overflowY: 'auto',
-        padding: '0px',
-      }"
-    >
-      <div class="flex h-full flex-col">
-        <!-- 流程基本信息 -->
-        <div class="flex flex-col gap-2">
-          <component
-            v-if="processInstance?.status"
-            :is="auditIconsMap[processInstance?.status]"
-            class="absolute right-5 top-2.5 size-28"
-          />
-        </div>
+  <div class="bpm-process-instance-detail">
+    <!-- 初始加载中 -->
+    <Loading v-if="processInstanceLoading && !processDefinition?.formType" :spinning="true" />
 
-        <!-- 流程操作 -->
-        <div class="process-tabs-container flex flex-1 flex-col">
-          <Tabs v-model:active-key="activeTab" class="mt-0 h-full">
-            <TabPane tab="审批详情" key="form" class="tab-pane-content">
-              <Row :gutter="[48, 24]" class="h-full">
-                <Col
-                  :xs="24"
-                  :sm="24"
-                  :md="20"
-                  :lg="20"
-                  :xl="20"
-                  class="h-full"
-                >
-                  <!-- 流程表单 -->
-                  <div class="h-full">
-                    <form-create
-                      v-model="detailForm.value"
-                      v-model:api="fApi"
-                      :option="detailForm.option"
-                      :rule="detailForm.rule"
-                    />
-                  </div>
+    <!-- ======== 流程表单 (NORMAL) ======== -->
+    <template v-else-if="processDefinition?.formType === BpmModelFormType.NORMAL">
+      <Loading :spinning="processInstanceLoading">
+        <BasicForm
+          ref="basicFormRef"
+          :header-data="normalFormHeaderData"
+          :activity-nodes="activityNodes"
+          :hide-footer="isApproval"
+          :hide-submit="!isEditable"
+          :hide-save="true"
+          :disabled="!isEditable"
+          @close="handleClose"
+          @submit="handleSubmit"
+          @revoke="handleRevoke"
+        >
+          <!-- 表单内容：使用 form-create 渲染 -->
+          <template #base-form>
+            <form-create
+              v-model="detailForm.value"
+              v-model:api="fApi"
+              :option="detailForm.option"
+              :rule="detailForm.rule"
+            />
+          </template>
+        </BasicForm>
+      </Loading>
 
-                  <!-- <div
-                    v-if="
-                      processDefinition?.formType === BpmModelFormType.CUSTOM
-                    "
-                    class="h-full"
-                  >
-                    <BusinessFormComponent :id="processInstance?.businessKey" />
-                  </div> -->
-                </Col>
-                <Col :xs="24" :sm="24" :md="4" :lg="4" :xl="4" class="h-full">
-                  <div class="mt-4 h-full">
-                    <ProcessInstanceTimeline :activity-nodes="activityNodes" />
-                  </div>
-                </Col>
-              </Row>
-            </TabPane>
+      <!-- 审批态：底部操作按钮（operation-button 内部已有固定定位样式） -->
+      <ProcessInstanceOperationButton
+        v-if="isApproval"
+        ref="operationButtonRef"
+        :process-instance="processInstance"
+        :process-definition="processDefinition"
+        :user-options="userOptions"
+        :normal-form="detailForm"
+        :normal-form-api="fApi"
+        :writable-fields="writableFields"
+        @success="getDetail"
+      />
+    </template>
 
-            <TabPane
-              tab="流程图"
-              key="diagram"
-              class="tab-pane-content"
-              :force-render="true"
-            >
-              <div class="h-full">
-                <ProcessInstanceSimpleViewer
-                  v-show="
-                    processDefinition.modelType &&
-                    processDefinition.modelType === BpmModelType.SIMPLE
-                  "
-                  :loading="processInstanceLoading"
-                  :model-view="processModelView"
-                />
-                <ProcessInstanceBpmnViewer
-                  v-show="
-                    processDefinition.modelType &&
-                    processDefinition.modelType === BpmModelType.BPMN
-                  "
-                  :loading="processInstanceLoading"
-                  :model-view="processModelView"
-                />
-              </div>
-            </TabPane>
-
-            <TabPane tab="流转记录" key="record" class="tab-pane-content">
-              <div class="h-full">
-                <BpmProcessInstanceTaskList
-                  ref="taskListRef"
-                  :loading="processInstanceLoading"
-                  :id="id"
-                />
-              </div>
-            </TabPane>
-
-            <!-- TODO 待开发 -->
-            <TabPane
-              tab="流转评论"
-              key="comment"
-              v-if="false"
-              class="tab-pane-content"
-            >
-              <div class="h-full">待开发</div>
-            </TabPane>
-          </Tabs>
-        </div>
-      </div>
-
-      <template #actions>
-        <div class="px-4">
-          <ProcessInstanceOperationButton
-            ref="operationButtonRef"
-            :process-instance="processInstance"
-            :process-definition="processDefinition"
-            :user-options="userOptions"
-            :normal-form="detailForm"
-            :normal-form-api="fApi"
-            :writable-fields="writableFields"
-            @success="getDetail"
-          />
-        </div>
-      </template>
-    </Card>
-  </Page>
-  <div v-else>
-    <Card
-      :body-style="{
-        overflowY: 'auto',
-        padding: '0px',
-      }"
-    >
+    <!-- ======== 业务表单 (CUSTOM) ======== -->
+    <template v-else-if="processDefinition?.formType === BpmModelFormType.CUSTOM">
       <BusinessFormComponent
         ref="businessFormRef"
         :id="processInstance?.businessKey"
@@ -456,53 +403,23 @@ onMounted(async () => {
         :node-key="nodeKey"
         :node-key-name="nodeKeyName"
       />
-      <template #actions>
-        <div class="px-4" v-if="isApproval">
-          <ProcessInstanceOperationButton
-            ref="operationButtonRef"
-            :process-instance="processInstance"
-            :process-definition="processDefinition"
-            :user-options="userOptions"
-            :normal-form="detailForm"
-            :normal-form-api="fApi"
-            :writable-fields="writableFields"
-            :before-approval="handleBeforeApproval"
-            @success="getDetail"
-          />
-        </div>
-      </template>
-    </Card>
+      <!-- 审批态：底部操作按钮 -->
+      <ProcessInstanceOperationButton
+        v-if="isApproval"
+        ref="operationButtonRef"
+        :process-instance="processInstance"
+        :process-definition="processDefinition"
+        :user-options="userOptions"
+        :normal-form="detailForm"
+        :normal-form-api="fApi"
+        :writable-fields="writableFields"
+        :before-approval="handleBeforeApproval"
+        @success="getDetail"
+      />
+    </template>
   </div>
 </template>
 
 <style lang="scss" scoped>
-.ant-tabs-content {
-  height: 100%;
-}
-
-.process-tabs-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-:deep(.ant-tabs) {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-:deep(.ant-tabs-content) {
-  flex: 1;
-  overflow-y: auto;
-}
-
-:deep(.ant-tabs-tabpane) {
-  height: 100%;
-}
-
-.tab-pane-content {
-  padding-right: 12px;
-  overflow: hidden auto;
-}
+@use '#/styles/fixed-footer.scss' as *;
 </style>

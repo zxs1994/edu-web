@@ -7,7 +7,7 @@ import { h } from 'vue';
 import { Page, prompt } from '@vben/common-ui';
 import { BpmProcessInstanceStatus, DICT_TYPE } from '@vben/constants';
 
-import { Button, message, Textarea } from 'ant-design-vue';
+import { Button, message, Tag, Textarea } from 'ant-design-vue';
 
 import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import { getProcessInstanceMyPage } from '#/api/bpm/processInstance';
@@ -17,17 +17,8 @@ import { router } from '#/router';
 
 import { useGridColumns, useGridFormSchema } from './data';
 
-// 扩展 Task 接口以包含 assigneeUser 属性
-interface ExtendedTask extends BpmProcessInstanceApi.Task {
-  assigneeUser?: { nickname: string };
-}
-
-// 扩展 ProcessInstance 接口以包含 summary 属性
-interface ExtendedProcessInstance
-  extends BpmProcessInstanceApi.ProcessInstance {
-  summary?: Array<{ key: string; value: string }>;
-  tasks?: ExtendedTask[];
-}
+// 使用原始 ProcessInstance 类型
+type ExtendedProcessInstance = BpmProcessInstanceApi.ProcessInstance;
 
 defineOptions({ name: 'BpmProcessInstanceMy' });
 
@@ -134,9 +125,13 @@ const [Grid, gridApi] = useVbenVxeGrid({
       </template>
 
       <template #slot-status="{ row }">
+        <!-- 未提交状态 -->
+        <template v-if="row.status === BpmProcessInstanceStatus.NOT_START">
+          <Tag color="default">未提交</Tag>
+        </template>
         <!-- 审批中状态 -->
         <template
-          v-if="
+          v-else-if="
             row.status === BpmProcessInstanceStatus.RUNNING &&
             row.tasks &&
             row.tasks.length > 0
