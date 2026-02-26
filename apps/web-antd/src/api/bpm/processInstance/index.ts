@@ -198,10 +198,7 @@ export async function resubmitProcessInstance(data: {
   processInstanceId: string;
   variables?: Record<string, any>;
 }) {
-  return requestClient.put<boolean>(
-    '/bpm/process-instance/resubmit',
-    data,
-  );
+  return requestClient.put<boolean>('/bpm/process-instance/resubmit', data);
 }
 
 /** 获取审批详情 */

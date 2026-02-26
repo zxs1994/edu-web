@@ -7,14 +7,23 @@
 -->
 
 <script lang="ts" setup>
+import type { FormInstance } from 'ant-design-vue';
+
+import { computed, reactive, ref } from 'vue';
+
 import {
   BpmProcessInstanceStatus,
   BpmProcessInstanceStatusEditValue,
 } from '@vben/constants';
 
-import { Button, Space, Popover, Form, FormItem, Textarea } from 'ant-design-vue';
-import { ref, reactive, computed } from 'vue';
-import type { FormInstance } from 'ant-design-vue';
+import {
+  Button,
+  Form,
+  FormItem,
+  Popover,
+  Space,
+  Textarea,
+} from 'ant-design-vue';
 
 // 传入组件参数
 const props = defineProps({
@@ -102,7 +111,7 @@ const closeRevokePopover = () => {
 // 确认撤回
 const confirmRevoke = async () => {
   if (!revokeFormRef.value) return;
-  
+
   try {
     await revokeFormRef.value.validate();
     emit('revoke', revokeReasonForm.reason);
@@ -167,28 +176,15 @@ const confirmRevoke = async () => {
               />
             </FormItem>
             <FormItem>
-              <Button
-                type="primary"
-                @click="confirmRevoke"
-              >
-                确认撤回
-              </Button>
-              <Button
-                class="ml-2"
-                @click="closeRevokePopover"
-              >
-                取消
-              </Button>
+              <Button type="primary" @click="confirmRevoke"> 确认撤回 </Button>
+              <Button class="ml-2" @click="closeRevokePopover"> 取消 </Button>
             </FormItem>
           </Form>
         </div>
       </template>
     </Popover>
     <!-- 【再次提交】按钮 -->
-    <Button
-      @click="reCreateForm"
-      v-if="showReCreate && isEndStatus"
-    >
+    <Button @click="reCreateForm" v-if="showReCreate && isEndStatus">
       再次提交
     </Button>
     <!-- 【关闭】按钮 -->

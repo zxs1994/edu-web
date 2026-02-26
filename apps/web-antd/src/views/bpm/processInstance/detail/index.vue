@@ -6,10 +6,7 @@ import { computed, nextTick, onMounted, ref, shallowRef } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { Loading } from '@vben/common-ui';
-import {
-  BpmModelFormType,
-  BpmProcessInstanceStatus,
-} from '@vben/constants';
+import { BpmModelFormType, BpmProcessInstanceStatus } from '@vben/constants';
 import { useTabs } from '@vben/hooks';
 import { useUserStore } from '@vben/stores';
 
@@ -133,8 +130,10 @@ const todoTask = ref<any>(null);
 
 /** 是否处于可编辑状态（撤回后的 NOT_START 且有待办任务） */
 const isEditable = computed(() => {
-  return processInstance.value?.status === BpmProcessInstanceStatus.NOT_START
-    && !!todoTask.value;
+  return (
+    processInstance.value?.status === BpmProcessInstanceStatus.NOT_START &&
+    !!todoTask.value
+  );
 });
 
 /** 构建流程表单的 headerData */
@@ -146,7 +145,8 @@ const normalFormHeaderData = computed(() => {
     };
   }
   return {
-    billName: processDefinition.value?.name || processInstance.value?.name || '',
+    billName:
+      processDefinition.value?.name || processInstance.value?.name || '',
     processStatus: processInstance.value.status,
     billCode: String(processInstance.value.id),
     creatorName: processInstance.value.startUser?.nickname,
@@ -320,7 +320,9 @@ async function handleSubmit() {
   try {
     processInstanceLoading.value = true;
     // 收集所有表单字段的值作为流程变量（撤回后重新提交需要全量提交）
-    const variables: Record<string, any> = { ...(detailForm.value.value || {}) };
+    const variables: Record<string, any> = {
+      ...detailForm.value.value,
+    };
     // 调用后端重新提交接口（更新状态为审批中 + 审批发起人任务）
     await resubmitProcessInstance({
       processInstanceId: String(processInstance.value.id),
@@ -348,10 +350,15 @@ onMounted(async () => {
 <template>
   <div class="bpm-process-instance-detail">
     <!-- 初始加载中 -->
-    <Loading v-if="processInstanceLoading && !processDefinition?.formType" :spinning="true" />
+    <Loading
+      v-if="processInstanceLoading && !processDefinition?.formType"
+      :spinning="true"
+    />
 
     <!-- ======== 流程表单 (NORMAL) ======== -->
-    <template v-else-if="processDefinition?.formType === BpmModelFormType.NORMAL">
+    <template
+      v-else-if="processDefinition?.formType === BpmModelFormType.NORMAL"
+    >
       <Loading :spinning="processInstanceLoading">
         <BasicForm
           ref="basicFormRef"
@@ -392,7 +399,9 @@ onMounted(async () => {
     </template>
 
     <!-- ======== 业务表单 (CUSTOM) ======== -->
-    <template v-else-if="processDefinition?.formType === BpmModelFormType.CUSTOM">
+    <template
+      v-else-if="processDefinition?.formType === BpmModelFormType.CUSTOM"
+    >
       <BusinessFormComponent
         ref="businessFormRef"
         :id="processInstance?.businessKey"

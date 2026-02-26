@@ -421,30 +421,41 @@ function handleProcess(record: any) {
 function handleDetail(record: any) {
   const tab = activeTab.value;
 
-  if (tab === 'myBill') {
-    // 我的单据：跳转到流程实例详情（参考"我的流程"页面，带 isTodo=false）
-    router.push({
-      name: 'BpmProcessInstanceDetail',
-      query: { id: record.id, isTodo: 'false' },
-    });
-  } else if (tab === 'done') {
-    // 已办任务：跳转到流程实例详情
-    router.push({
-      name: 'BpmProcessInstanceDetail',
-      query: {
-        id: record.processInstance?.id,
-        taskId: record.id,
-      },
-    });
-  } else if (tab === 'copy') {
-    // 抄送我的：跳转到流程实例详情
-    router.push({
-      name: 'BpmProcessInstanceDetail',
-      query: {
-        id: record.processInstanceId,
-        ...(record.activityId && { activityId: record.activityId }),
-      },
-    });
+  switch (tab) {
+    case 'copy': {
+      // 抄送我的：跳转到流程实例详情
+      router.push({
+        name: 'BpmProcessInstanceDetail',
+        query: {
+          id: record.processInstanceId,
+          ...(record.activityId && { activityId: record.activityId }),
+        },
+      });
+
+      break;
+    }
+    case 'done': {
+      // 已办任务：跳转到流程实例详情
+      router.push({
+        name: 'BpmProcessInstanceDetail',
+        query: {
+          id: record.processInstance?.id,
+          taskId: record.id,
+        },
+      });
+
+      break;
+    }
+    case 'myBill': {
+      // 我的单据：跳转到流程实例详情（参考"我的流程"页面，带 isTodo=false）
+      router.push({
+        name: 'BpmProcessInstanceDetail',
+        query: { id: record.id, isTodo: 'false' },
+      });
+
+      break;
+    }
+    // No default
   }
 }
 
