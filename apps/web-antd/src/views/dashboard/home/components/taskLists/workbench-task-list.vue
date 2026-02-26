@@ -154,6 +154,21 @@ const columns = computed(() => {
       },
     },
     {
+      title: '发起人',
+      dataIndex: ['processInstance', 'startUser', 'nickname'],
+      key: 'startUser',
+      width: 100,
+      customRender: ({ record }: any) => {
+        if (tab === 'copy') {
+          return record.startUser?.nickname || '-';
+        }
+        if (tab === 'myBill') {
+          return record.startUser?.nickname || '-';
+        }
+        return record.processInstance?.startUser?.nickname || '-';
+      },
+    },
+    {
       title: '所属公司',
       dataIndex: ['processInstance', 'companyName'],
       key: 'companyName',
@@ -192,15 +207,8 @@ const columns = computed(() => {
 
   switch (tab) {
     case 'copy': {
-      // 抄送我的：发起人、抄送节点、抄送时间
+      // 抄送我的：抄送节点、抄送时间
       specialColumns.push(
-        {
-          title: '发起人',
-          dataIndex: ['startUser', 'nickname'],
-          key: 'startUser',
-          width: 100,
-          customRender: ({ record }: any) => record.startUser?.nickname || '-',
-        },
         {
           title: '抄送节点',
           dataIndex: 'activityName',
@@ -250,15 +258,8 @@ const columns = computed(() => {
       break;
     }
     case 'myBill': {
-      // 我的单据：发起人、发起时间
+      // 我的单据：发起时间
       specialColumns.push(
-        {
-          title: '发起人',
-          dataIndex: ['startUser', 'nickname'],
-          key: 'startUser',
-          width: 100,
-          customRender: ({ record }: any) => record.startUser?.nickname || '-',
-        },
         {
           title: '发起时间',
           dataIndex: 'createTime',
