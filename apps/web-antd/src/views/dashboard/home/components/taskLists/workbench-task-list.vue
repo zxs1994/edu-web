@@ -259,17 +259,15 @@ const columns = computed(() => {
     }
     case 'myBill': {
       // 我的单据：发起时间
-      specialColumns.push(
-        {
-          title: '发起时间',
-          dataIndex: 'createTime',
-          key: 'createTime',
-          width: 160,
-          customRender: ({ text }: any) => {
-            return text ? new Date(text).toLocaleString('zh-CN') : '-';
-          },
+      specialColumns.push({
+        title: '发起时间',
+        dataIndex: 'createTime',
+        key: 'createTime',
+        width: 160,
+        customRender: ({ text }: any) => {
+          return text ? new Date(text).toLocaleString('zh-CN') : '-';
         },
-      );
+      });
 
       break;
     }
