@@ -2,6 +2,16 @@ import type { RouteRecordRaw } from 'vue-router';
 
 const routes: RouteRecordRaw[] = [
   {
+    name: 'Profile',
+    path: '/profile',
+    component: () => import('#/views/_core/profile/index.vue'),
+    meta: {
+      title: '个人中心',
+      icon: 'ant-design:user-outlined',
+      hideInMenu: true,
+    },
+  },
+  {
     path: '/system/notify-message',
     component: () => import('#/views/system/notify/my/index.vue'),
     name: 'MyNotifyMessage',

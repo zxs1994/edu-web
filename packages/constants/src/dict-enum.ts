@@ -23,6 +23,7 @@ const SYSTEM_DICT = {
   SYSTEM_MAIL_SEND_STATUS: 'system_mail_send_status',
   SYSTEM_NOTIFY_TEMPLATE_TYPE: 'system_notify_template_type',
   SYSTEM_SOCIAL_TYPE: 'system_social_type',
+  SYSTEM_DEPT_ORG_TYPE: 'system_dept_org_type', // 组织类型
   SCHEDULE_TYPE: 'schedule_type', // 日程类型
   SCHEDULE_CATEGORY: 'schedule_category', // 日程分类
 } as const;
