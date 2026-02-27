@@ -32,8 +32,25 @@ export function useGridColumns(): VxeTableGridOptions['columns'] {
   return [
     {
       field: 'processInstanceName',
-      title: '流程名称',
-      minWidth: 200,
+      title: '单据类型',
+      minWidth: 140,
+      fixed: 'left',
+    },
+    {
+      field: 'billCode',
+      title: '单据编号',
+      minWidth: 160,
+      align: 'center',
+      cellRender: {
+        name: 'CellRouterLink',
+        props: {
+          name: 'BpmProcessInstanceDetail',
+          queryFields: [
+            { key: 'id', field: 'processInstanceId' },
+            { key: 'activityId', field: 'activityId' },
+          ],
+        },
+      },
     },
     {
       field: 'summary',
@@ -42,7 +59,13 @@ export function useGridColumns(): VxeTableGridOptions['columns'] {
       formatter: ({ cellValue }) => {
         return cellValue && cellValue.length > 0
           ? cellValue
-              .map((item: any) => `${item.key} : ${item.value}`)
+              .map((item: any) => {
+                const key = item?.key;
+                const value = item?.value ?? '';
+                return key && `${key}`.trim().length > 0
+                  ? `${key} : ${value}`
+                  : `${value}`;
+              })
               .join('\n')
           : '-';
       },
@@ -51,6 +74,16 @@ export function useGridColumns(): VxeTableGridOptions['columns'] {
       field: 'startUser.nickname',
       title: '流程发起人',
       minWidth: 120,
+    },
+    {
+      field: 'companyName',
+      title: '所属公司',
+      minWidth: 160,
+    },
+    {
+      field: 'deptName',
+      title: '所属部门',
+      minWidth: 160,
     },
     {
       field: 'processInstanceStartTime',

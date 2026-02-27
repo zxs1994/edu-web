@@ -26,6 +26,16 @@ export function useFormSchema(): VbenFormSchema[] {
       rules: 'required',
     },
     {
+      fieldName: 'billCodePrefix',
+      label: '单据类型编码',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入单据类型编码，如 OA103',
+      },
+      help: '作为单据编号前缀，如 OA103 生成 OA103-2026022700001',
+      rules: 'required',
+    },
+    {
       fieldName: 'status',
       label: '状态',
       component: 'RadioGroup',

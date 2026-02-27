@@ -32,6 +32,11 @@ export function useGridColumns(): VxeTableGridOptions['columns'] {
       minWidth: 200,
     },
     {
+      field: 'billCodePrefix',
+      title: '单据类型编码',
+      minWidth: 140,
+    },
+    {
       field: 'status',
       title: '状态',
       minWidth: 200,

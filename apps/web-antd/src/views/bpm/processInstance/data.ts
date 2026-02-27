@@ -139,7 +139,7 @@ export function useGridColumns(): VxeTableGridOptions['columns'] {
       fixed: 'left',
     },
     {
-      field: 'formVariables.billCode',
+      field: 'billCode',
       title: '单据编号',
       minWidth: 160,
       align: 'center',
@@ -172,6 +172,16 @@ export function useGridColumns(): VxeTableGridOptions['columns'] {
               .join('\n')
           : '-';
       },
+    },
+    {
+      field: 'companyName',
+      title: '所属公司',
+      minWidth: 160,
+    },
+    {
+      field: 'deptName',
+      title: '所属部门',
+      minWidth: 160,
     },
 
     // 流程状态

@@ -11,6 +11,7 @@ export namespace BpmFormApi {
     fields: string[];
     status: number;
     remark: string;
+    billCodePrefix?: string;
     createTime: number;
   }
 }

@@ -148,11 +148,11 @@ const normalFormHeaderData = computed(() => {
     billName:
       processDefinition.value?.name || processInstance.value?.name || '',
     processStatus: processInstance.value.status,
-    billCode: String(processInstance.value.id),
+    billCode: processInstance.value.billCode || String(processInstance.value.id),
     creatorName: processInstance.value.startUser?.nickname,
     createTime: processInstance.value.startTime,
-    deptName: processInstance.value.startUser?.deptName,
-    companyName: (processInstance.value.startUser as any)?.companyName || '',
+    deptName: processInstance.value.deptName || processInstance.value.startUser?.deptName,
+    companyName: processInstance.value.companyName || (processInstance.value.startUser as any)?.companyName || '',
     processInstanceId: String(processInstance.value.id),
   };
 });

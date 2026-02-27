@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, nextTick, onMounted, ref } from 'vue';
+import { computed, nextTick, onActivated, onMounted, ref } from 'vue';
 
 import { Badge, Table, Tabs } from 'ant-design-vue';
 
@@ -92,10 +92,10 @@ const columns = computed(() => {
       width: 160,
       customRender: ({ record }: any) => {
         if (tab === 'copy') {
-          return '-';
+          return record.billCode || '-';
         }
         if (tab === 'myBill') {
-          return record.formVariables?.billCode || '-';
+          return record.billCode || record.formVariables?.billCode || '-';
         }
         return record.processInstance?.billCode || '-';
       },
@@ -175,10 +175,7 @@ const columns = computed(() => {
       width: 160,
       ellipsis: true,
       customRender: ({ record }: any) => {
-        if (tab === 'copy') {
-          return '-';
-        }
-        if (tab === 'myBill') {
+        if (tab === 'copy' || tab === 'myBill') {
           return record.companyName || '-';
         }
         return record.processInstance?.companyName || '-';
@@ -191,10 +188,7 @@ const columns = computed(() => {
       width: 160,
       ellipsis: true,
       customRender: ({ record }: any) => {
-        if (tab === 'copy') {
-          return '-';
-        }
-        if (tab === 'myBill') {
+        if (tab === 'copy' || tab === 'myBill') {
           return record.deptName || '-';
         }
         return record.processInstance?.deptName || '-';
@@ -363,6 +357,18 @@ function handleBillCodeClick(record: any) {
   const tab = activeTab.value;
 
   switch (tab) {
+    case 'copy': {
+      // 抄送我的：跳转到流程实例详情
+      router.push({
+        name: 'BpmProcessInstanceDetail',
+        query: {
+          id: record.processInstanceId,
+          ...(record.activityId && { activityId: record.activityId }),
+        },
+      });
+
+      break;
+    }
     case 'done': {
       // 已办任务：跳转到流程实例详情
       router.push({
@@ -473,8 +479,8 @@ function handleViewMore() {
   }
 }
 
-// 初始化
-onMounted(async () => {
+// 加载所有数据（当前tab数据 + 其他tab统计）
+async function loadAllData() {
   const currentTab = activeTab.value;
 
   // 先加载当前tab的数据（使用loadData函数保证逻辑一致）
@@ -515,6 +521,16 @@ onMounted(async () => {
   } catch (error) {
     console.error('加载其他tab统计数据失败:', error);
   }
+}
+
+// 初始化
+onMounted(() => {
+  loadAllData();
+});
+
+// 页面被KeepAlive缓存后重新激活时，自动刷新数据
+onActivated(() => {
+  loadAllData();
 });
 </script>
 
@@ -560,6 +576,7 @@ onMounted(async () => {
             <a
               v-if="
                 record.processInstance?.billCode ||
+                record.billCode ||
                 record.formVariables?.billCode
               "
               class="bill-code-link"
@@ -567,8 +584,10 @@ onMounted(async () => {
             >
               {{
                 activeTab === 'myBill'
-                  ? record.formVariables?.billCode
-                  : record.processInstance?.billCode
+                  ? record.billCode || record.formVariables?.billCode
+                  : activeTab === 'copy'
+                    ? record.billCode
+                    : record.processInstance?.billCode
               }}
             </a>
             <span v-else>-</span>

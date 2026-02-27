@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { SystemNoticeApi } from '#/api/system/notice';
 
-import { computed, onMounted, ref } from 'vue';
+import { computed, onActivated, onMounted, ref } from 'vue';
 
 import { DICT_TYPE } from '@vben/constants';
 import { getDictLabel } from '@vben/hooks';
@@ -92,6 +92,11 @@ const badgeCount = computed(() => {
 
 // 组件挂载时加载数据
 onMounted(() => {
+  loadNoticeList();
+});
+
+// 页面被KeepAlive缓存后重新激活时，自动刷新数据
+onActivated(() => {
   loadNoticeList();
 });
 </script>

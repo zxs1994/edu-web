@@ -3,7 +3,7 @@ import type { Dayjs } from 'dayjs';
 
 import type { SystemScheduleApi } from '#/api/system/schedule';
 
-import { computed, onMounted, ref } from 'vue';
+import { computed, onActivated, onMounted, ref } from 'vue';
 
 import { useVbenModal } from '@vben/common-ui';
 import { DICT_TYPE } from '@vben/constants';
@@ -161,10 +161,20 @@ function handleViewAll() {
   router.push({ path: '/oa/schedule' });
 }
 
-// 组件挂载时加载数据
-onMounted(async () => {
+// 加载所有日程数据
+async function loadAllScheduleData() {
   await loadScheduleDates();
   await loadScheduleListByDate(selectedDate.value);
+}
+
+// 组件挂载时加载数据
+onMounted(() => {
+  loadAllScheduleData();
+});
+
+// 页面被KeepAlive缓存后重新激活时，自动刷新数据
+onActivated(() => {
+  loadAllScheduleData();
 });
 </script>
 
