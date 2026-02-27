@@ -15,6 +15,8 @@ export namespace BpmTaskApi {
     event: string; // 监听事件
     valueType: string; // 监听器值类型
     taskDefinitionKey: string; // 任务定义key
+    withdrawable?: boolean; // 是否可撤回
+    withdrawDisableReason?: string; // 不可撤回原因
   }
 
   // 流程任务

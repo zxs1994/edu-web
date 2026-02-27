@@ -24,7 +24,7 @@ const emits = defineEmits<{
 }>();
 
 /** TinyMCE 自托管：https://www.jianshu.com/p/59a9c3802443 */
-const tinymceScriptSrc = `${import.meta.env.VITE_BASE}tinymce/tinymce.min.js`;
+const tinymceScriptSrc = `${import.meta.env.BASE_URL}tinymce/tinymce.min.js`;
 
 const [Modal, modalApi] = useVbenModal({
   async onOpenChange(isOpen: boolean) {

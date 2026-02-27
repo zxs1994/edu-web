@@ -57,7 +57,7 @@ interface TinymacProps {
 const modelValue = defineModel('modelValue', { default: '', type: String });
 
 /** TinyMCE 自托管：https://www.jianshu.com/p/59a9c3802443 */
-const tinymceScriptSrc = `${import.meta.env.VITE_BASE}tinymce/tinymce.min.js`;
+const tinymceScriptSrc = `${import.meta.env.BASE_URL}tinymce/tinymce.min.js`;
 
 const attrs = useAttrs();
 const editorRef = ref<EditorType>();

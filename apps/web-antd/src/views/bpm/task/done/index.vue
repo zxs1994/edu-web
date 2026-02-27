@@ -82,12 +82,19 @@ const [Grid, gridApi] = useVbenVxeGrid({
             {
               label: '撤回',
               type: 'link',
-              danger: true,
+              danger: !row.withdrawable ? false : true,
               icon: ACTION_ICON.DELETE,
-              popConfirm: {
-                title: '确定要撤回该任务吗？',
-                confirm: handleWithdraw.bind(null, row),
-              },
+              disabled: !row.withdrawable,
+              tooltip: !row.withdrawable
+                ? row.withdrawDisableReason || '当前任务不支持撤回'
+                : undefined,
+              popConfirm: row.withdrawable
+                ? {
+                    title: '确定要撤回该任务吗？',
+                    confirm: handleWithdraw.bind(null, row),
+                  }
+                : undefined,
+              onClick: !row.withdrawable ? () => {} : undefined,
             },
             {
               label: '历史',
