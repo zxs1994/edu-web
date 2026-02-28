@@ -54,5 +54,19 @@ export function useFormSchema(): VbenFormSchema[] {
         placeholder: '请输入备注',
       },
     },
+    {
+      fieldName: 'summaryFields',
+      label: '摘要字段',
+      component: 'Select',
+      componentProps: {
+        mode: 'multiple',
+        placeholder: '不选则默认展示前三个字段',
+        options: [],
+        maxTagCount: 3,
+        allowClear: true,
+        style: { width: '100%' },
+      },
+      help: '选择显示在流程任务摘要中的字段，不选则默认展示前三个字段',
+    },
   ];
 }

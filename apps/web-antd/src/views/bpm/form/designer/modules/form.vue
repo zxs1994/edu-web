@@ -37,6 +37,25 @@ const [Form, formApi] = useVbenForm({
   showDefaultActions: false,
 });
 
+/** 从设计器规则中递归提取字段信息（field、title） */
+function extractDesignerFields(ruleList: any[]) {
+  const options: Array<{ label: string; value: string }> = [];
+
+  function traverse(rules: any[]) {
+    for (const rule of rules) {
+      if (rule.field && rule.title) {
+        options.push({ label: rule.title, value: rule.field });
+      }
+      if (rule.children && Array.isArray(rule.children)) {
+        traverse(rule.children);
+      }
+    }
+  }
+
+  traverse(ruleList);
+  return { options };
+}
+
 const [Modal, modalApi] = useVbenModal({
   async onConfirm() {
     const { valid } = await formApi.validate();
@@ -48,9 +67,31 @@ const [Modal, modalApi] = useVbenModal({
     try {
       // 获取表单数据
       const data = (await formApi.getValues()) as BpmFormApi.Form;
+
+      // 获取摘要字段选择
+      const summaryFields: string[] = (data as any).summaryFields || [];
+
       // 编码表单配置和表单字段
       data.conf = encodeConf(designerComponent);
       data.fields = encodeFields(designerComponent);
+
+      // 将 showInSummary 注入到每个 field JSON 中（因为 formCreate.toJson 不会序列化自定义属性）
+      // 无论是否选择了摘要字段，都需要注入，以便清空时能正确移除旧的 showInSummary: true
+      data.fields = data.fields.map((fieldJson: string) => {
+        try {
+          const fieldObj = JSON.parse(fieldJson);
+          if (fieldObj.field) {
+            fieldObj.showInSummary = summaryFields.includes(fieldObj.field);
+          }
+          return JSON.stringify(fieldObj);
+        } catch {
+          return fieldJson;
+        }
+      });
+
+      // 移除 summaryFields（非后端字段，仅用于前端控制）
+      delete (data as any).summaryFields;
+
       // 保存表单数据
       if (formData.value?.id) {
         await (editorAction.value === 'copy'
@@ -96,6 +137,39 @@ const [Modal, modalApi] = useVbenModal({
       // 设置到 values
       if (formData.value) {
         await formApi.setValues(formData.value);
+      }
+
+      // 解析设计器中的表单字段，动态填充「摘要字段」多选选项
+      if (designerComponent.value) {
+        const rules = designerComponent.value.getRule();
+        const { options } = extractDesignerFields(rules);
+
+        // 从原始 fields JSON 中解析已保存的 showInSummary 状态（更可靠）
+        const selectedFields: string[] = [];
+        if (formData.value?.fields) {
+          for (const fieldJson of formData.value.fields) {
+            try {
+              const fieldObj = JSON.parse(fieldJson);
+              if (fieldObj.field && fieldObj.showInSummary === true) {
+                selectedFields.push(fieldObj.field);
+              }
+            } catch {
+              // 忽略解析错误
+            }
+          }
+        }
+
+        // 更新摘要字段的下拉选项
+        await formApi.updateSchema([
+          {
+            fieldName: 'summaryFields',
+            componentProps: { options },
+          },
+        ]);
+        // 回显已选中的摘要字段
+        if (selectedFields.length > 0) {
+          await formApi.setValues({ summaryFields: selectedFields });
+        }
       }
     } finally {
       modalApi.unlock();
