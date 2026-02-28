@@ -597,7 +597,9 @@ onActivated(() => {
           >
             <!-- 审批中且有待办任务：显示审批人信息 -->
             <template
-              v-if="record.status === 1 && record.tasks && record.tasks.length > 0"
+              v-if="
+                record.status === 1 && record.tasks && record.tasks.length > 0
+              "
             >
               <span>
                 <span class="text-primary">{{
