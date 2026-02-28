@@ -104,7 +104,7 @@ const columns = computed(() => {
       title: '审批状态',
       dataIndex: 'status',
       key: 'status',
-      width: 100,
+      width: tab === 'myBill' ? 200 : 100,
       customRender: ({ record }: any) => {
         let status = null;
         switch (tab) {
@@ -591,6 +591,36 @@ onActivated(() => {
               }}
             </a>
             <span v-else>-</span>
+          </template>
+          <template
+            v-else-if="column.key === 'status' && activeTab === 'myBill'"
+          >
+            <!-- 审批中且有待办任务：显示审批人信息 -->
+            <template
+              v-if="record.status === 1 && record.tasks && record.tasks.length > 0"
+            >
+              <span>
+                <span class="text-primary">{{
+                  record.tasks[0]?.assigneeUser?.nickname || '未知用户'
+                }}</span>
+                <template v-if="record.tasks.length > 1">
+                  等 {{ record.tasks.length }} 人
+                </template>
+                （{{ record.tasks[0]?.name || '未知任务' }}）审批中
+              </span>
+            </template>
+            <!-- 其他状态：正常显示状态文字 -->
+            <template v-else>
+              {{
+                {
+                  [-1]: '未提交',
+                  1: '审批中',
+                  2: '已通过',
+                  3: '未通过',
+                  4: '已取消',
+                }[record.status] ?? '-'
+              }}
+            </template>
           </template>
           <template v-else-if="column.key === 'action'">
             <!-- 待办任务：显示办理按钮 -->
