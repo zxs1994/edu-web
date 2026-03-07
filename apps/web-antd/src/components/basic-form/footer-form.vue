@@ -49,13 +49,30 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  /** 是否隐藏删除按钮 */
+  hideDelete: {
+    type: Boolean,
+    default: false,
+  },
+  /** 单据编号（新建未保存时为空，此时不显示删除按钮） */
+  billCode: {
+    type: String,
+    default: '',
+  },
   /** 是否显示再次提交按钮（流程已结束时使用） */
   showReCreate: {
     type: Boolean,
     default: false,
   },
 });
-const emit = defineEmits(['close', 'save', 'submit', 'revoke', 'reCreate']);
+const emit = defineEmits([
+  'close',
+  'save',
+  'submit',
+  'revoke',
+  'reCreate',
+  'delete',
+]);
 
 /** 流程是否已结束 */
 const isEndStatus = computed(() => {
@@ -93,6 +110,19 @@ const submitForm = () => {
 // 再次提交
 const reCreateForm = () => {
   emit('reCreate');
+};
+
+// 删除相关
+const deletePopoverVisible = ref(false);
+const openDeletePopover = () => {
+  deletePopoverVisible.value = true;
+};
+const closeDeletePopover = () => {
+  deletePopoverVisible.value = false;
+};
+const confirmDelete = () => {
+  emit('delete');
+  closeDeletePopover();
 };
 
 // 打开撤回弹窗
@@ -180,6 +210,32 @@ const confirmRevoke = async () => {
               <Button class="ml-2" @click="closeRevokePopover"> 取消 </Button>
             </FormItem>
           </Form>
+        </div>
+      </template>
+    </Popover>
+    <!-- 【删除】按钮 -->
+    <Popover
+      v-model:open="deletePopoverVisible"
+      placement="top"
+      :overlay-style="{ minWidth: '300px' }"
+      trigger="click"
+      v-if="
+        !hideDelete &&
+        billCode &&
+        processStatus &&
+        BpmProcessInstanceStatusEditValue.includes(processStatus)
+      "
+    >
+      <Button danger type="primary" @click="openDeletePopover"> {{ $t('common.delete') }} </Button>
+      <template #content>
+        <div class="flex flex-1 flex-col px-5 pt-5">
+          <p class="mb-4">确定要删除此单据吗？删除后单据信息和流程数据将一并清理，不可恢复。</p>
+          <div>
+            <Button danger type="primary" @click="confirmDelete">
+              确认删除
+            </Button>
+            <Button class="ml-2" @click="closeDeletePopover"> 取消 </Button>
+          </div>
         </div>
       </template>
     </Popover>

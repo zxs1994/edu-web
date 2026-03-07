@@ -17,6 +17,7 @@ import { Button, message } from 'ant-design-vue';
 
 import { withdrawProcessToStart } from '#/api/bpm/task';
 import {
+  deleteSealApplyBill,
   getSealApplyBill,
   saveSealApplyBill,
   submitSealApplyBill,
@@ -129,6 +130,21 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
     await loadData();
   } catch (error) {
     console.error('保存失败:', error);
+  } finally {
+    loading.value = false;
+  }
+}
+
+// 删除
+async function handleDelete() {
+  if (!id) return;
+  loading.value = true;
+  try {
+    await deleteSealApplyBill(id);
+    message.success('删除成功');
+    closeCurrentTab();
+  } catch (error) {
+    console.error('删除失败:', error);
   } finally {
     loading.value = false;
   }
@@ -310,6 +326,7 @@ onMounted(() => {
       @save="handleSaveAndSubmit(false)"
       @submit="handleSaveAndSubmit(true)"
       @revoke="handleRevoke"
+      @delete="handleDelete"
       :hide-footer="props.isApproval"
       :activity-nodes="props.activityNodes"
     >

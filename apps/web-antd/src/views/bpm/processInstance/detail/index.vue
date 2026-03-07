@@ -13,6 +13,7 @@ import { useUserStore } from '@vben/stores';
 import { message } from 'ant-design-vue';
 
 import {
+  deleteProcessInstance,
   getApprovalDetail as getApprovalDetailApi,
   resubmitProcessInstance,
 } from '#/api/bpm/processInstance';
@@ -294,6 +295,21 @@ async function handleBeforeApproval(): Promise<boolean> {
   }
 }
 
+/** 流程表单 - 删除 */
+async function handleDelete() {
+  if (!processInstance.value?.id) return;
+  try {
+    processInstanceLoading.value = true;
+    await deleteProcessInstance(String(processInstance.value.id));
+    message.success('删除成功');
+    closeCurrentTab();
+  } catch (error) {
+    console.error('删除失败:', error);
+  } finally {
+    processInstanceLoading.value = false;
+  }
+}
+
 /** 流程表单 - 关闭 */
 function handleClose() {
   closeCurrentTab();
@@ -377,6 +393,7 @@ onMounted(async () => {
           @close="handleClose"
           @submit="handleSubmit"
           @revoke="handleRevoke"
+          @delete="handleDelete"
         >
           <!-- 表单内容：使用 form-create 渲染 -->
           <template #base-form>

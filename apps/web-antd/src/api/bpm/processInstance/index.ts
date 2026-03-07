@@ -230,3 +230,10 @@ export async function getProcessInstancePrintData(id: string) {
     `/bpm/process-instance/get-print-data?processInstanceId=${id}`,
   );
 }
+
+/** 删除流程实例（清理 Flowable 数据 + 通知业务模块删除业务数据） */
+export async function deleteProcessInstance(id: string) {
+  return requestClient.delete<boolean>('/bpm/process-instance/delete', {
+    params: { id },
+  });
+}

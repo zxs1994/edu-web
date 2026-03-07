@@ -21,7 +21,7 @@ const projectItems: WorkbenchProjectItem[] = [
     group: 'Spring Boot 单体架构',
     icon: 'simple-icons:springboot',
     title: 'ruoyi-vue-pro',
-    url: 'https://github.com/YunaiV/ruoyi-vue-pro',
+    url: 'https://gitee.com/yqzy1688/ruoyi-office.git',
   },
   {
     color: '#409EFF',

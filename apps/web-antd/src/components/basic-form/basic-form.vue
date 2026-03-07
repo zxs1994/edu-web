@@ -41,6 +41,7 @@ interface Props {
   hideFooter?: boolean; // 是否隐藏底部
   hideSubmit?: boolean; // 是否隐藏提交按钮
   hideSave?: boolean; // 是否隐藏保存按钮
+  hideDelete?: boolean; // 是否隐藏删除按钮
   showReCreate?: boolean; // 是否显示再次提交按钮
   // 表单相关props
   formData?: Record<string, any>; // 表单数据
@@ -62,13 +63,14 @@ const props = withDefaults(defineProps<Props>(), {
   hideFooter: false,
   hideSubmit: false,
   hideSave: false,
+  hideDelete: false,
   showReCreate: false,
   formData: () => ({}),
   formSchema: () => [],
   disabled: false,
 });
 
-const emit = defineEmits(['close', 'save', 'submit', 'revoke', 'reCreate']);
+const emit = defineEmits(['close', 'save', 'submit', 'revoke', 'reCreate', 'delete']);
 
 const processInstanceLoading = ref(false); // 流程实例的加载中
 const processModelView = ref<any>({}); // 流程模型视图
@@ -209,6 +211,10 @@ const revokeForm = (reason?: string) => {
 // 再次提交
 const reCreateForm = () => {
   emit('reCreate');
+};
+// 删除
+const deleteForm = () => {
+  emit('delete');
 };
 
 /** 手动刷新所有数据 */
@@ -388,9 +394,12 @@ defineExpose({
           @save="saveForm"
           @revoke="revokeForm"
           @re-create="reCreateForm"
+          @delete="deleteForm"
           :process-status="props.headerData.processStatus"
+          :bill-code="props.headerData.billCode"
           :hide-submit="props.hideSubmit"
           :hide-save="props.hideSave"
+          :hide-delete="props.hideDelete"
           :show-re-create="props.showReCreate"
         />
       </a-layout-footer>

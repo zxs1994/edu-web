@@ -5,12 +5,19 @@ import type { BpmProcessInstanceApi } from '#/api/bpm/processInstance';
 import { h } from 'vue';
 
 import { Page, prompt } from '@vben/common-ui';
-import { BpmProcessInstanceStatus, DICT_TYPE } from '@vben/constants';
+import {
+  BpmProcessInstanceStatus,
+  BpmProcessInstanceStatusEditValue,
+  DICT_TYPE,
+} from '@vben/constants';
 
 import { Button, message, Tag, Textarea } from 'ant-design-vue';
 
 import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
-import { getProcessInstanceMyPage } from '#/api/bpm/processInstance';
+import {
+  deleteProcessInstance,
+  getProcessInstanceMyPage,
+} from '#/api/bpm/processInstance';
 import { withdrawProcessToStart } from '#/api/bpm/task';
 import { DictTag } from '#/components/dict-tag';
 import { router } from '#/router';
@@ -33,6 +40,17 @@ function handleDetail(row: ExtendedProcessInstance) {
     name: 'BpmProcessInstanceDetail',
     query: { id: row.id.toString(), isTodo: 'false' },
   });
+}
+
+/** 删除流程实例 */
+async function handleDeleteInstance(row: ExtendedProcessInstance) {
+  try {
+    await deleteProcessInstance(row.id.toString());
+    message.success('删除成功');
+    handleRefresh();
+  } catch {
+    // error already handled by request client
+  }
 }
 
 /** 撤回流程实例 */
@@ -183,6 +201,18 @@ const [Grid, gridApi] = useVbenVxeGrid({
               ifShow: row.status === BpmProcessInstanceStatus.RUNNING,
               auth: ['bpm:process-instance:cancel'],
               onClick: handleCancel.bind(null, row),
+            },
+            {
+              label: $t('common.delete'),
+              type: 'link',
+              danger: true,
+              icon: ACTION_ICON.DELETE,
+              ifShow: BpmProcessInstanceStatusEditValue.includes(row.status),
+              auth: ['bpm:process-instance:cancel'],
+              popConfirm: {
+                title: '确定要删除此流程实例吗？删除后不可恢复。',
+                confirm: handleDeleteInstance.bind(null, row),
+              },
             },
           ]"
         />
