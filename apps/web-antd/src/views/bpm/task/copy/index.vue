@@ -15,9 +15,11 @@ defineOptions({ name: 'BpmCopyTask' });
 
 /** 任务详情 */
 function handleDetail(row: BpmProcessInstanceApi.ProcessInstanceCopyRespVO) {
-  const query = {
+  const query: Record<string, string> = {
     id: row.processInstanceId,
+    isCopy: 'true',
     ...(row.activityId && { activityId: row.activityId }),
+    ...(row.reason && { copyReason: row.reason }),
   };
   router.push({
     name: 'BpmProcessInstanceDetail',

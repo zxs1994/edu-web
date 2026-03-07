@@ -232,9 +232,9 @@ function handleEmployeeSelect(employee: any) {
       expectedFormalDate: employee.expectedFormalDate || employee.formalDate,
     };
 
-    // 更新表单
+    // 更新表单（传入 true 触发校验，清除 HelpInput 必填项的红框提示）
     if (basicFormRef.value) {
-      basicFormRef.value.setFormValues(employeeData);
+      basicFormRef.value.setFormValues(employeeData, true);
     }
 
     // 同时更新formData

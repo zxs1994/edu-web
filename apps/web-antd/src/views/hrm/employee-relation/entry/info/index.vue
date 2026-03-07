@@ -16,7 +16,6 @@ import { useUserStore } from '@vben/stores';
 import { Button, message, Table } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
-
 import { withdrawProcessToStart } from '#/api/bpm/task';
 import {
   getEmployeeEntryBill,
@@ -118,7 +117,9 @@ function updateWorkFormSchema() {
         ...schema,
         componentProps: {
           ...componentProps,
-          disabled: hasCustomDisabled ? componentProps.disabled() : readonly.value,
+          disabled: hasCustomDisabled
+            ? componentProps.disabled()
+            : readonly.value,
         },
       };
     });
@@ -149,7 +150,7 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
   if (isSubmit) {
     const { valid: basicValid } = await basicFormRef.value.validateForm();
     const workValid = await workFormApi.validate();
-    
+
     // 如果校验不通过，则不允许提交
     if (!basicValid || !workValid.valid) {
       loading.value = false;
@@ -164,7 +165,7 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
       : ((await basicFormRef.value.getFormValues(
           false,
         )) as EmployeeEntryBillApi.EmployeeEntryBill);
-    
+
     // 获取工作信息表单的值
     const workValues = await workFormApi.getValues();
 
@@ -272,7 +273,7 @@ async function loadData() {
 
     // 重新初始化表单schema（因为readonly状态可能变化）
     initFormSchema();
-    
+
     // 更新工作信息表单的schema（因为readonly状态可能变化）
     updateWorkFormSchema();
 
@@ -280,7 +281,7 @@ async function loadData() {
     if (basicFormRef.value) {
       await basicFormRef.value.setFormValues(data);
     }
-    
+
     // 设置工作信息表单值
     await workFormApi.setValues(data);
   } catch (error) {
@@ -307,12 +308,12 @@ function handleDeptSelect(dept: any) {
       empCompanyId: dept.companyId,
       empCompanyName: dept.companyName || '',
     };
-    
-    // 更新基本信息表单（BasicForm）
+
+    // 更新基本信息表单（BasicForm）（传入 true 触发校验，清除 HelpInput 必填项的红框提示）
     if (basicFormRef.value) {
-      basicFormRef.value.setFormValues(deptData);
+      basicFormRef.value.setFormValues(deptData, true);
     }
-    
+
     // 更新工作信息表单（WorkForm）
     workFormApi.setValues(deptData);
 
@@ -334,16 +335,10 @@ const workExperienceColumns = useWorkExperienceColumns(
 );
 
 // 教育经历表格列定义
-const educationColumns = useEducationColumns(
-  readonly,
-  handleDeleteEducation,
-);
+const educationColumns = useEducationColumns(readonly, handleDeleteEducation);
 
 // 家属信息表格列定义
-const familyColumns = useFamilyColumns(
-  readonly,
-  handleDeleteFamily,
-);
+const familyColumns = useFamilyColumns(readonly, handleDeleteFamily);
 
 // ========== 工作经历相关操作 ==========
 function handleAddWorkExperience() {
@@ -432,7 +427,6 @@ onMounted(() => {
     >
       <!-- 扩展插槽，用于明细表格等 -->
       <template #form-extension>
-        
         <CardContainer title="工作信息">
           <WorkForm />
         </CardContainer>

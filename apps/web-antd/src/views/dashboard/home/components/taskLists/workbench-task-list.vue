@@ -358,12 +358,14 @@ function handleBillCodeClick(record: any) {
 
   switch (tab) {
     case 'copy': {
-      // 抄送我的：跳转到流程实例详情
+      // 抄送我的：跳转到流程实例详情（只读模式）
       router.push({
         name: 'BpmProcessInstanceDetail',
         query: {
           id: record.processInstanceId,
+          isCopy: 'true',
           ...(record.activityId && { activityId: record.activityId }),
+          ...(record.reason && { copyReason: record.reason }),
         },
       });
 
@@ -428,12 +430,14 @@ function handleDetail(record: any) {
 
   switch (tab) {
     case 'copy': {
-      // 抄送我的：跳转到流程实例详情
+      // 抄送我的：跳转到流程实例详情（只读模式）
       router.push({
         name: 'BpmProcessInstanceDetail',
         query: {
           id: record.processInstanceId,
+          isCopy: 'true',
           ...(record.activityId && { activityId: record.activityId }),
+          ...(record.reason && { copyReason: record.reason }),
         },
       });
 

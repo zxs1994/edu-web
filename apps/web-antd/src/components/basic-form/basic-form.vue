@@ -298,8 +298,10 @@ defineExpose({
   async validateForm() {
     return formApi ? await formApi.validate() : { valid: true };
   },
-  async setFormValues(values: any) {
-    return formApi ? await formApi.setValues(values) : undefined;
+  async setFormValues(values: any, shouldValidate = false) {
+    return formApi
+      ? await formApi.setValues(values, true, shouldValidate)
+      : undefined;
   },
   resetForm() {
     if (formApi) {
@@ -394,21 +396,25 @@ defineExpose({
         :style="{ left: `${footerLeft}px` }"
         class="fixed-footer-form"
       >
+        <!-- 底部按钮上方的扩展区域（如抄送意见） -->
+        <slot name="footer-extra"></slot>
         <!-- 底部按钮 -->
-        <FooterForm
-          @submit="submitForm"
-          @close="closeForm"
-          @save="saveForm"
-          @revoke="revokeForm"
-          @re-create="reCreateForm"
-          @delete="deleteForm"
-          :process-status="props.headerData.processStatus"
-          :bill-code="props.headerData.billCode"
-          :hide-submit="props.hideSubmit"
-          :hide-save="props.hideSave"
-          :hide-delete="props.hideDelete"
-          :show-re-create="props.showReCreate"
-        />
+        <div class="footer-buttons">
+          <FooterForm
+            @submit="submitForm"
+            @close="closeForm"
+            @save="saveForm"
+            @revoke="revokeForm"
+            @re-create="reCreateForm"
+            @delete="deleteForm"
+            :process-status="props.headerData.processStatus"
+            :bill-code="props.headerData.billCode"
+            :hide-submit="props.hideSubmit"
+            :hide-save="props.hideSave"
+            :hide-delete="props.hideDelete"
+            :show-re-create="props.showReCreate"
+          />
+        </div>
       </a-layout-footer>
     </a-layout>
   </Page>
@@ -524,5 +530,9 @@ defineExpose({
 :deep(.ant-form-item-label) {
   font-weight: 500;
   text-align: left;
+}
+
+.footer-buttons {
+  padding: 10px 16px;
 }
 </style>

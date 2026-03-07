@@ -48,7 +48,9 @@ export function useGridColumns(): VxeTableGridOptions['columns'] {
           queryFields: [
             { key: 'id', field: 'processInstanceId' },
             { key: 'activityId', field: 'activityId' },
+            { key: 'copyReason', field: 'reason' },
           ],
+          fixedQuery: { isCopy: 'true' },
         },
       },
     },

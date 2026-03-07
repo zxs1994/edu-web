@@ -194,13 +194,16 @@ async function loadData() {
   }
 }
 
-// 处理车辆选择
+// 处理车辆选择（传入 true 触发校验，清除 HelpInput 必填项的红框提示）
 function handleCarSelect(val: any) {
   if (basicFormRef.value && val && val.carNo && val.id) {
-    basicFormRef.value.setFormValues({
-      carNo: val.carNo,
-      carId: val.id,
-    });
+    basicFormRef.value.setFormValues(
+      {
+        carNo: val.carNo,
+        carId: val.id,
+      },
+      true,
+    );
   }
 }
 
@@ -214,27 +217,19 @@ function handleUploadAttachment() {
 // 处理用车申请单选择
 function handleApplySelect(val: any) {
   if (basicFormRef.value && val && val.billCode) {
-    const values: Record<string, any> = { applyBill: val.billCode };
+    const values: Record<string, any> = {
+      applyBill: val.billCode,
+      carNo: val.carNo,
+      carId: val.carId,
+      goTime: val.goTime,
+      returnTime: val.returnTime,
+      goArea: val.goArea,
+      returnArea: val.returnArea,
+      passenger: val.passenger,
+      cause: val.cause,
+    };
 
-    // 自动填充车辆信息
-    values.carNo = val.carNo;
-    values.carId = val.carId;
-
-    // 自动填充时间信息
-    values.goTime = val.goTime;
-    values.returnTime = val.returnTime;
-
-    // 自动填充地点信息
-    values.goArea = val.goArea;
-    values.returnArea = val.returnArea;
-
-    // 自动填充随行人信息
-    values.passenger = val.passenger;
-
-    // 自动填充用车事由
-    values.cause = val.cause;
-
-    basicFormRef.value.setFormValues(values);
+    basicFormRef.value.setFormValues(values, true);
   }
 }
 
