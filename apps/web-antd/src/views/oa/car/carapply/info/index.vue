@@ -194,16 +194,19 @@ async function loadData() {
   }
 }
 
-// 处理车辆选择（传入 true 触发校验，清除 HelpInput 必填项的红框提示）
-function handleCarSelect(val: any) {
+// 处理车辆选择（只清除当前字段的验证错误，不触发其他字段的验证）
+async function handleCarSelect(val: any) {
   if (basicFormRef.value && val && val.carNo && val.id) {
-    basicFormRef.value.setFormValues(
+    // 设置表单值，不触发验证（shouldValidate = false）
+    await basicFormRef.value.setFormValues(
       {
         carNo: val.carNo,
         carId: val.id,
       },
-      true,
+      false,
     );
+    // 只清除当前字段的验证错误，不影响其他字段
+    await basicFormRef.value.clearFieldError('carNo');
   }
 }
 

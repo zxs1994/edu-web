@@ -299,8 +299,8 @@ async function loadData() {
   }
 }
 
-// 处理部门选择
-function handleDeptSelect(dept: any) {
+// 处理部门选择（只清除当前字段的验证错误，不触发其他字段的验证）
+async function handleDeptSelect(dept: any) {
   if (dept) {
     const deptData = {
       empDeptId: dept.id,
@@ -309,9 +309,11 @@ function handleDeptSelect(dept: any) {
       empCompanyName: dept.companyName || '',
     };
 
-    // 更新基本信息表单（BasicForm）（传入 true 触发校验，清除 HelpInput 必填项的红框提示）
+    // 更新基本信息表单（BasicForm）（不触发验证）
     if (basicFormRef.value) {
-      basicFormRef.value.setFormValues(deptData, true);
+      await basicFormRef.value.setFormValues(deptData, false);
+      // 只清除当前字段的验证错误，不影响其他字段
+      await basicFormRef.value.clearFieldError('empDeptName');
     }
 
     // 更新工作信息表单（WorkForm）

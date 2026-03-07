@@ -308,6 +308,12 @@ defineExpose({
       formApi.setValues({});
     }
   },
+  // 清除单个字段的验证错误
+  async clearFieldError(fieldName: string) {
+    if (formApi && formApi.form && formApi.form.setFieldError) {
+      formApi.form.setFieldError(fieldName, undefined);
+    }
+  },
 });
 </script>
 <template>

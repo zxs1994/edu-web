@@ -211,8 +211,8 @@ async function loadData() {
   }
 }
 
-// 处理员工选择（暂时留空，后续可以创建员工选择弹窗）
-function handleEmployeeSelect(employee: any) {
+// 处理员工选择（只清除当前字段的验证错误，不触发其他字段的验证）
+async function handleEmployeeSelect(employee: any) {
   if (employee) {
     // 从员工档案中读取信息并填充表单
     const employeeData = {
@@ -232,9 +232,11 @@ function handleEmployeeSelect(employee: any) {
       expectedFormalDate: employee.expectedFormalDate || employee.formalDate,
     };
 
-    // 更新表单（传入 true 触发校验，清除 HelpInput 必填项的红框提示）
+    // 更新表单（不触发验证）
     if (basicFormRef.value) {
-      basicFormRef.value.setFormValues(employeeData, true);
+      await basicFormRef.value.setFormValues(employeeData, false);
+      // 只清除当前字段的验证错误，不影响其他字段
+      await basicFormRef.value.clearFieldError('name');
     }
 
     // 同时更新formData

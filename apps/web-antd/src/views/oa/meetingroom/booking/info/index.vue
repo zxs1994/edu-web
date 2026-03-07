@@ -212,18 +212,21 @@ async function loadData() {
   }
 }
 
-// 处理会议室选择（传入 true 触发校验，清除 HelpInput 必填项的红框提示）
-function handleMeetingRoomSelect(val: any) {
+// 处理会议室选择（只清除当前字段的验证错误，不触发其他字段的验证）
+async function handleMeetingRoomSelect(val: any) {
   if (basicFormRef.value && val && val.roomName && val.id) {
-    basicFormRef.value.setFormValues(
+    // 设置表单值，不触发验证（shouldValidate = false）
+    await basicFormRef.value.setFormValues(
       {
         roomName: val.roomName,
         roomId: val.id,
         roomLocation: val.roomLocation || '',
         roomType: val.roomType,
       },
-      true,
+      false,
     );
+    // 只清除当前字段的验证错误，不影响其他字段
+    await basicFormRef.value.clearFieldError('roomName');
 
     // 同时更新formData
     Object.assign(formData.value, {

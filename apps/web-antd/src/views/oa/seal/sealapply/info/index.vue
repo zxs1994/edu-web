@@ -249,7 +249,7 @@ function handleUploadAttachment() {
   }
 }
 
-function handleSealSelect(val: any) {
+async function handleSealSelect(val: any) {
   if (basicFormRef.value && val) {
     const sealData = {
       sealId: val.id,
@@ -261,7 +261,10 @@ function handleSealSelect(val: any) {
       keeperDeptId: val.keeperDeptId,
       keeperDeptName: val.keeperDeptName,
     };
-    basicFormRef.value.setFormValues(sealData, true);
+    // 设置表单值，不触发验证（shouldValidate = false）
+    await basicFormRef.value.setFormValues(sealData, false);
+    // 只清除当前字段的验证错误，不影响其他字段
+    await basicFormRef.value.clearFieldError('sealName');
 
     // 同时更新formData
     Object.assign(formData.value, sealData);

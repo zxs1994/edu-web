@@ -271,8 +271,8 @@ async function loadData() {
   }
 }
 
-// 处理员工选择
-function handleEmployeeSelect(employee: any) {
+// 处理员工选择（只清除当前字段的验证错误，不触发其他字段的验证）
+async function handleEmployeeSelect(employee: any) {
   if (employee) {
     // 从员工档案中读取信息并填充表单
     const employeeData = {
@@ -297,9 +297,11 @@ function handleEmployeeSelect(employee: any) {
       originalCompanyName: employee.companyName || '',
     };
 
-    // 更新基本信息表单（BasicForm）（传入 true 触发校验，清除 HelpInput 必填项的红框提示）
+    // 更新基本信息表单（BasicForm）（不触发验证）
     if (basicFormRef.value) {
-      basicFormRef.value.setFormValues(employeeData, true);
+      await basicFormRef.value.setFormValues(employeeData, false);
+      // 只清除当前字段的验证错误，不影响其他字段
+      await basicFormRef.value.clearFieldError('name');
     }
 
     // 更新调动信息表单（TransferForm）
@@ -310,8 +312,8 @@ function handleEmployeeSelect(employee: any) {
   }
 }
 
-// 处理部门选择
-function handleDeptSelect(dept: any) {
+// 处理部门选择（只清除当前字段的验证错误，不触发其他字段的验证）
+async function handleDeptSelect(dept: any) {
   if (dept) {
     const deptData = {
       newDeptId: dept.id,
@@ -320,9 +322,11 @@ function handleDeptSelect(dept: any) {
       newCompanyName: dept.companyName || '',
     };
 
-    // 更新基本信息表单（BasicForm）（传入 true 触发校验，清除 HelpInput 必填项的红框提示）
+    // 更新基本信息表单（BasicForm）（不触发验证）
     if (basicFormRef.value) {
-      basicFormRef.value.setFormValues(deptData, true);
+      await basicFormRef.value.setFormValues(deptData, false);
+      // 只清除当前字段的验证错误，不影响其他字段
+      await basicFormRef.value.clearFieldError('newDeptName');
     }
 
     // 更新调动信息表单（TransferForm）
