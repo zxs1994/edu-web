@@ -41,6 +41,7 @@ interface Props {
   hideFooter?: boolean; // 是否隐藏底部
   hideSubmit?: boolean; // 是否隐藏提交按钮
   hideSave?: boolean; // 是否隐藏保存按钮
+  hideDelete?: boolean; // 是否隐藏删除按钮
   showReCreate?: boolean; // 是否显示再次提交按钮
   // 表单相关props
   formData?: Record<string, any>; // 表单数据
@@ -62,13 +63,21 @@ const props = withDefaults(defineProps<Props>(), {
   hideFooter: false,
   hideSubmit: false,
   hideSave: false,
+  hideDelete: false,
   showReCreate: false,
   formData: () => ({}),
   formSchema: () => [],
   disabled: false,
 });
 
-const emit = defineEmits(['close', 'save', 'submit', 'revoke', 'reCreate']);
+const emit = defineEmits([
+  'close',
+  'save',
+  'submit',
+  'revoke',
+  'reCreate',
+  'delete',
+]);
 
 const processInstanceLoading = ref(false); // 流程实例的加载中
 const processModelView = ref<any>({}); // 流程模型视图
@@ -210,6 +219,10 @@ const revokeForm = (reason?: string) => {
 const reCreateForm = () => {
   emit('reCreate');
 };
+// 删除
+const deleteForm = () => {
+  emit('delete');
+};
 
 /** 手动刷新所有数据 */
 function refreshAllData() {
@@ -285,8 +298,10 @@ defineExpose({
   async validateForm() {
     return formApi ? await formApi.validate() : { valid: true };
   },
-  async setFormValues(values: any) {
-    return formApi ? await formApi.setValues(values) : undefined;
+  async setFormValues(values: any, shouldValidate = false) {
+    return formApi
+      ? await formApi.setValues(values, true, shouldValidate)
+      : undefined;
   },
   resetForm() {
     if (formApi) {
@@ -381,18 +396,25 @@ defineExpose({
         :style="{ left: `${footerLeft}px` }"
         class="fixed-footer-form"
       >
+        <!-- 底部按钮上方的扩展区域（如抄送意见） -->
+        <slot name="footer-extra"></slot>
         <!-- 底部按钮 -->
-        <FooterForm
-          @submit="submitForm"
-          @close="closeForm"
-          @save="saveForm"
-          @revoke="revokeForm"
-          @re-create="reCreateForm"
-          :process-status="props.headerData.processStatus"
-          :hide-submit="props.hideSubmit"
-          :hide-save="props.hideSave"
-          :show-re-create="props.showReCreate"
-        />
+        <div class="footer-buttons">
+          <FooterForm
+            @submit="submitForm"
+            @close="closeForm"
+            @save="saveForm"
+            @revoke="revokeForm"
+            @re-create="reCreateForm"
+            @delete="deleteForm"
+            :process-status="props.headerData.processStatus"
+            :bill-code="props.headerData.billCode"
+            :hide-submit="props.hideSubmit"
+            :hide-save="props.hideSave"
+            :hide-delete="props.hideDelete"
+            :show-re-create="props.showReCreate"
+          />
+        </div>
       </a-layout-footer>
     </a-layout>
   </Page>
@@ -508,5 +530,9 @@ defineExpose({
 :deep(.ant-form-item-label) {
   font-weight: 500;
   text-align: left;
+}
+
+.footer-buttons {
+  padding: 10px 16px;
 }
 </style>

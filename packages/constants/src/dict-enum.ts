@@ -212,6 +212,7 @@ const HRM_DICT = {
   HRM_TRANSFER_REASON: 'hrm_transfer_reason', // 异动原因
   HRM_RESIGNATION_TYPE: 'hrm_resignation_type', // 离职类型
   HRM_RESIGNATION_REASON: 'hrm_resignation_reason', // 离职原因
+  HRM_LEAVE_TYPE: 'hrm_leave_type', // 请假类型
 } as const;
 
 /** 字典类型枚举 - 统一导出 */

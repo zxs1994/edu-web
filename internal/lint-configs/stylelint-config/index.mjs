@@ -49,6 +49,7 @@ export default {
       {
         ignoreAtRules: [
           'extends',
+          'extend',
           'ignores',
           'include',
           'mixin',
@@ -112,6 +113,7 @@ export default {
       {
         ignoreAtRules: [
           'extends',
+          'extend',
           'ignores',
           'include',
           'mixin',

@@ -13,6 +13,7 @@ import { useUserStore } from '@vben/stores';
 import { message } from 'ant-design-vue';
 
 import {
+  deleteProcessInstance,
   getApprovalDetail as getApprovalDetailApi,
   resubmitProcessInstance,
 } from '#/api/bpm/processInstance';
@@ -65,7 +66,13 @@ const route = useRoute();
 const userStore = useUserStore();
 const { closeCurrentTab } = useTabs();
 
+/** 是否抄送查看模式 */
+const isCopy = computed(() => route.query.isCopy === 'true');
+/** 抄送意见 */
+const copyReason = computed(() => (route.query.copyReason as string) || '');
+
 const isApproval = computed(() => {
+  if (isCopy.value) return false;
   const queryApproval = route.query.isTodo;
   // 情况1：明确指定为false
   if (queryApproval === 'false') {
@@ -294,6 +301,21 @@ async function handleBeforeApproval(): Promise<boolean> {
   }
 }
 
+/** 流程表单 - 删除 */
+async function handleDelete() {
+  if (!processInstance.value?.id) return;
+  try {
+    processInstanceLoading.value = true;
+    await deleteProcessInstance(String(processInstance.value.id));
+    message.success('删除成功');
+    closeCurrentTab();
+  } catch (error) {
+    console.error('删除失败:', error);
+  } finally {
+    processInstanceLoading.value = false;
+  }
+}
+
 /** 流程表单 - 关闭 */
 function handleClose() {
   closeCurrentTab();
@@ -370,13 +392,15 @@ onMounted(async () => {
           ref="basicFormRef"
           :header-data="normalFormHeaderData"
           :activity-nodes="activityNodes"
-          :hide-footer="isApproval"
-          :hide-submit="!isEditable"
+          :hide-footer="isApproval && !isCopy"
+          :hide-submit="isCopy || !isEditable"
           :hide-save="true"
-          :disabled="!isEditable"
+          :hide-delete="isCopy"
+          :disabled="isCopy || !isEditable"
           @close="handleClose"
           @submit="handleSubmit"
           @revoke="handleRevoke"
+          @delete="handleDelete"
         >
           <!-- 表单内容：使用 form-create 渲染 -->
           <template #base-form>
@@ -387,12 +411,16 @@ onMounted(async () => {
               :rule="detailForm.rule"
             />
           </template>
+          <!-- 抄送意见展示（插入到底部按钮上方） -->
+          <template v-if="isCopy && copyReason" #footer-extra>
+            <div class="copy-reason-text">抄送意见：{{ copyReason }}</div>
+          </template>
         </BasicForm>
       </Loading>
 
       <!-- 审批态：底部操作按钮（operation-button 内部已有固定定位样式） -->
       <ProcessInstanceOperationButton
-        v-if="isApproval"
+        v-if="isApproval && !isCopy"
         ref="operationButtonRef"
         :process-instance="processInstance"
         :process-definition="processDefinition"
@@ -411,7 +439,9 @@ onMounted(async () => {
       <BusinessFormComponent
         ref="businessFormRef"
         :id="processInstance?.businessKey"
-        :is-approval="isApproval"
+        :is-approval="isCopy ? false : isApproval"
+        :is-copy="isCopy"
+        :copy-reason="copyReason"
         :activity-nodes="activityNodes"
         :process-instance="processInstance"
         :process-definition="processDefinition"
@@ -420,7 +450,7 @@ onMounted(async () => {
       />
       <!-- 审批态：底部操作按钮 -->
       <ProcessInstanceOperationButton
-        v-if="isApproval"
+        v-if="isApproval && !isCopy"
         ref="operationButtonRef"
         :process-instance="processInstance"
         :process-definition="processDefinition"
@@ -437,4 +467,14 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 @use '#/styles/fixed-footer.scss' as *;
+
+.copy-reason-text {
+  width: 100%;
+  padding: 8px 16px;
+  font-size: 13px;
+  color: rgb(0 0 0 / 65%);
+  text-align: center;
+  background-color: rgb(0 0 0 / 4%);
+  border-bottom: 1px solid #f0f0f0;
+}
 </style>

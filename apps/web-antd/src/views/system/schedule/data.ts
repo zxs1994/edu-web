@@ -87,8 +87,8 @@ export function useFormSchema(): VbenFormSchema[] {
       },
     },
     {
-      fieldName: 'receiverIds',
-      label: '接收人',
+      fieldName: 'pendingReceiverIds',
+      label: '待推送接收人',
       component: 'ApiSelect',
       componentProps: {
         allowClear: true,
@@ -109,6 +109,15 @@ export function useFormSchema(): VbenFormSchema[] {
         },
       },
       defaultValue: [],
+    },
+    {
+      fieldName: 'receiverNames',
+      label: '已接收人',
+      component: 'Input',
+      componentProps: {
+        disabled: true,
+        placeholder: '暂无已推送接收人',
+      },
     },
     {
       fieldName: 'remark',
@@ -260,6 +269,15 @@ export function useGridColumns(): VxeTableGridOptions['columns'] {
       cellRender: {
         name: 'CellDict',
         props: { type: DICT_TYPE.SCHEDULE_CATEGORY },
+      },
+    },
+    {
+      field: 'pendingReceiverIds',
+      title: '待推送',
+      minWidth: 80,
+      formatter: ({ cellValue }) => {
+        if (!cellValue || cellValue.length === 0) return '-';
+        return `${cellValue.length}人`;
       },
     },
     {

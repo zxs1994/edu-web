@@ -212,15 +212,18 @@ async function loadData() {
   }
 }
 
-// 处理会议室选择
+// 处理会议室选择（传入 true 触发校验，清除 HelpInput 必填项的红框提示）
 function handleMeetingRoomSelect(val: any) {
   if (basicFormRef.value && val && val.roomName && val.id) {
-    basicFormRef.value.setFormValues({
-      roomName: val.roomName,
-      roomId: val.id,
-      roomLocation: val.roomLocation || '',
-      roomType: val.roomType,
-    });
+    basicFormRef.value.setFormValues(
+      {
+        roomName: val.roomName,
+        roomId: val.id,
+        roomLocation: val.roomLocation || '',
+        roomType: val.roomType,
+      },
+      true,
+    );
 
     // 同时更新formData
     Object.assign(formData.value, {

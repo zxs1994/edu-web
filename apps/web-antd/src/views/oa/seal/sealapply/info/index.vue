@@ -17,6 +17,7 @@ import { Button, message } from 'ant-design-vue';
 
 import { withdrawProcessToStart } from '#/api/bpm/task';
 import {
+  deleteSealApplyBill,
   getSealApplyBill,
   saveSealApplyBill,
   submitSealApplyBill,
@@ -33,8 +34,10 @@ defineOptions({ name: 'OaSealApplyBillInfo' });
 // 定义组件 props
 const props = defineProps<{
   activityNodes?: any[];
+  copyReason?: string; // 抄送意见
   id?: number | string; // 从 BusinessFormComponent 传递的 id
   isApproval?: boolean; // 是否审批态
+  isCopy?: boolean; // 是否抄送查看模式
   nodeKey?: string; // 节点key
   nodeKeyName?: string; // 节点名称
   processDefinition?: any; // 流程定义信息
@@ -129,6 +132,21 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
     await loadData();
   } catch (error) {
     console.error('保存失败:', error);
+  } finally {
+    loading.value = false;
+  }
+}
+
+// 删除
+async function handleDelete() {
+  if (!id) return;
+  loading.value = true;
+  try {
+    await deleteSealApplyBill(id);
+    message.success('删除成功');
+    closeCurrentTab();
+  } catch (error) {
+    console.error('删除失败:', error);
   } finally {
     loading.value = false;
   }
@@ -243,7 +261,7 @@ function handleSealSelect(val: any) {
       keeperDeptId: val.keeperDeptId,
       keeperDeptName: val.keeperDeptName,
     };
-    basicFormRef.value.setFormValues(sealData);
+    basicFormRef.value.setFormValues(sealData, true);
 
     // 同时更新formData
     Object.assign(formData.value, sealData);
@@ -305,14 +323,22 @@ onMounted(() => {
       }"
       :form-data="formData"
       :form-schema="formSchema"
-      :disabled="readonly"
+      :disabled="props.isCopy || readonly"
       @close="handleClose"
       @save="handleSaveAndSubmit(false)"
       @submit="handleSaveAndSubmit(true)"
       @revoke="handleRevoke"
-      :hide-footer="props.isApproval"
+      @delete="handleDelete"
+      :hide-footer="props.isApproval && !props.isCopy"
+      :hide-submit="props.isCopy"
+      :hide-save="props.isCopy"
+      :hide-delete="props.isCopy"
       :activity-nodes="props.activityNodes"
     >
+      <!-- 抄送意见展示 -->
+      <template v-if="props.isCopy && props.copyReason" #footer-extra>
+        <div class="copy-reason-text">抄送意见：{{ props.copyReason }}</div>
+      </template>
       <!-- 扩展插槽，用于明细表格等 -->
       <template #form-extension>
         <!-- 附件列表 -->
@@ -344,5 +370,13 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* 业务页面样式已封装到BasicForm组件中，无需重复定义 */
+.copy-reason-text {
+  width: 100%;
+  padding: 8px 16px;
+  font-size: 13px;
+  color: rgb(0 0 0 / 65%);
+  text-align: center;
+  background-color: rgb(0 0 0 / 4%);
+  border-bottom: 1px solid #f0f0f0;
+}
 </style>

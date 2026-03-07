@@ -297,9 +297,9 @@ function handleEmployeeSelect(employee: any) {
       originalCompanyName: employee.companyName || '',
     };
 
-    // 更新基本信息表单（BasicForm）
+    // 更新基本信息表单（BasicForm）（传入 true 触发校验，清除 HelpInput 必填项的红框提示）
     if (basicFormRef.value) {
-      basicFormRef.value.setFormValues(employeeData);
+      basicFormRef.value.setFormValues(employeeData, true);
     }
 
     // 更新调动信息表单（TransferForm）
@@ -320,9 +320,9 @@ function handleDeptSelect(dept: any) {
       newCompanyName: dept.companyName || '',
     };
 
-    // 更新基本信息表单（BasicForm）
+    // 更新基本信息表单（BasicForm）（传入 true 触发校验，清除 HelpInput 必填项的红框提示）
     if (basicFormRef.value) {
-      basicFormRef.value.setFormValues(deptData);
+      basicFormRef.value.setFormValues(deptData, true);
     }
 
     // 更新调动信息表单（TransferForm）

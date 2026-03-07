@@ -39,45 +39,43 @@ const [Form, formApi] = useVbenForm({
   showDefaultActions: false,
 });
 
-/** 保存日程（不推送） */
+/** 保存日程 */
 async function handleSave(needPush = false) {
   const { valid } = await formApi.validate();
   if (!valid) {
     return;
   }
   modalApi.lock();
-  // 提交表单
   const formValues = await formApi.getValues();
-  // 确保只发送 receiverIds，不发送 receivers
   const data: any = { ...formValues };
-  if (data.receivers) {
-    delete data.receivers;
-  }
-  // 如果 receiverIds 为空数组，也要发送（后端会处理）
-  if (!data.receiverIds) {
-    data.receiverIds = [];
+  // 清理前端专用字段
+  delete data.receivers;
+  delete data.receiverNames;
+  if (!data.pendingReceiverIds) {
+    data.pendingReceiverIds = [];
   }
   try {
     let scheduleId: number;
     if (formData.value?.id) {
-      // 更新
       await updateSchedule(data);
       scheduleId = data.id!;
     } else {
-      // 创建
       scheduleId = await createSchedule(data);
     }
-    // 如果需要推送
-    if (needPush && data.receiverIds && data.receiverIds.length > 0) {
+    if (needPush) {
+      if (data.pendingReceiverIds.length === 0) {
+        message.warning('请选择待推送接收人');
+        modalApi.unlock();
+        return;
+      }
       await pushSchedule({
         scheduleId,
-        receiverIds: data.receiverIds,
+        receiverIds: data.pendingReceiverIds,
       });
       message.success('保存并推送成功');
     } else {
       message.success($t('ui.actionMessage.operationSuccess'));
     }
-    // 关闭并提示
     await modalApi.close();
     emit('success');
   } finally {
@@ -104,21 +102,22 @@ const [Modal, modalApi] = useVbenModal({
       }
       return;
     }
-    // 编辑场景：从后端加载数据
     modalApi.lock();
     try {
       formData.value = await getSchedule(data.id);
-      // 将 receivers 转换为 receiverIds
       const formValues: any = { ...formData.value };
-      formValues.receiverIds =
+      // 待推送接收人（从后端 pendingReceiverIds 直接回填）
+      if (!formValues.pendingReceiverIds) {
+        formValues.pendingReceiverIds = [];
+      }
+      // 已接收人（只读展示姓名）
+      formValues.receiverNames =
         formValues.receivers && formValues.receivers.length > 0
-          ? formValues.receivers.map(
-              (r: SystemScheduleApi.Receiver) => r.receiverId,
-            )
-          : [];
-      // 删除 receivers 字段，只保留 receiverIds
+          ? formValues.receivers
+              .map((r: SystemScheduleApi.Receiver) => r.receiverName)
+              .join('、')
+          : '';
       delete formValues.receivers;
-      // 设置到 values
       await formApi.setValues(formValues);
     } finally {
       modalApi.unlock();

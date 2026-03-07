@@ -194,13 +194,16 @@ async function loadData() {
   }
 }
 
-// 处理车辆选择
+// 处理车辆选择（传入 true 触发校验，清除 HelpInput 必填项的红框提示）
 function handleCarSelect(val: any) {
   if (basicFormRef.value && val && val.carNo && val.id) {
-    basicFormRef.value.setFormValues({
-      carNo: val.carNo,
-      carId: val.id,
-    });
+    basicFormRef.value.setFormValues(
+      {
+        carNo: val.carNo,
+        carId: val.id,
+      },
+      true,
+    );
   }
 }
 
