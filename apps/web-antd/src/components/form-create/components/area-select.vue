@@ -2,6 +2,8 @@
 <script lang="ts" setup>
 import { onMounted, ref, watch } from 'vue';
 
+import { AreaLevelEnum } from '@vben/constants';
+
 import { Cascader } from 'ant-design-vue';
 
 import { getAreaTree } from '#/api/system/area';
@@ -11,7 +13,7 @@ defineOptions({ name: 'AreaSelect' });
 const props = withDefaults(defineProps<Props>(), {
   modelValue: undefined,
   value: undefined,
-  level: 3,
+  level: AreaLevelEnum.DISTRICT,
   disabled: false,
   placeholder: '请选择省市区',
   clearable: true,
@@ -39,7 +41,7 @@ interface AreaVO {
 interface Props {
   modelValue?: number[] | string[];
   value?: number[] | string[];
-  level?: 1 | 2 | 3; // 1-省 2-市 3-区
+  level?: (typeof AreaLevelEnum)[keyof typeof AreaLevelEnum];
   disabled?: boolean;
   placeholder?: string;
   clearable?: boolean;

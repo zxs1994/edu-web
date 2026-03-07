@@ -1,3 +1,5 @@
+import { AreaLevelEnum } from '@vben/constants';
+
 import {
   localeProps,
   makeRequiredRule,
@@ -29,11 +31,11 @@ export function useAreaSelectRule() {
           type: 'select',
           field: 'level',
           title: '选择层级',
-          value: 3,
+          value: AreaLevelEnum.DISTRICT,
           options: [
-            { label: '省', value: 1 },
-            { label: '省/市', value: 2 },
-            { label: '省/市/区', value: 3 },
+            { label: '省', value: AreaLevelEnum.PROVINCE },
+            { label: '省/市', value: AreaLevelEnum.CITY },
+            { label: '省/市/区', value: AreaLevelEnum.DISTRICT },
           ],
           info: '限制可选择的地区层级',
         },

@@ -2,7 +2,7 @@
 <script lang="ts" setup>
 import { onMounted, ref, watch } from 'vue';
 
-import { handleTree } from '@vben/utils';
+import { AreaLevelEnum } from '@vben/constants';
 
 import { ElCascader } from 'element-plus';
 
@@ -12,7 +12,7 @@ defineOptions({ name: 'AreaSelect' });
 
 const props = withDefaults(defineProps<Props>(), {
   modelValue: undefined,
-  level: 3,
+  level: AreaLevelEnum.DISTRICT,
   disabled: false,
   placeholder: '请选择省市区',
   clearable: true,
@@ -38,7 +38,7 @@ interface AreaVO {
 // 接受父组件参数
 interface Props {
   modelValue?: number[] | string[];
-  level?: 1 | 2 | 3; // 1-省 2-市 3-区
+  level?: (typeof AreaLevelEnum)[keyof typeof AreaLevelEnum];
   disabled?: boolean;
   placeholder?: string;
   clearable?: boolean;
@@ -118,11 +118,9 @@ function syncSelectedValue(): void {
   }
 
   // 确保是数组格式
-  if (Array.isArray(newValue)) {
-    selectedValue.value = newValue as number[];
-  } else {
-    selectedValue.value = [newValue as number];
-  }
+  selectedValue.value = Array.isArray(newValue)
+    ? (newValue as number[])
+    : [newValue as number];
 }
 
 // 监听 modelValue 变化
