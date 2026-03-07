@@ -226,10 +226,14 @@ const confirmRevoke = async () => {
         BpmProcessInstanceStatusEditValue.includes(processStatus)
       "
     >
-      <Button danger type="primary" @click="openDeletePopover"> {{ $t('common.delete') }} </Button>
+      <Button danger type="primary" @click="openDeletePopover">
+        {{ $t('common.delete') }}
+      </Button>
       <template #content>
         <div class="flex flex-1 flex-col px-5 pt-5">
-          <p class="mb-4">确定要删除此单据吗？删除后单据信息和流程数据将一并清理，不可恢复。</p>
+          <p class="mb-4">
+            确定要删除此单据吗？删除后单据信息和流程数据将一并清理，不可恢复。
+          </p>
           <div>
             <Button danger type="primary" @click="confirmDelete">
               确认删除

@@ -8,18 +8,18 @@ export namespace SystemScheduleApi {
     id?: number;
     title: string;
     content?: string;
-    scheduleDate: string; // 日期格式：YYYY-MM-DD
-    startTime?: string; // 时间格式：HH:mm:ss
-    endTime?: string; // 时间格式：HH:mm:ss
-    scheduleType?: string; // 日程类型
-    scheduleCategory?: string; // 日程分类
+    scheduleDate: string;
+    startTime?: string;
+    endTime?: string;
+    scheduleType?: string;
+    scheduleCategory?: string;
     creatorId?: number;
     creatorName?: string;
     isPushed?: boolean;
     status?: number;
     remark?: string;
-    receivers?: Receiver[]; // 后端返回的接收人列表（对象数组）
-    receiverIds?: number[]; // 前端表单使用的接收人ID列表
+    pendingReceiverIds?: number[];
+    receivers?: Receiver[];
     createTime?: Date;
     updateTime?: Date;
   }
@@ -28,7 +28,7 @@ export namespace SystemScheduleApi {
   export interface Receiver {
     receiverId: number;
     receiverName: string;
-    readStatus?: number; // 0未读 1已读
+    readStatus?: number;
     readTime?: Date;
   }
 
@@ -46,13 +46,13 @@ export namespace SystemScheduleApi {
 
   /** 按日期查询参数 */
   export interface ScheduleListByDateReq {
-    scheduleDate: string; // 日期格式：YYYY-MM-DD
+    scheduleDate: string;
   }
 
   /** 推送日程参数 */
   export interface SchedulePushReq {
     scheduleId: number;
-    receiverIds: number[];
+    receiverIds?: number[];
   }
 }
 

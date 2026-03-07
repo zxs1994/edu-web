@@ -36,10 +36,7 @@ function handleRefresh() {
 
 /** 创建日程 */
 function handleCreate() {
-  const currentId = currentUserId.value;
-  // 新增时，默认接收人选中自己
-  const defaultData = currentId ? { receiverIds: [currentId] } : null;
-  formModalApi.setData(defaultData).open();
+  formModalApi.setData(null).open();
 }
 
 /** 编辑日程 */
@@ -91,15 +88,8 @@ function handleRowCheckboxChange({
   checkedIds.value = records.map((item) => item.id!);
 }
 
-/** 推送日程 */
+/** 推送日程（使用日程中保存的待推送接收人） */
 async function handlePush(row: SystemScheduleApi.Schedule) {
-  // 这里可以打开一个选择用户的弹窗，暂时使用空数组
-  // TODO: 实现用户选择弹窗
-  const receiverIds: number[] = [];
-  if (receiverIds.length === 0) {
-    message.warning('请选择接收人');
-    return;
-  }
   const hideLoading = message.loading({
     content: '正在推送中...',
     duration: 0,
@@ -107,7 +97,6 @@ async function handlePush(row: SystemScheduleApi.Schedule) {
   try {
     await pushSchedule({
       scheduleId: row.id!,
-      receiverIds,
     });
     message.success($t('ui.actionMessage.operationSuccess'));
     handleRefresh();

@@ -70,7 +70,14 @@ const props = withDefaults(defineProps<Props>(), {
   disabled: false,
 });
 
-const emit = defineEmits(['close', 'save', 'submit', 'revoke', 'reCreate', 'delete']);
+const emit = defineEmits([
+  'close',
+  'save',
+  'submit',
+  'revoke',
+  'reCreate',
+  'delete',
+]);
 
 const processInstanceLoading = ref(false); // 流程实例的加载中
 const processModelView = ref<any>({}); // 流程模型视图
