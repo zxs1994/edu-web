@@ -10,9 +10,9 @@
 ## 🐶 新手必读
 
 - nodejs > 20.19.0 && pnpm > 10.28.1 (强制使用pnpm)
-- 演示地址【Vue3 + element-plus】：<http://dashboard-vue3.yudao.iocoder.cn>
-- 演示地址【Vue3 + vben5(ant-design-vue)】：<http://dashboard-vben.yudao.iocoder.cn>
-- 演示地址【Vue2 + element-ui】：<http://dashboard.yudao.iocoder.cn>
+- 演示地址【Vue3 + element-plus】：<http://dashboard-vue3.yudao.ruoyioffice.com>
+- 演示地址【Vue3 + vben5(ant-design-vue)】：<http://dashboard-vben.yudao.ruoyioffice.com>
+- 演示地址【Vue2 + element-ui】：<http://dashboard.yudao.ruoyioffice.com>
 - 启动文档：<http://ruoyioffice.com/quick-start/>
 - 视频教程：<http://ruoyioffice.com/video/>
 
@@ -66,11 +66,11 @@
 
 支持 Spring Boot、Spring Cloud 两种架构：
 
-① Spring Boot 单体架构：<https://doc.iocoder.cn>
+① Spring Boot 单体架构：<https://doc.ruoyioffice.com>
 
 ![架构图](/.gitee/image/common/ruoyi-vue-pro-architecture.png)
 
-② Spring Cloud 微服务架构：<https://cloud.iocoder.cn>
+② Spring Cloud 微服务架构：<https://cloud.ruoyioffice.com>
 
 ![架构图](/.gitee/image/common/yudao-cloud-architecture.png)
 

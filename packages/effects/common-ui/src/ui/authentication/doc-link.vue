@@ -30,14 +30,14 @@ defineOptions({
         🔥 视频教程
       </a>
       <a
-        href="https://www.iocoder.cn/Interview/good-collection/"
+        href="https://www.ruoyioffice.com/Interview/good-collection/"
         target="_blank"
         class="text-primary hover:text-primary/80 text-sm"
       >
         ⚡ 面试手册
       </a>
       <a
-        href="http://static.yudao.iocoder.cn/mp/xinyu370.jpeg"
+        href="http://static.yudao.ruoyioffice.com/mp/xinyu370.jpeg"
         target="_blank"
         class="text-primary hover:text-primary/80 text-sm"
       >

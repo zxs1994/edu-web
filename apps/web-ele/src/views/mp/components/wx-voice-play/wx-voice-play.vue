@@ -12,7 +12,7 @@ defineOptions({ name: 'WxVoicePlayer' });
 const props = withDefaults(
   defineProps<{
     content?: string; // 语音文本
-    url: string; // 语音地址，例如说：https://www.iocoder.cn/xxx.amr
+    url: string; // 语音地址，例如说：https://www.ruoyioffice.com/xxx.amr
   }>(),
   {
     content: '',

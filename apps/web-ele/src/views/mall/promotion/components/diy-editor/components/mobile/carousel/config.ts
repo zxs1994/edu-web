@@ -33,12 +33,12 @@ export const component = {
     items: [
       {
         type: 'img',
-        imgUrl: 'https://static.iocoder.cn/mall/banner-01.jpg',
+        imgUrl: 'https://static.ruoyioffice.com/mall/banner-01.jpg',
         videoUrl: '',
       },
       {
         type: 'img',
-        imgUrl: 'https://static.iocoder.cn/mall/banner-02.jpg',
+        imgUrl: 'https://static.ruoyioffice.com/mall/banner-02.jpg',
         videoUrl: '',
       },
     ] as CarouselItemProperty[],
