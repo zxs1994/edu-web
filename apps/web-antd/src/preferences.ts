@@ -42,7 +42,7 @@ export const overridesPreferences = defineOverridesPreferences({
   },
   copyright: {
     companyName: import.meta.env.VITE_APP_TITLE,
-    companySiteLink: 'https://gitee.com/yudaocode/yudao-ui-admin-vben',
+    companySiteLink: 'https://gitee.com/dhcode/dh-ui-admin-vben',
   },
   // 标签页配置 - 隐藏图标
   tabbar: {

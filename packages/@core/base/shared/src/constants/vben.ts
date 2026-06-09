@@ -3,7 +3,7 @@
  */
 // export const VBEN_GITHUB_URL = 'https://github.com/vbenjs/vue-vben-admin';
 export const VBEN_GITHUB_URL =
-  'https://github.com/yudaocode/yudao-ui-admin-vben';
+  'https://github.com/dhcode/dh-ui-admin-vben';
 
 /**
  * @zh_CN 文档地址

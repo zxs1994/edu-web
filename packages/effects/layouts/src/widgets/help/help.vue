@@ -34,7 +34,7 @@ const [Modal, modalApi] = useVbenModal({
           <VbenButton
             variant="link"
             @click="
-              openWindow('https://gitee.com/yudaocode/yudao-ui-admin-vben')
+              openWindow('https://gitee.com/dhcode/dh-ui-admin-vben')
             "
           >
             Gitee
@@ -42,7 +42,7 @@ const [Modal, modalApi] = useVbenModal({
           <VbenButton
             variant="link"
             @click="
-              openWindow('https://github.com/yudaocode/yudao-ui-admin-vben')
+              openWindow('https://github.com/dhcode/dh-ui-admin-vben')
             "
           >
             Github
@@ -55,7 +55,7 @@ const [Modal, modalApi] = useVbenModal({
             variant="link"
             @click="
               openWindow(
-                'https://gitee.com/yudaocode/yudao-ui-admin-vben/issues',
+                'https://gitee.com/dhcode/dh-ui-admin-vben/issues',
               )
             "
           >
@@ -65,7 +65,7 @@ const [Modal, modalApi] = useVbenModal({
             variant="link"
             @click="
               openWindow(
-                'https://github.com/yudaocode/yudao-ui-admin-vben/issues',
+                'https://github.com/dhcode/dh-ui-admin-vben/issues',
               )
             "
           >

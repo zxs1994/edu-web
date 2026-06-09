@@ -25,22 +25,22 @@ const quickNavItems: WorkbenchQuickNavItem[] = [
     url: '/',
   },
   {
-    color: '#ff6b6b',
-    icon: 'lucide:shopping-bag',
-    title: '商城中心',
-    url: '/mall',
+    color: '#3fb27f',
+    icon: 'simple-icons:erpnext',
+    title: 'OA 办公',
+    url: '/oa',
   },
   {
     color: '#7c3aed',
-    icon: 'tabler:ai',
-    title: 'AI 大模型',
-    url: '/ai',
+    icon: 'tabler:brand-ansible',
+    title: '工作流程',
+    url: '/bpm',
   },
   {
-    color: '#3fb27f',
-    icon: 'simple-icons:erpnext',
-    title: 'ERP 系统',
-    url: '/erp',
+    color: '#4daf1bc9',
+    icon: 'simple-icons:civicrm',
+    title: '人事管理',
+    url: '/hrm',
   },
 ];
 

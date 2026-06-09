@@ -8,7 +8,6 @@ import { resetStaticRoutes } from '@vben/utils';
 
 import { createRouterGuard } from './guard';
 import { routes } from './routes';
-import { setupAnalytics } from './tongji';
 
 /**
  *  @zh_CN 创建vue-router实例
@@ -34,7 +33,5 @@ const resetRoutes = () => resetStaticRoutes(router, routes);
 
 // 创建路由守卫
 createRouterGuard(router);
-// 设置流量统计（百度统计 + Google Analytics）
-setupAnalytics(router);
 
 export { resetRoutes, router };

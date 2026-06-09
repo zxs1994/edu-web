@@ -37,7 +37,7 @@ defineOptions({
         ⚡ 面试手册
       </a>
       <a
-        href="http://static.yudao.ruoyioffice.com/mp/xinyu370.jpeg"
+        href="http://static.dh.ruoyioffice.com/mp/xinyu370.jpeg"
         target="_blank"
         class="text-primary hover:text-primary/80 text-sm"
       >

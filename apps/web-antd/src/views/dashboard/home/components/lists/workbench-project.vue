@@ -25,12 +25,12 @@ const projectItems: WorkbenchProjectItem[] = [
   },
   {
     color: '#409EFF',
-    content: 'github.com/yudaocode/yudao-ui-admin-vue3',
+    content: 'github.com/dhcode/dh-ui-admin-vue3',
     date: '2025-02-03',
     group: 'Vue3 + element-plus 管理后台',
     icon: 'ep:element-plus',
-    title: 'yudao-ui-admin-vue3',
-    url: 'https://github.com/yudaocode/yudao-ui-admin-vue3',
+    title: 'dh-ui-admin-vue3',
+    url: 'https://github.com/dhcode/dh-ui-admin-vue3',
   },
 ];
 
