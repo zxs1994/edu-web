@@ -55,4 +55,13 @@ export const overridesPreferences = defineOverridesPreferences({
   navigation: {
     showIcon: true,
   },
+  // 隐藏顶栏头像左侧的所有图标（搜索、通知、主题切换、语言切换）
+  widget: {
+    fullscreen: false,
+    globalSearch: false,
+    languageToggle: false,
+    notification: false,
+    themeToggle: false,
+    timezone: false,
+  },
 });

@@ -172,14 +172,33 @@ const formSchema = computed((): VbenFormSchema[] => {
 </script>
 
 <template>
-  <div>
+  <div class="oa-login-wrapper">
     <AuthenticationLogin
       ref="loginRef"
       :form-schema="formSchema"
       :loading="authStore.loginLoading"
+      :show-code-login="false"
+      :show-forget-password="false"
+      :show-qrcode-login="false"
+      :show-register="false"
+      :show-third-party-login="false"
       @submit="handleLogin"
       @third-login="handleThirdLogin"
-    />
+    >
+      <!-- 自定义标题区域 -->
+      <template #title>
+        <div class="mb-8">
+          <h2
+            class="text-foreground text-2xl font-bold tracking-tight sm:text-3xl"
+          >
+            {{ $t('authentication.welcomeBack') }}
+          </h2>
+          <p class="text-muted-foreground mt-2 text-sm">
+            {{ $t('authentication.loginSubtitle') }}
+          </p>
+        </div>
+      </template>
+    </AuthenticationLogin>
     <Verification
       ref="verifyRef"
       v-if="captchaEnable"
@@ -192,3 +211,41 @@ const formSchema = computed((): VbenFormSchema[] => {
     />
   </div>
 </template>
+
+<style scoped>
+.oa-login-wrapper {
+  width: 100%;
+}
+
+/* 优化登录按钮样式 */
+:deep(button[aria-label='login']) {
+  height: 44px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 8px;
+  letter-spacing: 0.5px;
+}
+
+/* 优化表单间距 */
+:deep(.vben-form .form-item) {
+  margin-bottom: 20px;
+}
+
+/* 优化输入框样式 */
+:deep(.vben-form input) {
+  height: 42px;
+  border-radius: 8px;
+}
+
+/* 优化记住账号区域 */
+:deep(.flex.justify-between) {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+/* 隐藏萌新必读区块 */
+:deep(.mt-4.flex.items-center.justify-between),
+:deep(.mt-4.flex.w-full.justify-between) {
+  display: none;
+}
+</style>

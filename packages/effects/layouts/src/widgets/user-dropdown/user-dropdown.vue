@@ -232,7 +232,7 @@ if (enableShortcutKey.value) {
         </DropdownMenuLabel>
         <div class="ml-2 w-full text-center">
             <div class="text-muted-foreground text-xs font-normal">
-              {{ companyName }}/{{ deptName }}
+              {{ companyName }}{{ deptName }}
             </div>
           </div>
         <DropdownMenuSeparator v-if="menus?.length" />
@@ -246,18 +246,18 @@ if (enableShortcutKey.value) {
           {{ menu.text }}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem
-          v-if="preferences.widget.lockScreen"
-          class="mx-1 flex cursor-pointer items-center rounded-sm py-1 leading-8"
-          @click="handleOpenLock"
-        >
-          <LockKeyhole class="mr-2 size-4" />
-          {{ $t('ui.widgets.lockScreen.title') }}
-          <DropdownMenuShortcut v-if="enableLockScreenShortcutKey">
-            {{ altView }} L
-          </DropdownMenuShortcut>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator v-if="preferences.widget.lockScreen" />
+<!--        <DropdownMenuItem-->
+<!--          v-if="preferences.widget.lockScreen"-->
+<!--          class="mx-1 flex cursor-pointer items-center rounded-sm py-1 leading-8"-->
+<!--          @click="handleOpenLock"-->
+<!--        >-->
+<!--          <LockKeyhole class="mr-2 size-4" />-->
+<!--          {{ $t('ui.widgets.lockScreen.title') }}-->
+<!--          <DropdownMenuShortcut v-if="enableLockScreenShortcutKey">-->
+<!--            {{ altView }} L-->
+<!--          </DropdownMenuShortcut>-->
+<!--        </DropdownMenuItem>-->
+<!--        <DropdownMenuSeparator v-if="preferences.widget.lockScreen" />-->
         <DropdownMenuItem
           class="mx-1 flex cursor-pointer items-center rounded-sm py-1 leading-8"
           @click="handleLogout"

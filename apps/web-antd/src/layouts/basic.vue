@@ -64,31 +64,31 @@ const menus = computed(() => [
     icon: AntdProfileOutlined,
     text: $t('ui.widgets.profile'),
   },
-  {
-    handler: () => {
-      openWindow(VBEN_DOC_URL, {
-        target: '_blank',
-      });
-    },
-    icon: BookOpenText,
-    text: $t('ui.widgets.document'),
-  },
-  {
-    handler: () => {
-      openWindow(VBEN_GITHUB_URL, {
-        target: '_blank',
-      });
-    },
-    icon: SvgGithubIcon,
-    text: 'GitHub',
-  },
-  {
-    handler: () => {
-      helpModalApi.open();
-    },
-    icon: CircleHelp,
-    text: $t('ui.widgets.qa'),
-  },
+  // {
+  //   handler: () => {
+  //     openWindow(VBEN_DOC_URL, {
+  //       target: '_blank',
+  //     });
+  //   },
+  //   icon: BookOpenText,
+  //   text: $t('ui.widgets.document'),
+  // },
+  // {
+  //   handler: () => {
+  //     openWindow(VBEN_GITHUB_URL, {
+  //       target: '_blank',
+  //     });
+  //   },
+  //   icon: SvgGithubIcon,
+  //   text: 'GitHub',
+  // },
+  // {
+  //   handler: () => {
+  //     helpModalApi.open();
+  //   },
+  //   icon: CircleHelp,
+  //   text: $t('ui.widgets.qa'),
+  // },
 ]);
 
 const avatar = computed(() => {
@@ -230,45 +230,42 @@ watch(
         :avatar
         :menus
         :text="userStore.userInfo?.nickname"
-        :description="userStore.userInfo?.email"
         :tag-text="userStore.userInfo?.username"
-        :company-name="userStore.userInfo?.companyName"
-        :dept-name="userStore.userInfo?.deptName"
         @logout="handleLogout"
       />
     </template>
-    <template #notification>
-      <Notification
-        :dot="showDot"
-        :notifications="notifications"
-        @clear="handleNotificationClear"
-        @make-all="handleNotificationMakeAll"
-        @view-all="handleNotificationViewAll"
-        @open="handleNotificationOpen"
-        @read="handleNotificationRead"
-      />
-    </template>
-    <template #header-right-1>
-      <div v-if="tenantEnable && false">
-        <TenantDropdown
-          class="mr-2"
-          :tenant-list="tenants"
-          :visit-tenant-id="accessStore.visitTenantId"
-          @success="handleTenantChange"
-        />
-      </div>
-    </template>
-    <template #extra>
-      <AuthenticationLoginExpiredModal
-        v-model:open="accessStore.loginExpired"
-        :avatar
-      >
-        <LoginForm />
-      </AuthenticationLoginExpiredModal>
-    </template>
-    <template #lock-screen>
-      <LockScreen :avatar @to-login="handleLogout" />
-    </template>
+<!--    <template #notification>-->
+<!--      <Notification-->
+<!--        :dot="showDot"-->
+<!--        :notifications="notifications"-->
+<!--        @clear="handleNotificationClear"-->
+<!--        @make-all="handleNotificationMakeAll"-->
+<!--        @view-all="handleNotificationViewAll"-->
+<!--        @open="handleNotificationOpen"-->
+<!--        @read="handleNotificationRead"-->
+<!--      />-->
+<!--    </template>-->
+<!--    <template #header-right-1>-->
+<!--      <div v-if="tenantEnable && false">-->
+<!--        <TenantDropdown-->
+<!--          class="mr-2"-->
+<!--          :tenant-list="tenants"-->
+<!--          :visit-tenant-id="accessStore.visitTenantId"-->
+<!--          @success="handleTenantChange"-->
+<!--        />-->
+<!--      </div>-->
+<!--    </template>-->
+<!--    <template #extra>-->
+<!--      <AuthenticationLoginExpiredModal-->
+<!--        v-model:open="accessStore.loginExpired"-->
+<!--        :avatar-->
+<!--      >-->
+<!--        <LoginForm />-->
+<!--      </AuthenticationLoginExpiredModal>-->
+<!--    </template>-->
+<!--    <template #lock-screen>-->
+<!--      <LockScreen :avatar @to-login="handleLogout" />-->
+<!--    </template>-->
   </BasicLayout>
   <HelpModal />
 </template>
