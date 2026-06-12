@@ -52,19 +52,19 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div>
+  <div class="flex h-full flex-col">
     <Input
       placeholder="搜索部门"
       allow-clear
       v-model:value="searchValue"
       @change="handleSearch"
-      class="w-full"
+      class="w-full shrink-0"
     >
       <template #prefix>
         <IconifyIcon icon="lucide:search" class="size-4" />
       </template>
     </Input>
-    <Spin :spinning="loading" wrapper-class-name="w-full">
+    <Spin :spinning="loading" wrapper-class-name="flex-1 overflow-y-auto">
       <Tree
         @select="handleSelect"
         v-if="deptTree.length > 0"
@@ -72,7 +72,11 @@ onMounted(async () => {
         :tree-data="deptTree"
         :default-expand-all="true"
         :field-names="{ title: 'name', key: 'id', children: 'children' }"
-      />
+      >
+        <template #title="{ name }">
+          <span :title="name">{{ name.length > 7 ? name.slice(0, 7) + '...' : name }}</span>
+        </template>
+      </Tree>
       <div v-else-if="!loading" class="py-4 text-center text-gray-500">
         暂无数据
       </div>

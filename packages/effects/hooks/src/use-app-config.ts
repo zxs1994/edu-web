@@ -42,7 +42,3 @@ export function isTenantEnable(): boolean {
 export function isCaptchaEnable(): boolean {
   return import.meta.env.VITE_APP_CAPTCHA_ENABLE === 'true';
 }
-
-export function isDocAlertEnable(): boolean {
-  return import.meta.env.VITE_APP_DOCALERT_ENABLE !== 'false';
-}

@@ -19,7 +19,6 @@ const getTitle = computed(() => {
     : $t('ui.actionTitle.create', ['车辆信息']);
 });
 
-
 const [Form, formApi] = useVbenForm({
   commonConfig: {
     componentProps: {

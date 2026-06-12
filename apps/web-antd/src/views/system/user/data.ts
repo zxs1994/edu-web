@@ -1,5 +1,6 @@
 import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
+import type { SystemPostApi } from '#/api/system/post';
 import type { SystemUserApi } from '#/api/system/user';
 
 import { CommonStatusEnum, DICT_TYPE } from '@vben/constants';
@@ -295,14 +296,13 @@ export function useGridColumns(
     newStatus: number,
     row: SystemUserApi.User,
   ) => PromiseLike<boolean | undefined>,
+  postList?: SystemPostApi.Post[],
 ): VxeTableGridOptions['columns'] {
+  const postMap = new Map(
+    (postList ?? []).map((p) => [Number(p.id), p]),
+  );
   return [
     { type: 'checkbox', width: 40 },
-    {
-      field: 'id',
-      title: '用户编号',
-      minWidth: 100,
-    },
     {
       field: 'username',
       title: '用户名称',
@@ -319,10 +319,30 @@ export function useGridColumns(
       minWidth: 120,
     },
     {
-      field: 'mobile',
-      title: '手机号码',
-      minWidth: 120,
+      field: 'postIds',
+      title: '岗位',
+      minWidth: 140,
+      sortable: true,
+      formatter({ row }) {
+        const ids: (number | string)[] = row.postIds ?? [];
+        return ids
+          .map((id: number | string) => postMap.get(Number(id))?.name ?? '')
+          .filter(Boolean)
+          .join('、');
+      },
+      sortType: 'number',
+      sortBy({ row }) {
+        const ids: (number | string)[] = row.postIds ?? [];
+        if (ids.length === 0) return Number.MAX_SAFE_INTEGER;
+        const post = postMap.get(Number(ids[0]));
+        return post?.sort ?? Number.MAX_SAFE_INTEGER;
+      },
     },
+    // {
+    //   field: 'mobile',
+    //   title: '手机号码',
+    //   minWidth: 120,
+    // },
     {
       field: 'status',
       title: '状态',

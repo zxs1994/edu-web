@@ -4,7 +4,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/bpm',
     name: 'bpm',
-    redirect: '/bpm/start-process', // 重定向到发起流程页面
+    redirect: '/bpm/manager/model', // 重定向到流程模型页面
     meta: {
       title: '工作流',
       hideInMenu: true,

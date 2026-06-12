@@ -119,28 +119,29 @@ onMounted(() => {
 
 const formSchema = computed((): VbenFormSchema[] => {
   return [
-    {
-      component: 'VbenSelect',
-      componentProps: {
-        options: tenantList.value.map((item) => ({
-          label: item.name,
-          value: item.id.toString(),
-        })),
-        placeholder: $t('authentication.tenantTip'),
-      },
-      fieldName: 'tenantId',
-      label: $t('authentication.tenant'),
-      rules: z.string().min(1, { message: $t('authentication.tenantTip') }),
-      dependencies: {
-        triggerFields: ['tenantId'],
-        if: tenantEnable,
-        trigger(values) {
-          if (values.tenantId) {
-            accessStore.setTenantId(Number(values.tenantId));
-          }
-        },
-      },
-    },
+    // 租户选择框（暂时注释）
+    // {
+    //   component: 'VbenSelect',
+    //   componentProps: {
+    //     options: tenantList.value.map((item) => ({
+    //       label: item.name,
+    //       value: item.id.toString(),
+    //     })),
+    //     placeholder: $t('authentication.tenantTip'),
+    //   },
+    //   fieldName: 'tenantId',
+    //   label: $t('authentication.tenant'),
+    //   rules: z.string().min(1, { message: $t('authentication.tenantTip') }),
+    //   dependencies: {
+    //     triggerFields: ['tenantId'],
+    //     if: tenantEnable,
+    //     trigger(values) {
+    //       if (values.tenantId) {
+    //         accessStore.setTenantId(Number(values.tenantId));
+    //       }
+    //     },
+    //   },
+    // },
     {
       component: 'VbenInput',
       componentProps: {

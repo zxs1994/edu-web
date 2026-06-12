@@ -15,9 +15,9 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   greeting: '欢迎回来，开始您的工作吧！',
-  showWeather: true,
+  showWeather: false,
   weatherApiKey: 'b7e576ee7562587ff8acdcea709e41b6', // 高德地图API Key，需要申请：https://console.amap.com/
-  defaultCity: '北京', // 默认城市
+  defaultCity: '上海', // 默认城市
 });
 
 const userStore = useUserStore();

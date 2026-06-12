@@ -5,7 +5,7 @@ import utc from 'dayjs/plugin/utc';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-type FormatDate = Date | dayjs.Dayjs | number | string;
+type FormatDate = Date | dayjs.Dayjs | number | number[] | string;
 
 type Format =
   | 'HH'
@@ -25,6 +25,17 @@ export function formatDate(time?: FormatDate, format: Format = 'YYYY-MM-DD') {
     return '';
   }
   try {
+    // 处理 Java LocalDate/LocalDateTime 序列化后的数组格式（月份从1开始）
+    // LocalDate: [year, month, day]  LocalDateTime: [year, month, day, hour, minute, second]
+    if (Array.isArray(time)) {
+      const [year, month, day, hour, minute, second] = time;
+      const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      if (hour !== undefined) {
+        time = `${dateStr} ${String(hour).padStart(2, '0')}:${String(minute ?? 0).padStart(2, '0')}:${String(second ?? 0).padStart(2, '0')}`;
+      } else {
+        time = dateStr;
+      }
+    }
     const date = dayjs.isDayjs(time) ? time : dayjs(time);
     if (!date.isValid()) {
       throw new Error('Invalid date');

@@ -4,7 +4,7 @@ import type { SystemTenantApi } from '#/api/system/tenant';
 
 import { ref } from 'vue';
 
-import { confirm, DocAlert, Page, useVbenModal } from '@vben/common-ui';
+import { confirm, Page, useVbenModal } from '@vben/common-ui';
 import { downloadFileFromBlobPart, isEmpty } from '@vben/utils';
 
 import { message } from 'ant-design-vue';
@@ -124,9 +124,6 @@ const [Grid, gridApi] = useVbenVxeGrid({
 </script>
 <template>
   <Page auto-content-height>
-    <template #doc>
-      <DocAlert title="SaaS 多租户" url="http://ruoyioffice.com/saas-tenant/" />
-    </template>
 
     <FormModal @success="handleRefresh" />
     <Grid table-title="租户列表">

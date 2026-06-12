@@ -206,11 +206,6 @@ export function useGridColumns(): VxeTableGridOptions['columns'] {
   return [
     { type: 'checkbox', width: 40 },
     {
-      field: 'id',
-      title: '角色编号',
-      minWidth: 100,
-    },
-    {
       field: 'name',
       title: '角色名称',
       minWidth: 200,

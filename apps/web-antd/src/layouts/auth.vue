@@ -1,9 +1,7 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
 
-import { LanguageToggle, ThemeToggle } from '@vben/layouts';
-import { usePreferences } from '@vben/preferences';
-import { preferences } from '@vben/preferences';
+import { preferences, usePreferences } from '@vben/preferences';
 
 import { $t } from '#/locales';
 
@@ -32,8 +30,8 @@ const currentYear = new Date().getFullYear();
     <!-- 左侧品牌展示面板 -->
     <div class="oa-brand-panel relative hidden w-[45%] lg:flex">
       <!-- 背景装饰 -->
-      <div class="oa-brand-bg absolute inset-0" />
-      <div class="oa-brand-pattern absolute inset-0" />
+      <div class="oa-brand-bg absolute inset-0"></div>
+      <div class="oa-brand-pattern absolute inset-0"></div>
 
       <!-- 内容区域 -->
       <div class="relative z-10 flex w-full flex-col justify-between p-12">
@@ -48,7 +46,6 @@ const currentYear = new Date().getFullYear();
           />
           <div>
             <h1 class="text-xl font-bold text-white">{{ appName }}</h1>
-            <p class="mt-0.5 text-sm text-white/60">DingHeng OA</p>
           </div>
         </div>
 
@@ -135,12 +132,12 @@ const currentYear = new Date().getFullYear();
     <!-- 右侧表单区域 -->
     <div class="relative flex flex-1 flex-col">
       <!-- 工具栏 -->
-<!--      <div-->
-<!--        class="absolute right-4 top-4 z-10 flex items-center gap-1"-->
-<!--      >-->
-<!--        <LanguageToggle />-->
-<!--        <ThemeToggle />-->
-<!--      </div>-->
+      <!--      <div-->
+      <!--        class="absolute right-4 top-4 z-10 flex items-center gap-1"-->
+      <!--      >-->
+      <!--        <LanguageToggle />-->
+      <!--        <ThemeToggle />-->
+      <!--      </div>-->
 
       <!-- 移动端 Logo -->
       <div class="flex items-center px-8 pt-8 lg:hidden">
@@ -151,9 +148,7 @@ const currentYear = new Date().getFullYear();
           class="mr-2"
           width="36"
         />
-        <span class="text-foreground text-lg font-semibold">{{
-          appName
-        }}</span>
+        <span class="text-lg font-semibold text-foreground">{{ appName }}</span>
       </div>
 
       <!-- 表单内容 -->
@@ -177,13 +172,13 @@ const currentYear = new Date().getFullYear();
       <!-- 底部版权 (桌面端) -->
       <div
         v-if="preferences.copyright.enable"
-        class="text-muted-foreground hidden px-8 pb-4 text-center text-xs lg:block"
+        class="hidden px-8 pb-4 text-center text-xs text-muted-foreground lg:block"
       >
         Copyright &copy; {{ currentYear }}
         <a
           v-if="companyName"
           :href="companySiteLink || 'javascript:void(0)'"
-          class="hover:text-primary mx-1"
+          class="mx-1 hover:text-primary"
           target="_blank"
         >
           {{ companyName }}
@@ -209,21 +204,22 @@ const currentYear = new Date().getFullYear();
 
 /* 装饰纹理 */
 .oa-brand-pattern {
-  background-image: radial-gradient(
-    circle at 20% 80%,
-    rgb(255 255 255 / 6%) 0%,
-    transparent 50%
-  ),
-  radial-gradient(
-    circle at 80% 20%,
-    rgb(255 255 255 / 4%) 0%,
-    transparent 50%
-  ),
-  radial-gradient(
-    circle at 40% 40%,
-    rgb(255 255 255 / 3%) 0%,
-    transparent 30%
-  );
+  background-image:
+    radial-gradient(
+      circle at 20% 80%,
+      rgb(255 255 255 / 6%) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 20%,
+      rgb(255 255 255 / 4%) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 40% 40%,
+      rgb(255 255 255 / 3%) 0%,
+      transparent 30%
+    );
 }
 
 /* 右侧区域过渡动画 */

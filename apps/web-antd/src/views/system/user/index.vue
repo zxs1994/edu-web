@@ -1,11 +1,12 @@
 <script lang="ts" setup>
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { SystemDeptApi } from '#/api/system/dept';
+import type { SystemPostApi } from '#/api/system/post';
 import type { SystemUserApi } from '#/api/system/user';
 
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 
-import { confirm, DocAlert, Page, useVbenModal } from '@vben/common-ui';
+import { confirm, Page, useVbenModal } from '@vben/common-ui';
 import { DICT_TYPE } from '@vben/constants';
 import { getDictLabel } from '@vben/hooks';
 import { downloadFileFromBlobPart, isEmpty } from '@vben/utils';
@@ -13,6 +14,7 @@ import { downloadFileFromBlobPart, isEmpty } from '@vben/utils';
 import { Card, message } from 'ant-design-vue';
 
 import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
+import { getSimplePostList } from '#/api/system/post';
 import {
   deleteUser,
   deleteUserList,
@@ -155,6 +157,16 @@ async function handleStatusChange(
   });
 }
 
+/** 岗位列表（用于在表格中展示岗位名称） */
+const postList = ref<SystemPostApi.Post[]>([]);
+
+onMounted(async () => {
+  postList.value = await getSimplePostList();
+  // 岗位加载完成后刷新表格列配置
+  gridApi.setGridOptions({ columns: useGridColumns(handleStatusChange, postList.value) });
+  gridApi.query();
+});
+
 const [Grid, gridApi] = useVbenVxeGrid({
   formOptions: {
     schema: useGridFormSchema(),
@@ -193,14 +205,6 @@ const [Grid, gridApi] = useVbenVxeGrid({
 
 <template>
   <Page auto-content-height>
-    <template #doc>
-      <DocAlert title="用户体系" url="http://ruoyioffice.com/user-center/" />
-      <DocAlert title="三方登陆" url="http://ruoyioffice.com/social-user/" />
-      <DocAlert
-        title="Excel 导入导出"
-        url="http://ruoyioffice.com/excel-import-and-export/"
-      />
-    </template>
 
     <FormModal @success="handleRefresh" />
     <ResetPasswordModal @success="handleRefresh" />
@@ -294,3 +298,11 @@ const [Grid, gridApi] = useVbenVxeGrid({
     </div>
   </Page>
 </template>
+
+<style scoped>
+:deep(.ant-card-body) {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+</style>

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, nextTick, onActivated, onMounted, ref } from 'vue';
+import { computed, nextTick, onActivated, onBeforeUnmount, onMounted, ref } from 'vue';
 
 import { Badge, Table, Tabs } from 'ant-design-vue';
 
@@ -527,9 +527,39 @@ async function loadAllData() {
   }
 }
 
+// 表格动态滚动高度
+const tableWrapperRef = ref<HTMLElement | null>(null);
+const tableScrollY = ref<number>(350);
+let resizeObserver: ResizeObserver | null = null;
+
+/** 更新表格滚动区域高度 */
+function updateTableScrollY() {
+  if (!tableWrapperRef.value) return;
+  const headerHeight = 55; // 表头高度（包含排序等）
+  const wrapperHeight = tableWrapperRef.value.clientHeight;
+  tableScrollY.value = Math.max(wrapperHeight - headerHeight, 100);
+}
+
 // 初始化
 onMounted(() => {
   loadAllData();
+
+  // 监听容器大小变化，动态调整表格滚动高度
+  nextTick(() => {
+    if (tableWrapperRef.value) {
+      updateTableScrollY();
+      resizeObserver = new ResizeObserver(() => {
+        updateTableScrollY();
+      });
+      resizeObserver.observe(tableWrapperRef.value);
+    }
+  });
+});
+
+// 组件卸载时清理观察器
+onBeforeUnmount(() => {
+  resizeObserver?.disconnect();
+  resizeObserver = null;
 });
 
 // 页面被KeepAlive缓存后重新激活时，自动刷新数据
@@ -539,8 +569,8 @@ onActivated(() => {
 </script>
 
 <template>
-  <div class="workbench-task-list rounded-lg bg-background">
-    <div class="flex items-end justify-between px-3">
+  <div class="workbench-task-list flex h-full flex-col rounded-lg bg-background">
+    <div class="flex flex-shrink-0 items-end justify-between px-3">
       <Tabs
         v-model:active-key="activeTab"
         class="flex-1"
@@ -564,14 +594,14 @@ onActivated(() => {
       </a>
     </div>
 
-    <div class="task-table-wrapper px-3 pb-2">
+    <div ref="tableWrapperRef" class="task-table-wrapper min-h-0 flex-1 overflow-auto px-3 pb-2">
       <Table
         :key="`${activeTab}-${taskList.length}`"
         :columns="columns"
         :data-source="taskList"
         :loading="loading"
         :pagination="false"
-        :scroll="{ x: 1200, y: 350 }"
+        :scroll="{ x: 1200, y: tableScrollY }"
         size="small"
         row-key="id"
       >
@@ -671,7 +701,7 @@ onActivated(() => {
 }
 
 .task-table-wrapper {
-  min-height: 350px;
+  min-height: 0;
 }
 
 /* 单据编号链接样式 */

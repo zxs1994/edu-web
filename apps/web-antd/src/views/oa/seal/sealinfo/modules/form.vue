@@ -19,7 +19,6 @@ const getTitle = computed(() => {
     : $t('ui.actionTitle.create', ['印章信息']);
 });
 
-
 const [Form, formApi] = useVbenForm({
   commonConfig: {
     componentProps: {
@@ -90,5 +89,4 @@ const [Modal, modalApi] = useVbenModal({
     <Form class="mx-4" />
   </Modal>
 </template>
-
 

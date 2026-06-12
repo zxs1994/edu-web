@@ -151,7 +151,7 @@ const wrapperStyle = computed(() => {
 
     <!-- 组件内容 -->
     <div
-      class="component-content flex-1"
+      class="component-content relative min-h-0 flex-1"
       :class="{
         'overflow-hidden': !allowOverflow,
         'overflow-visible': allowOverflow,
@@ -161,7 +161,7 @@ const wrapperStyle = computed(() => {
         :is="component"
         v-if="component && !hasError"
         v-bind="config"
-        class="h-full w-full"
+        class="absolute inset-0"
       />
       <Alert
         v-else

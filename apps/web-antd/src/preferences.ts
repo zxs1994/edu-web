@@ -13,7 +13,7 @@ export const overridesPreferences = defineOverridesPreferences({
     name: import.meta.env.VITE_APP_TITLE,
     enableRefreshToken: true,
     layout: 'mixed-nav',
-    /** 默认首页路径，改为我的首页 */
+    /** 默认首页路径 */
     defaultHomePath: '/workspace',
   },
   // 自定义应用 Logo（将图片放在 apps/web-antd/public/static/imgs/ 目录下）

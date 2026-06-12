@@ -4,7 +4,7 @@ import type { BpmProcessInstanceApi } from '#/api/bpm/processInstance';
 
 import { h } from 'vue';
 
-import { DocAlert, Page, prompt } from '@vben/common-ui';
+import { Page, prompt } from '@vben/common-ui';
 import { BpmProcessInstanceStatus } from '@vben/constants';
 
 import { Button, message, Textarea } from 'ant-design-vue';
@@ -100,9 +100,6 @@ const [Grid, gridApi] = useVbenVxeGrid({
 
 <template>
   <Page auto-content-height>
-    <template #doc>
-      <DocAlert title="工作流手册" url="http://ruoyioffice.com/bpm" />
-    </template>
 
     <Grid table-title="流程实例">
       <template #tasks="{ row }">

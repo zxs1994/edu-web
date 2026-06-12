@@ -152,6 +152,7 @@ onMounted(() => {
         >
           <div
             class="layout-item-content h-full w-full overflow-hidden rounded bg-white shadow-sm"
+            style="height: 100%"
           >
             <ComponentWrapper
               :component-code="item.componentCode"
@@ -189,6 +190,30 @@ onMounted(() => {
 
 .layout-item-content {
   padding: 0;
+}
+
+/* 强制所有子组件铺满卡片高度 */
+:deep(.layout-item-content > *) {
+  height: 100% !important;
+}
+
+:deep(.component-wrapper .component-content) {
+  position: relative !important;
+  height: 100% !important;
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+}
+
+:deep(.workbench-task-list) {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+}
+
+:deep(.workbench-task-list .task-table-wrapper) {
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  overflow: auto !important;
 }
 
 :deep(.vue-grid-item) {

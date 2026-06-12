@@ -38,10 +38,10 @@
   --menu-bg-button-hover: rgb(255 255 255 / 20%);
 
   /* 图标颜色 */
-  --menu-icon-default: rgb(255 255 255 / 85%);
-  --menu-icon-primary: rgb(255 255 255 / 90%);
-  --menu-icon-hover: #fff;
-  --menu-icon-arrow: rgb(255 255 255 / 80%);
+  --menu-icon-default: #006BE6;
+  --menu-icon-primary: #006BE6;
+  --menu-icon-hover: #006BE6;
+  --menu-icon-arrow: #006BE6;
 
   /* 边框颜色 */
   --menu-border-default: rgb(255 255 255 / 20%);

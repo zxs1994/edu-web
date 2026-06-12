@@ -196,6 +196,19 @@ const OA_DICT = {
   OA_MEETING_ROOM_EQUIPMENT: 'oa_meeting_room_equipment', // 会议室设备
   OA_MEETING_REMINDER_TYPE: 'oa_meeting_reminder_type', // 会议提醒类型
   OA_MEETING_BOOKING_USE_STATUS: 'oa_meeting_booking_use_status', // 会议室使用状态
+  OA_CONTRACT_TYPE: 'oa_contract_type',
+  OA_DOC_TYPE: 'oa_doc_type',
+  OA_URGENCY_LEVEL: 'oa_urgency_level',
+  OA_EXPENSE_TYPE: 'oa_expense_type',
+  OA_PAYMENT_METHOD: 'oa_payment_method',
+  OA_PROJECT_TYPE: 'oa_project_type',
+  OA_INCOMING_DOC_TYPE: 'oa_incoming_doc_type',
+  OA_HANDLING_STATUS: 'oa_handling_status',
+  OA_TRANSPORT_TYPE: 'oa_transport_type',
+  OA_ACCOMMODATION_TYPE: 'oa_accommodation_type',
+  OA_CORRECTION_BILL_TYPE: 'oa_correction_bill_type',
+  OA_FREEZE_STATUS: 'oa_freeze_status',
+  OA_CORRECTION_STATUS: 'oa_correction_status',
 } as const;
 
 /** ========== HRM - 人力资源模块 ========== */

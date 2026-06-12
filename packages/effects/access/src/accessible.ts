@@ -141,12 +141,17 @@ async function generateRoutes(
     }
     const firstChild = route.children[0];
 
-    // 如果子路由不是以/开头，则直接返回,这种情况需要计算全部父级的path才能得出正确的path，这里不做处理
-    if (!firstChild?.path || !firstChild.path.startsWith('/')) {
+    // 如果子路由不存在或没有path，则直接返回
+    if (!firstChild?.path) {
       return route;
     }
 
-    route.redirect = firstChild.path;
+    // 子路由以/开头时，直接使用其path作为redirect（已计算过全部父级path）
+    if (firstChild.path.startsWith('/')) {
+      route.redirect = firstChild.path;
+    }
+    // 子路由为相对路径时，需要拼接父级path才能得到完整路径，这里不做处理
+
     return route;
   });
 
