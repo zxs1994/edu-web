@@ -152,13 +152,13 @@ async function loadData() {
       creator: userStore.userInfo?.id,
       creatorName: userStore.userInfo?.nickname,
       companyId: userStore.userInfo?.companyId || 0,
-      companyName: userStore.userInfo?.companyName || '',
+      companyName: userStore.userInfo?.companyName || '中国引航协会',
       deptId: userStore.userInfo?.deptId || 0,
       deptName: userStore.userInfo?.deptName || '',
       processStatus: BpmProcessInstanceStatus.NOT_START,
       createTime: new Date(),
+      secrecyLevel: 0,
       urgencyLevel: 0,
-      isImportant: 0,
       billCode: '',
       attachments: [],
     };
@@ -217,7 +217,7 @@ onMounted(() => {
       ref="basicFormRef"
       :header-data="{
         ...formData,
-        billName: '收文办理单',
+        billName: '公文收文',
       }"
       :form-data="formData"
       :form-schema="formSchema"

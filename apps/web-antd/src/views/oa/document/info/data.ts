@@ -3,49 +3,88 @@ import type { VbenFormSchema } from '#/adapter/form';
 import { DICT_TYPE } from '@vben/constants';
 import { getDictOptions } from '@vben/hooks';
 
+import { getRedTemplateSimpleList } from '#/api/oa/red-template';
+import { handleTree } from '@vben/utils';
+import { getDeptList } from '#/api/system/dept';
+
+/** 缓存部门平铺列表，供 index.vue 根据 deptId 反查公司/部门名称 */
+export let cachedDeptList: any[] = [];
+
+/** 新增/修改的表单 */
 export function useFormSchema(): VbenFormSchema[] {
   return [
+    // ===== 隐藏字段 =====
     {
       fieldName: 'id',
       component: 'Input',
-      dependencies: {
-        triggerFields: [''],
-        show: () => false,
-      },
+      dependencies: { triggerFields: [''], show: () => false },
     },
     {
       fieldName: 'billCode',
       component: 'Input',
-      dependencies: {
-        triggerFields: [''],
-        show: () => false,
+      dependencies: { triggerFields: [''], show: () => false },
+    },
+    {
+      fieldName: 'companyId',
+      component: 'Input',
+      dependencies: { triggerFields: [''], show: () => false },
+    },
+    {
+      fieldName: 'companyName',
+      component: 'Input',
+      dependencies: { triggerFields: [''], show: () => false },
+    },
+    {
+      fieldName: 'deptName',
+      component: 'Input',
+      dependencies: { triggerFields: [''], show: () => false },
+    },
+
+    // ===== 基本信息 =====
+    {
+      fieldName: 'templateId',
+      label: '套红模板',
+      rules: 'required',
+      component: 'ApiSelect',
+      componentProps: {
+        api: getRedTemplateSimpleList,
+        labelField: 'templateName',
+        valueField: 'id',
+        placeholder: '请选择套红模板',
       },
     },
     {
       fieldName: 'docTitle',
-      label: '公文标题',
+      label: '标题',
       rules: 'required',
       component: 'Input',
-      componentProps: {
-        placeholder: '请输入公文标题',
-      },
+      componentProps: { placeholder: '请输入公文标题' },
     },
     {
-      fieldName: 'docNumber',
-      label: '发文字号',
+      fieldName: 'docNumberPrefix',
+      label: '字号',
       component: 'Input',
-      componentProps: {
-        placeholder: '请输入发文字号',
-      },
+      componentProps: { placeholder: '如：无办发' },
     },
     {
-      fieldName: 'docType',
-      label: '公文类型',
-      rules: 'required',
+      fieldName: 'docNumberYear',
+      label: '年份',
+      component: 'InputNumber',
+      componentProps: { placeholder: '如：2026', min: 1900, max: 2100 },
+    },
+    {
+      fieldName: 'docNumberSerial',
+      label: '第几号文',
+      component: 'InputNumber',
+      componentProps: { placeholder: '序号', min: 1 },
+    },
+    {
+      fieldName: 'secrecyLevel',
+      label: '密级',
       component: 'Select',
       componentProps: {
-        options: getDictOptions(DICT_TYPE.OA_DOC_TYPE, 'number'),
-        placeholder: '请选择公文类型',
+        options: getDictOptions(DICT_TYPE.OA_SECRECY_LEVEL, 'number'),
+        placeholder: '请选择密级',
       },
     },
     {
@@ -58,57 +97,101 @@ export function useFormSchema(): VbenFormSchema[] {
       },
     },
     {
-      fieldName: 'recipients',
-      label: '主送单位/人员',
-      component: 'Input',
+      fieldName: 'disclosureCategory',
+      label: '公开类别',
+      component: 'Select',
       componentProps: {
-        placeholder: '请输入主送单位/人员',
+        options: getDictOptions(DICT_TYPE.OA_DISCLOSURE_CATEGORY, 'number'),
+        placeholder: '请选择公开类别',
       },
     },
     {
-      fieldName: 'ccList',
-      label: '抄送',
-      component: 'Input',
+      fieldName: 'issueDate',
+      label: '发文日期',
+      rules: 'required',
+      component: 'DatePicker',
       componentProps: {
-        placeholder: '请输入抄送',
+        format: 'YYYY-MM-DD',
+        valueFormat: 'YYYY-MM-DD',
+        placeholder: '请选择发文日期',
       },
+    },
+    {
+      fieldName: 'deptId',
+      label: '发文部门',
+      component: 'ApiTreeSelect',
+      componentProps: {
+        allowClear: true,
+        api: async () => {
+          const data = await getDeptList();
+          cachedDeptList = data || [];
+          return handleTree(data);
+        },
+        labelField: 'name',
+        valueField: 'id',
+        childrenField: 'children',
+        placeholder: '请选择发文部门',
+        treeDefaultExpandAll: true,
+      },
+    },
+    {
+      fieldName: 'mainRecipients',
+      label: '主送部门',
+      rules: 'required',
+      component: 'ApiTreeSelect',
+      componentProps: {
+        allowClear: true,
+        multiple: true,
+        api: async () => {
+          const data = await getDeptList();
+          return handleTree(data);
+        },
+        labelField: 'name',
+        valueField: 'id',
+        childrenField: 'children',
+        placeholder: '请选择主送部门（可多选）',
+        treeDefaultExpandAll: true,
+        treeCheckable: true,
+      },
+    },
+    {
+      fieldName: 'ccDepartments',
+      label: '抄送部门',
+      component: 'ApiTreeSelect',
+      componentProps: {
+        allowClear: true,
+        multiple: true,
+        api: async () => {
+          const data = await getDeptList();
+          return handleTree(data);
+        },
+        labelField: 'name',
+        valueField: 'id',
+        childrenField: 'children',
+        placeholder: '请选择抄送部门（可多选）',
+        treeDefaultExpandAll: true,
+        treeCheckable: true,
+      },
+    },
+    {
+      fieldName: 'signer',
+      label: '签发人',
+      component: 'Input',
+      componentProps: { placeholder: '请输入签发人' },
     },
     {
       fieldName: 'docContent',
-      label: '公文正文',
+      label: '公文内容',
       component: 'Textarea',
-      formItemClass: 'col-span-full',
-      componentProps: {
-        placeholder: '请输入公文正文',
-      },
-    },
-    {
-      fieldName: 'isImportant',
-      label: '是否重要公文',
-      component: 'Select',
-      componentProps: {
-        options: getDictOptions(DICT_TYPE.COMMON_STATUS, 'number'),
-        placeholder: '请选择是否重要公文',
-      },
-    },
-    {
-      fieldName: 'cause',
-      label: '发文事由',
-      rules: 'required',
-      component: 'Textarea',
-      formItemClass: 'col-span-full',
-      componentProps: {
-        placeholder: '请输入发文事由',
-      },
+      formItemClass: 'col-span-2',
+      componentProps: { placeholder: '请输入公文正文内容', rows: 6 },
     },
     {
       fieldName: 'remark',
-      label: '备注',
+      label: '附注',
       component: 'Textarea',
-      formItemClass: 'col-span-full',
-      componentProps: {
-        placeholder: '请输入备注',
-      },
+      formItemClass: 'col-span-2',
+      componentProps: { placeholder: '请输入附注/备注', rows: 3 },
     },
   ];
 }

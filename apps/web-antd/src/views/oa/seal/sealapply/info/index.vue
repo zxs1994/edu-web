@@ -182,8 +182,6 @@ async function loadData() {
     formData.value = {
       creator: userStore.userInfo?.id,
       creatorName: userStore.userInfo?.nickname,
-      companyId: userStore.userInfo?.companyId || 0,
-      companyName: userStore.userInfo?.companyName || '',
       deptId: userStore.userInfo?.deptId || 0,
       deptName: userStore.userInfo?.deptName || '',
       processStatus: BpmProcessInstanceStatus.NOT_START, // 草稿状态

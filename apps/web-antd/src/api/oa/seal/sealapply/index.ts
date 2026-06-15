@@ -35,8 +35,6 @@ export namespace SealApplyBillApi {
     isUrgent?: number;
     creator?: number;
     creatorName?: string;
-    companyId: number;
-    companyName: string;
     deptId: number;
     deptName: string;
     remark?: string;
@@ -55,8 +53,6 @@ export namespace SealApplyBillApi {
     useMode?: number;
     useStatus?: number;
     isUrgent?: number;
-    companyId?: number;
-    companyName?: string;
     deptId?: number;
     deptName?: string;
     expectedUseTime?: Date[];

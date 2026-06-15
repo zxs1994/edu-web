@@ -253,8 +253,9 @@ export function useFormSchema(
       fieldName: 'isUrgent',
       label: '是否紧急',
       component: 'Select',
+      defaultValue: 0,
       componentProps: {
-        options: getDictOptions(DICT_TYPE.COMMON_STATUS, 'number'),
+        options: getDictOptions(DICT_TYPE.OA_IS_URGENT, 'number'),
         placeholder: '请选择是否紧急',
       },
     },

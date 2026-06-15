@@ -19,11 +19,8 @@ export namespace SealApi {
     purchaseDate?: string | Dayjs; // 购买日期
     enableDate?: string | Dayjs; // 启用日期
     disableDate?: string | Dayjs; // 停用日期
-    picUrl?: string; // 上传照片
     sort?: number; // 显示顺序
     remark?: string; // 备注
-    companyId?: number; // 公司ID
-    companyName?: string; // 公司名称
   }
 }
 

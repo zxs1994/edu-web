@@ -24,9 +24,10 @@ import {
 } from '#/api/oa/travel';
 import { AttachmentList } from '#/components/attachment-list';
 import { BasicForm, CardContainer } from '#/components/basic-form';
+import { ItineraryDetailList } from '#/components/itinerary-detail-list';
 import { $t } from '#/locales';
 
-import { useFormSchema } from './data';
+import { calcTravelDays, useFormSchema } from './data';
 
 defineOptions({ name: 'OaTravelApplyBillInfo' });
 
@@ -152,15 +153,14 @@ async function loadData() {
       creator: userStore.userInfo?.id,
       creatorName: userStore.userInfo?.nickname,
       companyId: userStore.userInfo?.companyId || 0,
-      companyName: userStore.userInfo?.companyName || '',
+      companyName: userStore.userInfo?.companyName || '中国引航协会',
       deptId: userStore.userInfo?.deptId || 0,
       deptName: userStore.userInfo?.deptName || '',
       processStatus: BpmProcessInstanceStatus.NOT_START,
       createTime: new Date(),
-      transportType: 1,
-      accommodationType: 1,
-      isOverseas: 0,
+      reimbursementStatus: 0,
       billCode: '',
+      itineraries: [],
       attachments: [],
     };
     return;
@@ -179,6 +179,10 @@ async function loadData() {
 
     if (basicFormRef.value) {
       await basicFormRef.value.setFormValues(data);
+      const days = calcTravelDays(data.travelStartDate, data.travelEndDate);
+      if (days !== undefined) {
+        await basicFormRef.value.setFormValues({ travelDays: days });
+      }
     }
   } catch (error) {
     console.error('获取差旅申请单详情失败:', error);
@@ -238,6 +242,13 @@ onMounted(() => {
         <div class="copy-reason-text">抄送意见：{{ props.copyReason }}</div>
       </template>
       <template #form-extension>
+        <CardContainer title="行程明细">
+          <ItineraryDetailList
+            v-model="formData.itineraries"
+            :readonly="readonly"
+          />
+        </CardContainer>
+
         <CardContainer :title="$t('common.attachmentInfo')">
           <template #extra>
             <Button

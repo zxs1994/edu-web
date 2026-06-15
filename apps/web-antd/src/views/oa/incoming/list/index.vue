@@ -42,6 +42,13 @@ function handleCreate() {
   });
 }
 
+function handleDetail(row: IncomingDocumentBillApi.IncomingDocumentBill) {
+  router.push({
+    path: '/oa/incoming-document-info',
+    query: { id: row.id },
+  });
+}
+
 async function handleDelete(
   row: IncomingDocumentBillApi.IncomingDocumentBill,
 ) {
@@ -106,7 +113,7 @@ async function handleExport() {
   const data = await exportIncomingDocumentBill(
     await gridApi.formApi.getValues(),
   );
-  downloadFileFromBlobPart({ fileName: '收文办理.xls', source: data });
+  downloadFileFromBlobPart({ fileName: '公文收文.xls', source: data });
 }
 
 const [Grid, gridApi] = useVbenVxeGrid({
@@ -147,7 +154,7 @@ onActivated(() => {
 
 <template>
   <Page auto-content-height>
-    <Grid table-title="收文办理列表">
+    <Grid table-title="公文收文列表">
       <template #toolbar-tools>
         <TableAction
           :actions="[
@@ -180,6 +187,12 @@ onActivated(() => {
       <template #actions="{ row }">
         <TableAction
           :actions="[
+            {
+              label: $t('common.detail'),
+              type: 'link',
+              icon: ACTION_ICON.VIEW,
+              onClick: () => handleDetail(row),
+            },
             {
               label: $t('common.delete'),
               type: 'link',

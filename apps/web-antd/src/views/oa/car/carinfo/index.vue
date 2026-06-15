@@ -7,7 +7,6 @@ import { ref, watch } from 'vue';
 import { Page, useVbenModal } from '@vben/common-ui';
 import { DICT_TYPE } from '@vben/constants';
 import { getDictOptions } from '@vben/hooks';
-import { useUserStore } from '@vben/stores';
 import { downloadFileFromBlobPart, isEmpty } from '@vben/utils';
 
 import { Card, Menu, message } from 'ant-design-vue';
@@ -29,7 +28,6 @@ const [FormModal, formModalApi] = useVbenModal({
   destroyOnClose: true,
 });
 
-const userStore = useUserStore();
 // 分类选择相关状态
 const selectedCarCls = ref<null | number>(null);
 const carClsOptions = getDictOptions(DICT_TYPE.OA_CAR_CLS, 'number');
@@ -54,8 +52,6 @@ function handleCreate() {
   // 设置默认值
   const car: CarApi.Car = {
     carCls: selectedCarCls.value || undefined,
-    companyId: userStore.userInfo?.companyId || undefined,
-    companyName: userStore.userInfo?.companyName || undefined,
     status: 0, //  空闲
   };
   formModalApi.setData(car).open();

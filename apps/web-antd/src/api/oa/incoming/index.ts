@@ -11,17 +11,18 @@ export namespace IncomingDocumentBillApi {
     processStatus?: number;
     docTitle: string;
     docNumber: string;
-    sender: string;
+    secrecyLevel: number;
     receiveDate: string;
     docType: number;
     urgencyLevel: number;
-    docSummary: string;
     handlingDeptId: number;
     handlingDeptName: string;
+    hostPerson: string;
+    leaderInstruction: string;
     handlingResult: string;
+    handlingDeadline: string;
+    contentSummary: string;
     handlingStatus: number;
-    isImportant: number;
-    cause: string;
     creator?: number;
     creatorName?: string;
     companyId: number;
@@ -36,9 +37,10 @@ export namespace IncomingDocumentBillApi {
   export interface IncomingDocumentBillPageReqVO extends PageParam {
     billCode?: string;
     processStatus?: number;
+    docTitle?: string;
+    docNumber?: string;
     docType?: number;
     handlingStatus?: number;
-    isImportant?: number;
     createTime?: Date[];
   }
 }

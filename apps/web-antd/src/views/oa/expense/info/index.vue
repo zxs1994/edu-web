@@ -1,8 +1,9 @@
 <script lang="ts" setup>
 import type { VbenFormSchema } from '#/adapter/form';
 import type { ExpenseReimburseBillApi } from '#/api/oa/expense';
+import type { TravelApplyBillApi } from '#/api/oa/travel';
 
-import { nextTick, onMounted, ref, shallowRef } from 'vue';
+import { computed, nextTick, onMounted, ref, shallowRef } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { Loading } from '@vben/common-ui';
@@ -13,7 +14,7 @@ import {
 import { useTabs } from '@vben/hooks';
 import { useUserStore } from '@vben/stores';
 
-import { Button, message } from 'ant-design-vue';
+import { Alert, Button, message, Table } from 'ant-design-vue';
 
 import { withdrawProcessToStart } from '#/api/bpm/task';
 import {
@@ -22,15 +23,18 @@ import {
   saveExpenseReimburseBill,
   submitExpenseReimburseBill,
 } from '#/api/oa/expense';
+import { getTravelApplyBillPage } from '#/api/oa/travel';
 import { AttachmentList } from '#/components/attachment-list';
 import { BasicForm, CardContainer } from '#/components/basic-form';
+import { ExpenseDetailList } from '#/components/expense-detail-list';
+import { filterEmptyExpenseDetails, normalizeExpenseDetail } from '#/components/expense-detail-list/data';
+import { TravelApplySelectModal } from '#/views/oa/travel/components';
 import { $t } from '#/locales';
 
 import { useFormSchema } from './data';
 
 defineOptions({ name: 'OaExpenseReimburseBillInfo' });
 
-// 定义组件 props
 const props = defineProps<{
   activityNodes?: any[];
   copyReason?: string;
@@ -52,10 +56,38 @@ const readonly = ref(false);
 const loading = ref(false);
 const basicFormRef = ref();
 const attachmentListRef = ref();
+const travelApplyModalRef = ref<InstanceType<typeof TravelApplySelectModal>>();
 const formSchema = shallowRef<VbenFormSchema[]>([]);
 
+/** 关联的差旅申请单列表（用于列表展示） */
+const travelBills = ref<TravelApplyBillApi.TravelApplyBill[]>([]);
+
+/** 差旅申请单列表表格列定义 */
+const travelBillColumns = [
+  { title: '单据编号', dataIndex: 'billCode', width: 180 },
+  { title: '出差事由', dataIndex: 'cause', ellipsis: true },
+  { title: '开始日期', dataIndex: 'travelStartDate', width: 170 },
+  { title: '结束日期', dataIndex: 'travelEndDate', width: 170 },
+  { title: '出差天数', dataIndex: 'travelDays', width: 100, align: 'center' },
+];
+
+/** 合计出差天数 */
+const totalTravelDays = computed(() => {
+  return travelBills.value.reduce((sum, bill) => {
+    const days = Number(bill.travelDays) || 0;
+    return Math.round((sum + days) * 10) / 10;
+  }, 0);
+});
+
+/** 从差旅申请单列表拼接出差事由 */
+function buildTravelCause(
+  bills: TravelApplyBillApi.TravelApplyBill[],
+): string {
+  return [...new Set(bills.map((b) => b.cause).filter(Boolean))].join('；');
+}
+
 function initFormSchema() {
-  formSchema.value = useFormSchema();
+  formSchema.value = useFormSchema(travelApplyModalRef);
 }
 
 let id: number | undefined = (() => {
@@ -89,9 +121,13 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
           false,
         )) as ExpenseReimburseBillApi.ExpenseReimburseBill);
 
+    const validDetails = filterEmptyExpenseDetails(formData.value.details);
+    formData.value.details = validDetails;
+
     const data = {
       ...formData.value,
       ...formValues,
+      details: validDetails,
     };
 
     id = await (isSubmit
@@ -152,35 +188,57 @@ async function loadData() {
       creator: userStore.userInfo?.id,
       creatorName: userStore.userInfo?.nickname,
       companyId: userStore.userInfo?.companyId || 0,
-      companyName: userStore.userInfo?.companyName || '',
+      companyName: userStore.userInfo?.companyName || '中国引航协会',
       deptId: userStore.userInfo?.deptId || 0,
       deptName: userStore.userInfo?.deptName || '',
       processStatus: BpmProcessInstanceStatus.NOT_START,
       createTime: new Date(),
-      paymentMethod: 1,
-      isLargeAmount: 0,
+      paymentStatus: 0,
       billCode: '',
+      details: [],
       attachments: [],
     };
+    travelBills.value = [];
     return;
   }
 
   loading.value = true;
   try {
     const data = await getExpenseReimburseBill(id);
-    formData.value = { ...data };
     readonly.value =
       props.isApproval === true
         ? props.isApproval
         : !BpmProcessInstanceStatusEditValue.includes(
-            formData.value.processStatus as number,
+            data.processStatus as number,
           );
 
+    // 优先使用接口返回的关联差旅申请单，否则按单号查询
+    if (data.travelBills?.length) {
+      travelBills.value = data.travelBills;
+    } else {
+      await loadTravelBills(data.travelBillCode);
+    }
+
+    const travelCause =
+      data.travelCause || buildTravelCause(travelBills.value);
+    const details = (data.details || []).map((item, index) =>
+      normalizeExpenseDetail(item, index),
+    );
+
+    formData.value = {
+      ...data,
+      travelCause,
+      details,
+    };
+
     if (basicFormRef.value) {
-      await basicFormRef.value.setFormValues(data);
+      await basicFormRef.value.setFormValues({
+        ...data,
+        travelCause,
+      });
     }
   } catch (error) {
-    console.error('获取费用报销单详情失败:', error);
+    console.error('获取差旅报销单详情失败:', error);
   } finally {
     loading.value = false;
     nextTick(() => {
@@ -189,10 +247,81 @@ async function loadData() {
   }
 }
 
+/**
+ * 根据单号加载关联的差旅申请单列表
+ */
+async function loadTravelBills(travelBillCode?: string) {
+  if (!travelBillCode) {
+    travelBills.value = [];
+    return;
+  }
+
+  const codes = travelBillCode.split(',').filter((c) => c.trim());
+  if (codes.length === 0) {
+    travelBills.value = [];
+    return;
+  }
+
+  try {
+    // 逐个查询差旅申请单信息
+    const results: TravelApplyBillApi.TravelApplyBill[] = [];
+    for (const code of codes) {
+      const pageResult = await getTravelApplyBillPage({
+        pageNo: 1,
+        pageSize: 1,
+        billCode: code,
+      });
+      const bill = pageResult?.list?.[0];
+      if (bill) {
+        results.push(bill);
+      }
+    }
+    travelBills.value = results;
+  } catch (error) {
+    console.error('加载关联差旅申请单失败:', error);
+    travelBills.value = [];
+  }
+}
+
+/**
+ * 处理差旅申请单选择 - 支持多选，自动回填关联字段
+ */
+async function handleTravelApplySelect(bills: TravelApplyBillApi.TravelApplyBill[]) {
+  if (!basicFormRef.value || !bills || bills.length === 0) return;
+
+  // 存储关联的差旅申请单
+  travelBills.value = bills;
+
+  // 拼接单号
+  const billCodes = bills.map((b) => b.billCode).join(',');
+  // 拼接出差事由
+  const causes = buildTravelCause(bills);
+
+  const values: Record<string, any> = {
+    travelBillCode: billCodes,
+    travelCause: causes,
+  };
+
+  // 同步更新 formData 中的 travelBillCode
+  formData.value.travelBillCode = billCodes;
+  formData.value.travelCause = causes;
+
+  await basicFormRef.value.setFormValues(values, false);
+  await basicFormRef.value.clearFieldError('travelBillCode');
+}
+
 function handleUploadAttachment() {
   if (attachmentListRef.value) {
     attachmentListRef.value.handleTriggerUpload();
   }
+}
+
+/**
+ * 费用明细合计金额变化 → 更新表单中的报销总金额
+ */
+async function handleTotalAmountChange(total: number) {
+  if (!basicFormRef.value) return;
+  await basicFormRef.value.setFormValues({ totalAmount: total }, false);
 }
 
 async function beforeApproval(): Promise<boolean> {
@@ -217,7 +346,7 @@ onMounted(() => {
       ref="basicFormRef"
       :header-data="{
         ...formData,
-        billName: '费用报销单',
+        billName: '差旅报销单',
       }"
       :form-data="formData"
       :form-schema="formSchema"
@@ -237,6 +366,40 @@ onMounted(() => {
         <div class="copy-reason-text">抄送意见：{{ props.copyReason }}</div>
       </template>
       <template #form-extension>
+        <!-- 关联差旅申请单信息列表 -->
+        <CardContainer title="关联出差信息">
+          <Table
+            :columns="travelBillColumns"
+            :data-source="travelBills"
+            :pagination="false"
+            size="small"
+            bordered
+            row-key="id"
+            :locale="{ emptyText: '请先选择关联的出差申请单' }"
+          >
+            <template #summary v-if="travelBills.length > 0">
+              <Table.Summary fixed>
+                <Table.Summary.Row>
+                  <Table.Summary.Cell :index="0" :col-span="4" align="right">
+                    <strong>合计天数</strong>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell :index="1" align="center">
+                    <strong>{{ totalTravelDays }}</strong>
+                  </Table.Summary.Cell>
+                </Table.Summary.Row>
+              </Table.Summary>
+            </template>
+          </Table>
+        </CardContainer>
+
+        <CardContainer title="费用明细">
+          <ExpenseDetailList
+            v-model="formData.details"
+            :readonly="readonly"
+            @update:total="handleTotalAmountChange"
+          />
+        </CardContainer>
+
         <CardContainer :title="$t('common.attachmentInfo')">
           <template #extra>
             <Button
@@ -256,8 +419,36 @@ onMounted(() => {
             :hide-upload-button="true"
           />
         </CardContainer>
+
+        <CardContainer title="报销规范">
+          <Alert
+            type="warning"
+            show-icon
+            :closable="false"
+            message="报销规范提示"
+          >
+            <template #description>
+              <div class="reimbursement-rules">
+                <p>1. 每笔费用需对应相应的发票或收据，附件中需包含发票金额。</p>
+                <p>2. 发票抬头需与公司名称及报销主体一致。</p>
+                <p>3. 发票日期需在报销期间内（前后不超过3个工作日）。</p>
+                <p>4. 交通费用需提供火车票、机票或电子客票行程单。</p>
+                <p>5. 住宿费用需提供酒店发票，发票上需体现入住/离店日期。</p>
+                <p>6. 餐饮费用每日标准按公司制度规定的上限执行。</p>
+                <p>7. 同一行程的交通路线不可重复报销，系统会自动校验重复记录。</p>
+                <p>8. 发票金额与报销金额需一致，如有差异需在备注中说明原因。</p>
+              </div>
+            </template>
+          </Alert>
+        </CardContainer>
       </template>
     </BasicForm>
+
+    <!-- 差旅申请单选择弹窗 -->
+    <TravelApplySelectModal
+      ref="travelApplyModalRef"
+      @select="handleTravelApplySelect"
+    />
   </Loading>
 </template>
 
@@ -270,5 +461,15 @@ onMounted(() => {
   text-align: center;
   background-color: rgb(0 0 0 / 4%);
   border-bottom: 1px solid #f0f0f0;
+}
+
+.reimbursement-rules {
+  line-height: 2;
+  font-size: 13px;
+  color: rgb(0 0 0 / 75%);
+}
+
+.reimbursement-rules p {
+  margin: 0;
 }
 </style>

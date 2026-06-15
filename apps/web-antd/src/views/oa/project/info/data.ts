@@ -23,21 +23,83 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'projectName',
-      label: '项目/活动名称',
+      label: '项目名称',
       rules: 'required',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入项目/活动名称',
+        placeholder: '请输入项目名称',
       },
     },
     {
       fieldName: 'projectType',
-      label: '类型',
+      label: '项目类型',
       rules: 'required',
       component: 'Select',
       componentProps: {
         options: getDictOptions(DICT_TYPE.OA_PROJECT_TYPE, 'number'),
-        placeholder: '请选择类型',
+        placeholder: '请选择项目类型',
+      },
+    },
+    {
+      fieldName: 'priority',
+      label: '优先级',
+      component: 'Select',
+      componentProps: {
+        options: getDictOptions(DICT_TYPE.OA_PRIORITY, 'number'),
+        placeholder: '请选择优先级',
+      },
+    },
+    {
+      fieldName: 'projectCategory',
+      label: '项目分类',
+      component: 'Select',
+      componentProps: {
+        options: getDictOptions(DICT_TYPE.OA_PROJECT_CATEGORY, 'number'),
+        placeholder: '请选择项目分类',
+      },
+    },
+    {
+      fieldName: 'projectSetName',
+      label: '所属项目集',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入所属项目集',
+      },
+    },
+    {
+      fieldName: 'startDate',
+      label: '计划开始',
+      component: 'DatePicker',
+      componentProps: {
+        format: 'YYYY-MM-DD',
+        valueFormat: 'YYYY-MM-DD',
+        placeholder: '请选择计划开始日期',
+      },
+    },
+    {
+      fieldName: 'endDate',
+      label: '计划结束',
+      component: 'DatePicker',
+      componentProps: {
+        format: 'YYYY-MM-DD',
+        valueFormat: 'YYYY-MM-DD',
+        placeholder: '请选择计划结束日期',
+      },
+    },
+    {
+      fieldName: 'contractCode',
+      label: '合同编号',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入合同编号',
+      },
+    },
+    {
+      fieldName: 'contractName',
+      label: '合同名称',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入合同名称',
       },
     },
     {
@@ -51,68 +113,54 @@ export function useFormSchema(): VbenFormSchema[] {
       },
     },
     {
-      fieldName: 'startDate',
-      label: '计划开始日期',
-      component: 'DatePicker',
-      componentProps: {
-        format: 'YYYY-MM-DD',
-        valueFormat: 'YYYY-MM-DD',
-        placeholder: '请选择计划开始日期',
-      },
-    },
-    {
-      fieldName: 'endDate',
-      label: '计划结束日期',
-      component: 'DatePicker',
-      componentProps: {
-        format: 'YYYY-MM-DD',
-        valueFormat: 'YYYY-MM-DD',
-        placeholder: '请选择计划结束日期',
-      },
-    },
-    {
-      fieldName: 'expectedOutcome',
-      label: '预期成果',
+      fieldName: 'projectManagerName',
+      label: '项目经理',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入预期成果',
+        placeholder: '请输入项目经理',
+      },
+    },
+    {
+      fieldName: 'counterpartyType',
+      label: '对方类型',
+      component: 'Select',
+      componentProps: {
+        options: getDictOptions(DICT_TYPE.OA_COUNTERPARTY_TYPE, 'number'),
+        placeholder: '请选择对方类型',
+      },
+    },
+    {
+      fieldName: 'counterpartyName',
+      label: '对方单位',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入对方单位名称',
+      },
+    },
+    {
+      fieldName: 'counterpartyContact',
+      label: '对方联系人',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入对方联系人',
+      },
+    },
+    {
+      fieldName: 'counterpartyPhone',
+      label: '对方电话',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入对方联系电话',
       },
     },
     {
       fieldName: 'projectDescription',
-      label: '项目/活动方案',
+      label: '项目描述',
       component: 'Textarea',
       formItemClass: 'col-span-full',
       componentProps: {
-        placeholder: '请输入项目/活动方案',
-      },
-    },
-    {
-      fieldName: 'isMajor',
-      label: '是否重大项目',
-      component: 'Select',
-      componentProps: {
-        options: getDictOptions(DICT_TYPE.COMMON_STATUS, 'number'),
-        placeholder: '请选择是否重大项目',
-      },
-    },
-    {
-      fieldName: 'majorRemark',
-      label: '重大项目说明',
-      component: 'Textarea',
-      formItemClass: 'col-span-full',
-      componentProps: {
-        placeholder: '请输入重大项目说明',
-      },
-    },
-    {
-      fieldName: 'cause',
-      label: '立项事由',
-      rules: 'required',
-      component: 'Textarea',
-      formItemClass: 'col-span-full',
-      componentProps: {
-        placeholder: '请输入立项事由',
+        placeholder: '请输入项目描述',
+        rows: 3,
       },
     },
     {
@@ -122,6 +170,7 @@ export function useFormSchema(): VbenFormSchema[] {
       formItemClass: 'col-span-full',
       componentProps: {
         placeholder: '请输入备注',
+        rows: 3,
       },
     },
   ];

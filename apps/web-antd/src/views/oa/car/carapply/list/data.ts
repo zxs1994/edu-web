@@ -4,10 +4,8 @@ import type { CarApplyBillApi } from '#/api/oa/car/carapply';
 
 import { DICT_TYPE } from '@vben/constants';
 import { getDictOptions } from '@vben/hooks';
-import { handleTree } from '@vben/utils';
 
 import { createRouterLinkColumn } from '#/adapter/vxe-table';
-import { getCompanyList } from '#/api/system/dept';
 import { getRangePickerDefaultProps } from '#/utils';
 import { getCurrentUserCompanyDeptTree } from '#/utils/dept-tree';
 
@@ -46,27 +44,6 @@ export function useGridFormSchema(modalRef?: any): VbenFormSchema[] {
         onClick: () => {
           modalRef.value?.modalApi.open();
         },
-      },
-    },
-    {
-      fieldName: 'companyId',
-      label: '所属公司',
-      component: 'ApiTreeSelect',
-      dependencies: {
-        triggerFields: [''],
-        show: () => false,
-      },
-      componentProps: {
-        allowClear: true,
-        api: async () => {
-          const data = await getCompanyList();
-          return handleTree(data);
-        },
-        labelField: 'name',
-        valueField: 'id',
-        childrenField: 'children',
-        placeholder: '请选择公司',
-        treeDefaultExpandAll: true,
       },
     },
     {
@@ -112,7 +89,7 @@ export function useGridColumns(): VxeTableGridOptions<CarApplyBillApi.CarApplyBi
     createRouterLinkColumn({
       field: 'billCode',
       title: '单据编号',
-      path: '/oa/car/car-apply-info',
+      path: '/car/car-apply-info',
       idField: 'id',
       queryParam: 'id',
     }),
@@ -202,13 +179,6 @@ export function useGridColumns(): VxeTableGridOptions<CarApplyBillApi.CarApplyBi
       align: 'left',
     },
     {
-      field: 'companyName',
-      title: '公司名称',
-      minWidth: 120,
-      headerAlign: 'center',
-      align: 'left',
-    },
-    {
       field: 'createTime',
       title: '创建时间',
       minWidth: 140,
@@ -219,7 +189,7 @@ export function useGridColumns(): VxeTableGridOptions<CarApplyBillApi.CarApplyBi
 
     {
       title: '操作',
-      width: 100,
+      width: 150,
       fixed: 'right',
       headerAlign: 'center',
       slots: { default: 'actions' },

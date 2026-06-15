@@ -38,9 +38,19 @@ function onRefresh() {
 /** 新增用车申请单 */
 function handleCreate() {
   router.push({
-    path: '/oa/car/car-apply-info',
+    path: '/car/car-apply-info',
     query: {
       t: Date.now(), // 添加时间戳作为随机串
+    },
+  });
+}
+
+/** 查看用车申请单详情 */
+function handleDetail(row: CarApplyBillApi.CarApplyBill) {
+  router.push({
+    path: '/car/car-apply-info',
+    query: {
+      id: row.id,
     },
   });
 }
@@ -141,7 +151,6 @@ const [Grid, gridApi] = useVbenVxeGrid({
             pageNo: page.currentPage,
             pageSize: page.pageSize,
             ...formValues,
-            companyId: userStore.userInfo?.companyId,
             creator: userStore.userInfo?.id,
           });
         },
@@ -203,21 +212,12 @@ onActivated(() => {
       <template #actions="{ row }">
         <TableAction
           :actions="[
-            // {
-            //   label: $t('common.view'),
-            //   type: 'link',
-            //   icon: ACTION_ICON.VIEW,
-            //   ifShow: () => !BpmProcessInstanceStatusEditValue.includes(row.processStatus as number),
-            //   onClick: handleView.bind(null, row),
-            // },
-            // {
-            //   label: $t('common.edit'),
-            //   type: 'link',
-            //   icon: ACTION_ICON.EDIT,
-            //   ifShow: () => BpmProcessInstanceStatusEditValue.includes(row.processStatus as number),
-            //   auth: ['oa:car-apply-bill:update'],
-            //   onClick: handleView.bind(null, row),
-            // },
+            {
+              label: $t('common.detail'),
+              type: 'link',
+              icon: ACTION_ICON.VIEW,
+              onClick: handleDetail.bind(null, row),
+            },
             {
               label: $t('common.delete'),
               type: 'link',

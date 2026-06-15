@@ -22,12 +22,13 @@ export function useFormSchema(): VbenFormSchema[] {
       },
     },
     {
-      fieldName: 'docTitle',
-      label: '来文标题',
+      fieldName: 'docType',
+      label: '收文类型',
       rules: 'required',
-      component: 'Input',
+      component: 'Select',
       componentProps: {
-        placeholder: '请输入来文标题',
+        options: getDictOptions(DICT_TYPE.OA_INCOMING_DOC_TYPE, 'number'),
+        placeholder: '请选择收文类型',
       },
     },
     {
@@ -39,17 +40,39 @@ export function useFormSchema(): VbenFormSchema[] {
       },
     },
     {
-      fieldName: 'sender',
-      label: '来文单位',
+      fieldName: 'docTitle',
+      label: '公文标题',
       rules: 'required',
       component: 'Input',
+      formItemClass: 'col-span-full',
       componentProps: {
-        placeholder: '请输入来文单位',
+        placeholder: '请输入公文标题',
+      },
+    },
+    {
+      fieldName: 'secrecyLevel',
+      label: '密级',
+      component: 'Select',
+      defaultValue: 0,
+      componentProps: {
+        options: getDictOptions(DICT_TYPE.OA_SECRECY_LEVEL, 'number'),
+        placeholder: '请选择密级',
+      },
+    },
+    {
+      fieldName: 'urgencyLevel',
+      label: '紧急程度',
+      component: 'Select',
+      defaultValue: 0,
+      componentProps: {
+        options: getDictOptions(DICT_TYPE.OA_URGENCY_LEVEL, 'number'),
+        placeholder: '请选择紧急程度',
       },
     },
     {
       fieldName: 'receiveDate',
       label: '收文日期',
+      rules: 'required',
       component: 'DatePicker',
       componentProps: {
         format: 'YYYY-MM-DD',
@@ -58,49 +81,55 @@ export function useFormSchema(): VbenFormSchema[] {
       },
     },
     {
-      fieldName: 'docType',
-      label: '来文类型',
-      rules: 'required',
-      component: 'Select',
+      fieldName: 'handlingDeptName',
+      label: '收文部门',
+      component: 'Input',
       componentProps: {
-        options: getDictOptions(DICT_TYPE.OA_INCOMING_DOC_TYPE, 'number'),
-        placeholder: '请选择来文类型',
+        placeholder: '请输入收文部门',
       },
     },
     {
-      fieldName: 'urgencyLevel',
-      label: '紧急程度',
-      component: 'Select',
+      fieldName: 'hostPerson',
+      label: '主办人',
+      component: 'Input',
       componentProps: {
-        options: getDictOptions(DICT_TYPE.OA_URGENCY_LEVEL, 'number'),
-        placeholder: '请选择紧急程度',
+        placeholder: '请输入主办人姓名',
       },
     },
     {
-      fieldName: 'docSummary',
-      label: '来文摘要',
+      fieldName: 'leaderInstruction',
+      label: '领导批示',
       component: 'Textarea',
       formItemClass: 'col-span-full',
       componentProps: {
-        placeholder: '请输入来文摘要',
+        placeholder: '请输入领导批示',
       },
     },
     {
-      fieldName: 'isImportant',
-      label: '是否重要来文',
-      component: 'Select',
-      componentProps: {
-        options: getDictOptions(DICT_TYPE.COMMON_STATUS, 'number'),
-        placeholder: '请选择是否重要来文',
-      },
-    },
-    {
-      fieldName: 'cause',
-      label: '收文说明',
+      fieldName: 'handlingResult',
+      label: '办理结果',
       component: 'Textarea',
       formItemClass: 'col-span-full',
       componentProps: {
-        placeholder: '请输入收文说明',
+        placeholder: '请输入办理结果',
+      },
+    },
+    {
+      fieldName: 'handlingDeadline',
+      label: '办理期限',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入办理期限',
+        addonAfter: '日',
+      },
+    },
+    {
+      fieldName: 'contentSummary',
+      label: '内容摘要',
+      component: 'Textarea',
+      formItemClass: 'col-span-full',
+      componentProps: {
+        placeholder: '请输入内容摘要',
       },
     },
     {

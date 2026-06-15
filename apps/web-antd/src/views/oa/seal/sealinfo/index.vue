@@ -54,8 +54,6 @@ function handleCreate() {
   // 设置默认值
   const seal: SealApi.Seal = {
     sealCls: selectedSealCls.value || undefined,
-    companyId: userStore.userInfo?.companyId || undefined,
-    companyName: userStore.userInfo?.companyName || undefined,
     status: 0, // 在库
   };
   formModalApi.setData(seal).open();

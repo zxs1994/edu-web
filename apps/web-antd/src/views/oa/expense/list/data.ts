@@ -27,24 +27,10 @@ export function useGridFormSchema(): VbenFormSchema[] {
       },
     },
     {
-      fieldName: 'expenseType',
-      label: '费用类型',
-      component: 'Select',
-      componentProps: {
-        allowClear: true,
-        options: getDictOptions('oa_expense_type', 'number'),
-        placeholder: '请选择费用类型',
-      },
-    },
-    {
-      fieldName: 'isLargeAmount',
-      label: '是否大额',
-      component: 'Select',
-      componentProps: {
-        allowClear: true,
-        options: getDictOptions('COMMON_STATUS', 'number'),
-        placeholder: '请选择是否大额',
-      },
+      fieldName: 'deptName',
+      label: '申请部门',
+      component: 'Input',
+      componentProps: { allowClear: true, placeholder: '请选择申请部门' },
     },
     {
       fieldName: 'createTime',
@@ -71,29 +57,16 @@ export function useGridColumns(): VxeTableGridOptions<ExpenseReimburseBillApi.Ex
       minWidth: 120,
       cellRender: { name: 'CellDict', props: { type: DICT_TYPE.BPM_PROCESS_INSTANCE_STATUS } },
     },
+    { field: 'totalAmount', title: '报销总金额', minWidth: 120 },
     {
-      field: 'expenseType',
-      title: '费用类型',
-      minWidth: 120,
-      cellRender: { name: 'CellDict', props: { type: 'oa_expense_type' } },
-    },
-    { field: 'totalAmount', title: '报销金额', minWidth: 120 },
-    { field: 'expenseDate', title: '费用日期', minWidth: 120 },
-    {
-      field: 'paymentMethod',
-      title: '支付方式',
-      minWidth: 120,
-      cellRender: { name: 'CellDict', props: { type: 'oa_payment_method' } },
-    },
-    {
-      field: 'isLargeAmount',
-      title: '是否大额',
+      field: 'paymentStatus',
+      title: '支付状态',
       minWidth: 100,
-      cellRender: { name: 'CellDict', props: { type: 'COMMON_STATUS' } },
+      cellRender: { name: 'CellDict', props: { type: DICT_TYPE.OA_EXPENSE_PAYMENT_STATUS } },
     },
     { field: 'creatorName', title: '申请人', minWidth: 100 },
     { field: 'deptName', title: '申请部门', minWidth: 120 },
     { field: 'createTime', title: '创建时间', minWidth: 140, formatter: 'formatDateTime' },
-    { title: '操作', width: 100, fixed: 'right', slots: { default: 'actions' } },
+    { title: '操作', width: 180, fixed: 'right', slots: { default: 'actions' } },
   ];
 }

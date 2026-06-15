@@ -9,6 +9,8 @@
 <script lang="ts" setup>
 import type { headerDataProps } from './typing';
 
+import { computed } from 'vue';
+
 import {
   BILL_FLOW_STATUS,
   BpmProcessInstanceStatus,
@@ -33,6 +35,11 @@ const props = withDefaults(defineProps<Props>(), {
     processStatus: BpmProcessInstanceStatus.NOT_START,
   }),
 });
+
+/** 所属单位兜底：当后端/用户信息未返回公司名称时，默认使用组织第一级 */
+const displayCompanyName = computed(
+  () => props.headerData.companyName || '中国引航协会',
+);
 // 获取审批状态名称
 const getStatusName = (val: any) => {
   const name: any = BILL_FLOW_STATUS.find((item: any) => item.value === val);
@@ -112,7 +119,7 @@ const fallbackCopy = (text: string) => {
           申请日期 : {{ formatDate(props.headerData.createTime) }}
         </span>
         <span class="info-item">
-          所属单位 : {{ props.headerData.companyName }}
+          所属单位 : {{ displayCompanyName }}
         </span>
         <span class="info-item">
           所属部门 : {{ props.headerData.deptName }}

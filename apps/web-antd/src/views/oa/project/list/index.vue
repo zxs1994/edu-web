@@ -42,17 +42,31 @@ function handleCreate() {
   });
 }
 
+function handleEdit(row: ProjectInitiationBillApi.ProjectInitiationBill) {
+  router.push({
+    path: '/oa/project-initiation-info',
+    query: { id: row.id },
+  });
+}
+
+function handleDetail(row: ProjectInitiationBillApi.ProjectInitiationBill) {
+  router.push({
+    path: '/oa/project-initiation-info',
+    query: { id: row.id },
+  });
+}
+
 async function handleDelete(
   row: ProjectInitiationBillApi.ProjectInitiationBill,
 ) {
   const hideLoading = message.loading({
-    content: $t('ui.actionMessage.deleting', [row.id]),
+    content: $t('ui.actionMessage.deleting', [row.billCode]),
     key: 'action_key_msg',
   });
   try {
     await deleteProjectInitiationBill(row.id as number);
     message.success({
-      content: $t('ui.actionMessage.deleteSuccess', [row.id]),
+      content: $t('ui.actionMessage.deleteSuccess', [row.billCode]),
       key: 'action_key_msg',
     });
     onRefresh();
@@ -181,6 +195,16 @@ onActivated(() => {
         <TableAction
           :actions="[
             {
+              label: $t('common.edit'),
+              type: 'link',
+              ifShow: () =>
+                BpmProcessInstanceStatusEditValue.includes(
+                  row.processStatus as number,
+                ),
+              auth: ['oa:project-initiation-bill:update'],
+              onClick: handleEdit.bind(null, row),
+            },
+            {
               label: $t('common.delete'),
               type: 'link',
               danger: true,
@@ -195,15 +219,10 @@ onActivated(() => {
               },
             },
             {
-              label: $t('common.delete'),
+              label: $t('common.detail'),
               type: 'link',
-              danger: true,
-              ifShow: () =>
-                !BpmProcessInstanceStatusEditValue.includes(
-                  row.processStatus as number,
-                ),
-              disabled: true,
-              auth: ['oa:project-initiation-bill:delete'],
+              icon: ACTION_ICON.VIEW,
+              onClick: handleDetail.bind(null, row),
             },
           ]"
         />

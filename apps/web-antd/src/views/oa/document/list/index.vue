@@ -23,9 +23,10 @@ import {
   exportDocumentDispatchBill,
   getDocumentDispatchBillPage,
 } from '#/api/oa/document';
+import { getSimpleDeptList } from '#/api/system/dept';
 import { $t } from '#/locales';
 
-import { useGridColumns, useGridFormSchema } from './data';
+import { cachedDeptList, useGridColumns, useGridFormSchema } from './data';
 
 const userStore = useUserStore();
 const router = useRouter();
@@ -39,6 +40,13 @@ function handleCreate() {
   router.push({
     path: '/oa/document-dispatch-info',
     query: { t: Date.now() },
+  });
+}
+
+function handleDetail(row: DocumentDispatchBillApi.DocumentDispatchBill) {
+  router.push({
+    path: '/oa/document-dispatch-info',
+    query: { id: row.id },
   });
 }
 
@@ -138,7 +146,16 @@ const [Grid, gridApi] = useVbenVxeGrid({
   },
 });
 
-onActivated(() => {
+onActivated(async () => {
+  // 首次进入时加载部门列表，用于主送部门 ID→名称映射
+  if (cachedDeptList.length === 0) {
+    try {
+      const data = await getSimpleDeptList();
+      cachedDeptList.push(...((data as Array<{ id: number; name: string }>) || []));
+    } catch {
+      // 静默失败
+    }
+  }
   onRefresh();
 });
 </script>
@@ -150,7 +167,7 @@ onActivated(() => {
         <TableAction
           :actions="[
             {
-              label: $t('ui.actionTitle.create'),
+              label: '新增公文发文',
               type: 'primary',
               icon: ACTION_ICON.ADD,
               auth: ['oa:document-dispatch-bill:create'],
@@ -178,6 +195,12 @@ onActivated(() => {
       <template #actions="{ row }">
         <TableAction
           :actions="[
+            {
+              label: $t('common.detail'),
+              type: 'link',
+              icon: ACTION_ICON.VIEW,
+              onClick: handleDetail.bind(null, row),
+            },
             {
               label: $t('common.delete'),
               type: 'link',

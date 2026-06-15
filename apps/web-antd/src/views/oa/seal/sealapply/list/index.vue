@@ -40,9 +40,19 @@ function onRefresh() {
 /** 新增用印申请单 */
 function handleCreate() {
   router.push({
-    path: '/oa/seal/seal-apply-info',
+    path: '/seal/seal-apply-info',
     query: {
       t: Date.now(), // 添加时间戳作为随机串
+    },
+  });
+}
+
+/** 查看用印申请单详情 */
+function handleDetail(row: SealApplyBillApi.SealApplyBill) {
+  router.push({
+    path: '/seal/seal-apply-info',
+    query: {
+      id: row.id,
     },
   });
 }
@@ -143,7 +153,6 @@ const [Grid, gridApi] = useVbenVxeGrid({
             pageNo: page.currentPage,
             pageSize: page.pageSize,
             ...formValues,
-            companyId: userStore.userInfo?.companyId,
             creator: userStore.userInfo?.id,
           });
         },
@@ -205,6 +214,12 @@ onActivated(() => {
       <template #actions="{ row }">
         <TableAction
           :actions="[
+            {
+              label: $t('common.detail'),
+              type: 'link',
+              icon: ACTION_ICON.VIEW,
+              onClick: handleDetail.bind(null, row),
+            },
             {
               label: $t('common.delete'),
               type: 'link',

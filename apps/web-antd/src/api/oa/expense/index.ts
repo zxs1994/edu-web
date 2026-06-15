@@ -1,24 +1,33 @@
 import type { PageParam, PageResult } from '@vben/request';
 import type { AttachmentApi } from '#/api/common/attachment';
+import type { TravelApplyBillApi } from '#/api/oa/travel';
 
 import { requestClient } from '#/api/request';
 
 export namespace ExpenseReimburseBillApi {
+  export interface ExpenseReimburseDetail {
+    id?: number;
+    billId?: number;
+    expenseType: string;
+    expenseDate: string;
+    departure: string;
+    destination: string;
+    amount: number;
+    description: string;
+    sortOrder?: number;
+    rowKey?: string;
+    createTime?: Date;
+  }
+
   export interface ExpenseReimburseBill {
     id?: number;
     billCode: string;
     processInstanceId?: string;
     processStatus?: number;
-    expenseType: number;
+    travelBillCode?: string;
+    travelCause?: string;
     totalAmount: number;
-    expenseDate: string;
-    expenseDescription: string;
-    paymentMethod: number;
-    bankAccount: string;
-    bankName: string;
-    isLargeAmount: number;
-    largeAmountRemark: string;
-    cause: string;
+    paymentStatus?: number;
     creator?: number;
     creatorName?: string;
     companyId: number;
@@ -27,14 +36,15 @@ export namespace ExpenseReimburseBillApi {
     deptName: string;
     remark?: string;
     createTime?: Date;
+    details?: ExpenseReimburseDetail[];
     attachments?: AttachmentApi.AttachmentSaveReq[];
+    travelBills?: TravelApplyBillApi.TravelApplyBill[];
   }
 
   export interface ExpenseReimburseBillPageReqVO extends PageParam {
     billCode?: string;
     processStatus?: number;
-    expenseType?: number;
-    isLargeAmount?: number;
+    deptName?: string;
     createTime?: Date[];
   }
 }

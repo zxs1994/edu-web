@@ -89,7 +89,7 @@ export function useGridColumns(): VxeTableGridOptions<CarReturnBillApi.CarReturn
     createRouterLinkColumn({
       field: 'billCode',
       title: '单据编号',
-      path: '/oa/car/car-return-info',
+      path: '/car/car-return-info',
       idField: 'id',
       queryParam: 'id',
     }),
@@ -153,13 +153,6 @@ export function useGridColumns(): VxeTableGridOptions<CarReturnBillApi.CarReturn
       align: 'left',
     },
     {
-      field: 'companyName',
-      title: '公司名称',
-      minWidth: 120,
-      headerAlign: 'center',
-      align: 'left',
-    },
-    {
       field: 'createTime',
       title: '创建时间',
       minWidth: 140,
@@ -169,7 +162,7 @@ export function useGridColumns(): VxeTableGridOptions<CarReturnBillApi.CarReturn
     },
     {
       title: '操作',
-      width: 100,
+      width: 150,
       fixed: 'right',
       headerAlign: 'center',
       slots: { default: 'actions' },

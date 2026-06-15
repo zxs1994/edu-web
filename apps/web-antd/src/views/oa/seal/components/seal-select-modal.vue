@@ -44,7 +44,7 @@ const [Grid] = useVbenVxeGrid({
           const queryParams = {
             pageNo: page.currentPage,
             pageSize: page.pageSize,
-            status: 0, // 只显示在库状态的印章
+            statusNe: 1, // 排除停用状态的印章
             ...formValues,
           };
           return await getSealPage(queryParams);

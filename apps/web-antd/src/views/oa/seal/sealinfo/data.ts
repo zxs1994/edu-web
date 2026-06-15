@@ -5,51 +5,13 @@ import type { SealApi } from '#/api/oa/seal/sealinfo';
 import { getSimpleUserList } from '#/api/system/user';
 import { DICT_TYPE } from '@vben/constants';
 import { getDictOptions } from '@vben/hooks';
-import { handleTree } from '@vben/utils';
 
-import { getCompanyList } from '#/api/system/dept';
 
 /** 新增/修改的表单 */
 export function useFormSchema(): VbenFormSchema[] {
   return [
     {
       fieldName: 'id',
-      component: 'Input',
-      dependencies: {
-        triggerFields: [''],
-        show: () => false,
-      },
-    },
-    {
-      fieldName: 'companyId',
-      label: '所属公司',
-      component: 'ApiTreeSelect',
-      componentProps: (values, formApi) => ({
-        allowClear: true,
-        api: async () => {
-          const data = await getCompanyList();
-          return handleTree(data);
-        },
-        labelField: 'name',
-        valueField: 'id',
-        childrenField: 'children',
-        placeholder: '请选择公司',
-        treeDefaultExpandAll: true,
-        onChange: (value: any, option: any) => {
-          if (value && option) {
-            // 选择了公司，设置公司名称
-            formApi.setFieldValue('companyName', option[0]);
-          } else {
-            // 清空选择，清空公司名称
-            formApi.setFieldValue('companyName', '');
-          }
-        },
-      }),
-      rules: 'selectRequired',
-    },
-    {
-      fieldName: 'companyName',
-      label: '公司名称',
       component: 'Input',
       dependencies: {
         triggerFields: [''],
@@ -189,11 +151,6 @@ export function useFormSchema(): VbenFormSchema[] {
       },
     },
     {
-      fieldName: 'picUrl',
-      label: '上传照片',
-      component: 'ImageUpload',
-    },
-    {
       fieldName: 'sort',
       label: '显示顺序',
       component: 'Input',
@@ -217,23 +174,6 @@ export function useFormSchema(): VbenFormSchema[] {
 /** 列表的搜索表单 */
 export function useGridFormSchema(): VbenFormSchema[] {
   return [
-    {
-      fieldName: 'companyId',
-      label: '所属公司',
-      component: 'ApiTreeSelect',
-      componentProps: {
-        allowClear: true,
-        api: async () => {
-          const data = await getCompanyList();
-          return handleTree(data);
-        },
-        labelField: 'name',
-        valueField: 'id',
-        childrenField: 'children',
-        placeholder: '请选择公司',
-        treeDefaultExpandAll: true,
-      },
-    },
     {
       fieldName: 'sealNo',
       label: '印章编号',
@@ -319,16 +259,6 @@ export function useGridColumns(): VxeTableGridOptions<SealApi.Seal>['columns'] {
   return [
     { type: 'checkbox', width: 40 },
     {
-      field: 'companyId',
-      title: '公司ID',
-      minWidth: 120,
-    },
-    {
-      field: 'companyName',
-      title: '公司名称',
-      minWidth: 120,
-    },
-    {
       field: 'sealNo',
       title: '印章编号',
       minWidth: 120,
@@ -345,14 +275,6 @@ export function useGridColumns(): VxeTableGridOptions<SealApi.Seal>['columns'] {
       cellRender: {
         name: 'CellDict',
         props: { type: DICT_TYPE.OA_SEAL_STATUS },
-      },
-    },
-    {
-      field: 'picUrl',
-      title: '印章照片',
-      minWidth: 120,
-      cellRender: {
-        name: 'CellImage',
       },
     },
     {

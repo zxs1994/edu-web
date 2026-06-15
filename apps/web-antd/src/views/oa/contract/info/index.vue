@@ -152,7 +152,7 @@ async function loadData() {
       creator: userStore.userInfo?.id,
       creatorName: userStore.userInfo?.nickname,
       companyId: userStore.userInfo?.companyId || 0,
-      companyName: userStore.userInfo?.companyName || '',
+      companyName: userStore.userInfo?.companyName || '中国引航协会',
       deptId: userStore.userInfo?.deptId || 0,
       deptName: userStore.userInfo?.deptName || '',
       processStatus: BpmProcessInstanceStatus.NOT_START,

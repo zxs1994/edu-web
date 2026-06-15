@@ -4,51 +4,12 @@ import type { CarApi } from '#/api/oa/car/carinfo';
 
 import { DICT_TYPE } from '@vben/constants';
 import { getDictOptions } from '@vben/hooks';
-import { handleTree } from '@vben/utils';
-
-import { getCompanyList } from '#/api/system/dept';
 
 /** 新增/修改的表单 */
 export function useFormSchema(): VbenFormSchema[] {
   return [
     {
       fieldName: 'id',
-      component: 'Input',
-      dependencies: {
-        triggerFields: [''],
-        show: () => false,
-      },
-    },
-    {
-      fieldName: 'companyId',
-      label: '所属公司',
-      component: 'ApiTreeSelect',
-      componentProps: (values, formApi) => ({
-        allowClear: true,
-        api: async () => {
-          const data = await getCompanyList();
-          return handleTree(data);
-        },
-        labelField: 'name',
-        valueField: 'id',
-        childrenField: 'children',
-        placeholder: '请选择公司',
-        treeDefaultExpandAll: true,
-        onChange: (value: any, option: any) => {
-          if (value && option) {
-            // 选择了公司，设置公司名称
-            formApi.setFieldValue('companyName', option[0]);
-          } else {
-            // 清空选择，清空公司名称
-            formApi.setFieldValue('companyName', '');
-          }
-        },
-      }),
-      rules: 'selectRequired',
-    },
-    {
-      fieldName: 'companyName',
-      label: '公司名称',
       component: 'Input',
       dependencies: {
         triggerFields: [''],
@@ -120,16 +81,6 @@ export function useFormSchema(): VbenFormSchema[] {
       },
     },
     {
-      fieldName: 'barePrice',
-      label: '裸车价',
-      component: 'InputAmount',
-      componentProps: {
-        placeholder: '请输入裸车价',
-        showUnit: false,
-        precision: 2,
-      },
-    },
-    {
       fieldName: 'forceInsuranceDate',
       label: '交强险到期日期',
       component: 'DatePicker',
@@ -157,11 +108,6 @@ export function useFormSchema(): VbenFormSchema[] {
       },
     },
     {
-      fieldName: 'picUrl',
-      label: '上传照片',
-      component: 'ImageUpload',
-    },
-    {
       fieldName: 'sort',
       label: '显示顺序',
       component: 'Input',
@@ -185,23 +131,6 @@ export function useFormSchema(): VbenFormSchema[] {
 /** 列表的搜索表单 */
 export function useGridFormSchema(): VbenFormSchema[] {
   return [
-    {
-      fieldName: 'companyId',
-      label: '所属公司',
-      component: 'ApiTreeSelect',
-      componentProps: {
-        allowClear: true,
-        api: async () => {
-          const data = await getCompanyList();
-          return handleTree(data);
-        },
-        labelField: 'name',
-        valueField: 'id',
-        childrenField: 'children',
-        placeholder: '请选择公司',
-        treeDefaultExpandAll: true,
-      },
-    },
     {
       fieldName: 'carNo',
       label: '车牌号',
@@ -288,16 +217,6 @@ export function useGridColumns(): VxeTableGridOptions<CarApi.Car>['columns'] {
   return [
     { type: 'checkbox', width: 40 },
     {
-      field: 'companyId',
-      title: '公司ID',
-      minWidth: 120,
-    },
-    {
-      field: 'companyName',
-      title: '公司名称',
-      minWidth: 120,
-    },
-    {
       field: 'carNo',
       title: '车牌号',
       minWidth: 120,
@@ -314,14 +233,6 @@ export function useGridColumns(): VxeTableGridOptions<CarApi.Car>['columns'] {
       cellRender: {
         name: 'CellDict',
         props: { type: DICT_TYPE.OA_CAR_USE_STATUS },
-      },
-    },
-    {
-      field: 'picUrl',
-      title: '车辆照片',
-      minWidth: 120,
-      cellRender: {
-        name: 'CellImage',
       },
     },
     {
@@ -351,14 +262,6 @@ export function useGridColumns(): VxeTableGridOptions<CarApi.Car>['columns'] {
       field: 'seatNum',
       title: '车座',
       minWidth: 120,
-    },
-    {
-      field: 'barePrice',
-      title: '裸车价',
-      minWidth: 120,
-      headerAlign: 'center',
-      align: 'right',
-      formatter: 'formatAmount',
     },
     {
       field: 'forceInsuranceDate',

@@ -157,7 +157,6 @@ async function loadData() {
       deptName: userStore.userInfo?.deptName || '',
       processStatus: BpmProcessInstanceStatus.NOT_START,
       createTime: new Date(),
-      isMajor: 0,
       billCode: '',
       attachments: [],
     };
@@ -216,7 +215,7 @@ onMounted(() => {
       ref="basicFormRef"
       :header-data="{
         ...formData,
-        billName: '项目立项单',
+        billName: '项目立项',
       }"
       :form-data="formData"
       :form-schema="formSchema"

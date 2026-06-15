@@ -6,19 +6,24 @@ import { requestClient } from '#/api/request';
 export namespace DocumentDispatchBillApi {
   export interface DocumentDispatchBill {
     id?: number;
-    billCode: string;
+    billCode?: string;
     processInstanceId?: string;
     processStatus?: number;
     docTitle: string;
-    docNumber: string;
-    docType: number;
-    urgencyLevel: number;
-    docContent: string;
-    recipients: string;
-    ccList: string;
-    isImportant: number;
-    cause: string;
-    creator?: number;
+    docNumber?: string;
+    secrecyLevel?: number;
+    templateId?: number;
+    docNumberPrefix?: string;
+    docNumberYear?: number;
+    docNumberSerial?: number;
+    urgencyLevel?: number;
+    disclosureCategory?: number;
+    issueDate?: string;
+    mainRecipients?: string;
+    ccDepartments?: string;
+    signer?: string;
+    docContent?: string;
+    creator?: string;
     creatorName?: string;
     companyId: number;
     companyName: string;
@@ -32,9 +37,10 @@ export namespace DocumentDispatchBillApi {
   export interface DocumentDispatchBillPageReqVO extends PageParam {
     billCode?: string;
     processStatus?: number;
-    docType?: number;
+    docTitle?: string;
+    docNumber?: string;
+    secrecyLevel?: number;
     urgencyLevel?: number;
-    isImportant?: number;
     createTime?: Date[];
   }
 }

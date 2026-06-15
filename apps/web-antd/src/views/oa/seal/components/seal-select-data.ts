@@ -12,23 +12,6 @@ import { getDictOptions } from '@vben/hooks';
 export function useSealSelectFormSchema(): VbenFormSchema[] {
   return [
     {
-      fieldName: 'companyId',
-      label: '所属公司',
-      component: 'ApiTreeSelect',
-      componentProps: {
-        allowClear: true,
-        placeholder: '请选择所属公司',
-        api: async () => {
-          const data = await getCompanyList();
-          return handleTree(data, 'id');
-        },
-        fieldNames: {
-          label: 'name',
-          value: 'id',
-        },
-      },
-    },
-    {
       fieldName: 'sealNo',
       label: '印章编号',
       component: 'Input',
@@ -54,16 +37,6 @@ export function useSealSelectFormSchema(): VbenFormSchema[] {
         allowClear: true,
         options: getDictOptions(DICT_TYPE.OA_SEAL_TYPE, 'number'),
         placeholder: '请选择印章类型',
-      },
-    },
-    {
-      fieldName: 'status',
-      label: '状态',
-      component: 'Select',
-      componentProps: {
-        allowClear: true,
-        options: getDictOptions(DICT_TYPE.OA_SEAL_STATUS, 'number'),
-        placeholder: '请选择状态',
       },
     },
   ];
@@ -99,8 +72,8 @@ export function useSealSelectColumns(): VxeGridProps['columns'] {
       },
     },
     {
-      title: '所属公司',
-      field: 'companyName',
+      title: '所属部门',
+      field: 'keeperDeptName',
       width: 200,
     },
     {

@@ -150,7 +150,7 @@ export function useGridColumns(): VxeTableGridOptions<SealApplyBillApi.SealApply
     createRouterLinkColumn({
       field: 'billCode',
       title: '单据编号',
-      path: '/oa/seal/seal-apply-info',
+      path: '/seal/seal-apply-info',
       idField: 'id',
       queryParam: 'id',
     }),
@@ -237,11 +237,6 @@ export function useGridColumns(): VxeTableGridOptions<SealApplyBillApi.SealApply
       minWidth: 120,
     },
     {
-      field: 'companyName',
-      title: '所属公司',
-      minWidth: 120,
-    },
-    {
       field: 'createTime',
       title: '创建时间',
       minWidth: 140,
@@ -249,7 +244,7 @@ export function useGridColumns(): VxeTableGridOptions<SealApplyBillApi.SealApply
     },
     {
       title: '操作',
-      width: 100,
+      width: 150,
       fixed: 'right',
       slots: { default: 'actions' },
     },

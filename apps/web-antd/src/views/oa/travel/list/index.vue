@@ -42,6 +42,13 @@ function handleCreate() {
   });
 }
 
+function handleDetail(row: TravelApplyBillApi.TravelApplyBill) {
+  router.push({
+    path: '/oa/travel-apply-info',
+    query: { id: row.id },
+  });
+}
+
 async function handleDelete(row: TravelApplyBillApi.TravelApplyBill) {
   const hideLoading = message.loading({
     content: $t('ui.actionMessage.deleting', [row.id]),
@@ -176,6 +183,12 @@ onActivated(() => {
       <template #actions="{ row }">
         <TableAction
           :actions="[
+            {
+              label: $t('common.detail'),
+              type: 'link',
+              icon: ACTION_ICON.VIEW,
+              onClick: () => handleDetail(row),
+            },
             {
               label: $t('common.delete'),
               type: 'link',

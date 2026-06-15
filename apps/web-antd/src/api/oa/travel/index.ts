@@ -4,23 +4,32 @@ import type { AttachmentApi } from '#/api/common/attachment';
 import { requestClient } from '#/api/request';
 
 export namespace TravelApplyBillApi {
+  export interface TravelItinerary {
+    id?: number;
+    billId?: number;
+    departureCity: string;
+    destinationCity: string;
+    startDate: string;
+    endDate: string;
+    transportType: number;
+    remark?: string;
+    sortOrder?: number;
+    rowKey?: string;
+    createTime?: Date;
+  }
+
   export interface TravelApplyBill {
     id?: number;
     billCode: string;
     processInstanceId?: string;
     processStatus?: number;
-    destination: string;
+    cause: string;
     travelStartDate: string;
     travelEndDate: string;
     travelDays: number;
-    transportType: number;
-    accommodationType: number;
-    budgetAmount: number;
-    budgetDetail: string;
-    travelMembers: string;
-    isOverseas: number;
-    overseasRemark: string;
-    cause: string;
+    companion: string;
+    estimatedCost: number;
+    reimbursementStatus?: number;
     creator?: number;
     creatorName?: string;
     companyId: number;
@@ -29,14 +38,14 @@ export namespace TravelApplyBillApi {
     deptName: string;
     remark?: string;
     createTime?: Date;
+    itineraries?: TravelItinerary[];
     attachments?: AttachmentApi.AttachmentSaveReq[];
   }
 
   export interface TravelApplyBillPageReqVO extends PageParam {
     billCode?: string;
     processStatus?: number;
-    isOverseas?: number;
-    transportType?: number;
+    deptName?: string;
     createTime?: Date[];
   }
 }

@@ -11,30 +11,40 @@ export namespace ProjectInitiationBillApi {
     processStatus?: number;
     projectName: string;
     projectType: number;
-    projectDescription: string;
-    budgetAmount: number;
-    startDate: string;
-    endDate: string;
-    expectedOutcome: string;
-    isMajor: number;
-    majorRemark: string;
-    cause: string;
-    creator?: number;
+    priority?: number;
+    projectCategory?: number;
+    projectSetId?: number;
+    projectSetName?: string;
+    projectDescription?: string;
+    budgetAmount?: number;
+    startDate?: string;
+    endDate?: string;
+    relatedContractId?: number;
+    contractCode?: string;
+    contractName?: string;
+    projectManagerId?: number;
+    projectManagerName?: string;
+    counterpartyType?: number;
+    counterpartyId?: number;
+    counterpartyName?: string;
+    counterpartyContact?: string;
+    counterpartyPhone?: string;
+    creator?: number | string;
     creatorName?: string;
     companyId: number;
     companyName: string;
     deptId: number;
     deptName: string;
     remark?: string;
-    createTime?: Date;
+    createTime?: Date | string;
     attachments?: AttachmentApi.AttachmentSaveReq[];
   }
 
   export interface ProjectInitiationBillPageReqVO extends PageParam {
     billCode?: string;
-    processStatus?: number;
+    projectName?: string;
     projectType?: number;
-    isMajor?: number;
+    processStatus?: number;
     createTime?: Date[];
   }
 }

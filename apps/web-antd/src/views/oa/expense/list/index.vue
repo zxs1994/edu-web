@@ -6,7 +6,10 @@ import { onActivated, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
-import { BpmProcessInstanceStatusEditValue } from '@vben/constants';
+import {
+  BpmProcessInstanceStatus,
+  BpmProcessInstanceStatusEditValue,
+} from '@vben/constants';
 import { useUserStore } from '@vben/stores';
 import { downloadFileFromBlobPart, isEmpty } from '@vben/utils';
 
@@ -22,6 +25,7 @@ import {
   deleteExpenseReimburseBillList,
   exportExpenseReimburseBill,
   getExpenseReimburseBillPage,
+  updateExpenseReimburseBill,
 } from '#/api/oa/expense';
 import { $t } from '#/locales';
 
@@ -106,7 +110,40 @@ async function handleExport() {
   const data = await exportExpenseReimburseBill(
     await gridApi.formApi.getValues(),
   );
-  downloadFileFromBlobPart({ fileName: '费用报销.xls', source: data });
+  downloadFileFromBlobPart({ fileName: '差旅报销单.xls', source: data });
+}
+
+function handleDetail(row: ExpenseReimburseBillApi.ExpenseReimburseBill) {
+  router.push({
+    path: '/oa/expense-reimburse-info',
+    query: { id: row.id },
+  });
+}
+
+async function handleMarkPaid(row: ExpenseReimburseBillApi.ExpenseReimburseBill) {
+  const hideLoading = message.loading({
+    content: '正在更新支付状态...',
+    key: 'action_key_msg',
+  });
+  try {
+    await updateExpenseReimburseBill({
+      id: row.id,
+      billCode: row.billCode,
+      totalAmount: row.totalAmount,
+      paymentStatus: 1,
+      companyId: row.companyId,
+      companyName: row.companyName,
+      deptId: row.deptId,
+      deptName: row.deptName,
+    });
+    message.success({
+      content: '已标记为已支付',
+      key: 'action_key_msg',
+    });
+    onRefresh();
+  } finally {
+    hideLoading();
+  }
 }
 
 const [Grid, gridApi] = useVbenVxeGrid({
@@ -147,7 +184,7 @@ onActivated(() => {
 
 <template>
   <Page auto-content-height>
-    <Grid table-title="费用报销列表">
+    <Grid table-title="差旅报销单列表">
       <template #toolbar-tools>
         <TableAction
           :actions="[
@@ -180,6 +217,23 @@ onActivated(() => {
       <template #actions="{ row }">
         <TableAction
           :actions="[
+            {
+              label: $t('common.detail'),
+              type: 'link',
+              icon: ACTION_ICON.VIEW,
+              onClick: handleDetail.bind(null, row),
+            },
+            {
+              label: '已支付',
+              type: 'link',
+              ifShow: () =>
+                row.paymentStatus !== 1 &&
+                row.processStatus === BpmProcessInstanceStatus.APPROVE,
+              popConfirm: {
+                title: `确认将 ${row.billCode} 标记为已支付？`,
+                confirm: handleMarkPaid.bind(null, row),
+              },
+            },
             {
               label: $t('common.delete'),
               type: 'link',
