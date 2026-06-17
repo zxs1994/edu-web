@@ -48,6 +48,23 @@ async function generateAccessible(
           (item) => item.name === route.name,
         );
         if (index !== undefined && index !== -1 && root.children) {
+          // 合并已有路由的子路由，避免静态模块路由中定义的子路由（如 BpmModelCreate、BpmModelUpdate）被动态路由覆盖后丢失
+          const existingRoute = root.children[index];
+          if (
+            existingRoute.children?.length &&
+            route.children !== undefined
+          ) {
+            const newChildNames = new Set(
+              route.children
+                .map((c: RouteRecordRaw) => c.name)
+                .filter(Boolean),
+            );
+            for (const child of existingRoute.children) {
+              if (child.name && !newChildNames.has(child.name)) {
+                route.children.push(child);
+              }
+            }
+          }
           root.children[index] = route;
         }
       } else {

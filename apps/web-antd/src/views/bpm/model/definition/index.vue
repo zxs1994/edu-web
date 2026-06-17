@@ -90,7 +90,7 @@ onMounted(() => {
 <template>
   <Page auto-content-height>
     <FormCreateDetailModal />
-    <Grid table-title="流程定义列表">
+    <Grid>
       <template #startUsers="{ row }">
         <template v-if="!row.startUsers || row.startUsers.length === 0">
           全部可见

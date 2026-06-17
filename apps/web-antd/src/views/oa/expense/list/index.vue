@@ -39,12 +39,15 @@ function onRefresh() {
   gridApi.query();
 }
 
-function handleCreate() {
+/* function handleCreate(billType: number) {
+  const path = billType === 1
+    ? '/oa/expense-travel/daily-expense-info'
+    : '/oa/expense-travel/expense-reimburse-info';
   router.push({
-    path: '/oa/expense-reimburse-info',
+    path,
     query: { t: Date.now() },
   });
-}
+} */
 
 async function handleDelete(
   row: ExpenseReimburseBillApi.ExpenseReimburseBill,
@@ -110,12 +113,15 @@ async function handleExport() {
   const data = await exportExpenseReimburseBill(
     await gridApi.formApi.getValues(),
   );
-  downloadFileFromBlobPart({ fileName: '差旅报销单.xls', source: data });
+  downloadFileFromBlobPart({ fileName: '报销单.xls', source: data });
 }
 
 function handleDetail(row: ExpenseReimburseBillApi.ExpenseReimburseBill) {
+  const path = row.billType === 1
+    ? '/oa/expense-travel/daily-expense-info'
+    : '/oa/expense-travel/expense-reimburse-info';
   router.push({
-    path: '/oa/expense-reimburse-info',
+    path,
     query: { id: row.id },
   });
 }
@@ -184,17 +190,24 @@ onActivated(() => {
 
 <template>
   <Page auto-content-height>
-    <Grid table-title="差旅报销单列表">
+    <Grid>
       <template #toolbar-tools>
         <TableAction
           :actions="[
-            {
-              label: $t('ui.actionTitle.create'),
+            /* {
+              label: '新增差旅报销',
               type: 'primary',
               icon: ACTION_ICON.ADD,
               auth: ['oa:expense-reimburse-bill:create'],
-              onClick: handleCreate,
+              onClick: () => handleCreate(2),
             },
+            {
+              label: '新增日常报销',
+              type: 'primary',
+              icon: ACTION_ICON.ADD,
+              auth: ['oa:expense-reimburse-bill:create'],
+              onClick: () => handleCreate(1),
+            }, */
             {
               label: $t('ui.actionTitle.export'),
               type: 'primary',

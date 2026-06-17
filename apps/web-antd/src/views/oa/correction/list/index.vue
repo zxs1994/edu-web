@@ -3,7 +3,7 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { CorrectionBillApi } from '#/api/oa/correction';
 
 import { onActivated } from 'vue';
-import { useRouter } from 'vue-router';
+// import { useRouter } from 'vue-router'; // 新增按钮已注释，暂不需要
 
 import { Page } from '@vben/common-ui';
 import { useUserStore } from '@vben/stores';
@@ -27,19 +27,19 @@ import { $t } from '#/locales';
 import { useGridColumns, useGridFormSchema } from './data';
 
 const userStore = useUserStore();
-const router = useRouter();
+// const router = useRouter(); // 新增按钮已注释，暂不需要
 defineOptions({ name: 'OaCorrectionBillList' });
 
 function onRefresh() {
   gridApi.query();
 }
 
-function handleCreate() {
+/* function handleCreate() {
   router.push({
     path: '/oa/correction/correction-info',
     query: { t: Date.now() },
   });
-}
+} */
 
 async function handleFreeze(row: CorrectionBillApi.CorrectionBill) {
   const hideLoading = message.loading({
@@ -108,17 +108,17 @@ onActivated(() => {
 
 <template>
   <Page auto-content-height>
-    <Grid table-title="纠错管理列表">
+    <Grid>
       <template #toolbar-tools>
         <TableAction
           :actions="[
-            {
+            /* {
               label: $t('ui.actionTitle.create'),
               type: 'primary',
               icon: ACTION_ICON.ADD,
               auth: ['oa:correction-bill:create'],
               onClick: handleCreate,
-            },
+            }, */
             {
               label: $t('ui.actionTitle.export'),
               type: 'primary',

@@ -61,7 +61,7 @@ const [Grid] = useVbenVxeGrid({
 <template>
   <Page auto-content-height>
 
-    <Grid table-title="抄送任务">
+    <Grid>
       <template #actions="{ row }">
         <TableAction
           :actions="[

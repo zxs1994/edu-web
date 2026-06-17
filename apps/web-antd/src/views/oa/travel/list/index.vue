@@ -35,16 +35,16 @@ function onRefresh() {
   gridApi.query();
 }
 
-function handleCreate() {
+/* function handleCreate() {
   router.push({
-    path: '/oa/travel-apply-info',
+    path: '/oa/expense-travel/travel-apply-info',
     query: { t: Date.now() },
   });
-}
+} */
 
 function handleDetail(row: TravelApplyBillApi.TravelApplyBill) {
   router.push({
-    path: '/oa/travel-apply-info',
+    path: '/oa/expense-travel/travel-apply-info',
     query: { id: row.id },
   });
 }
@@ -150,17 +150,17 @@ onActivated(() => {
 
 <template>
   <Page auto-content-height>
-    <Grid table-title="差旅申请列表">
+    <Grid>
       <template #toolbar-tools>
         <TableAction
           :actions="[
-            {
+            /* {
               label: $t('ui.actionTitle.create'),
               type: 'primary',
               icon: ACTION_ICON.ADD,
               auth: ['oa:travel-apply-bill:create'],
               onClick: handleCreate,
-            },
+            }, */
             {
               label: $t('ui.actionTitle.export'),
               type: 'primary',

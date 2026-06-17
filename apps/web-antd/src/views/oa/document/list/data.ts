@@ -55,7 +55,7 @@ export function useGridColumns(): VxeTableGridOptions<DocumentDispatchBillApi.Do
     createRouterLinkColumn({
       field: 'billCode',
       title: '单据编号',
-      path: '/oa/document-dispatch-info',
+      path: '/oa/document/document-dispatch-info',
       idField: 'id',
       queryParam: 'id',
     }),

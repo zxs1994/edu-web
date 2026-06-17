@@ -3,8 +3,8 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { ExpenseReimburseBillApi } from '#/api/oa/expense';
 import type { TravelApplyBillApi } from '#/api/oa/travel';
 
-import { computed, nextTick, onMounted, ref, shallowRef } from 'vue';
-import { useRoute } from 'vue-router';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
+import { onBeforeRouteLeave, useRoute } from 'vue-router';
 
 import { Loading } from '@vben/common-ui';
 import {
@@ -12,6 +12,7 @@ import {
   BpmProcessInstanceStatusEditValue,
 } from '@vben/constants';
 import { useTabs } from '@vben/hooks';
+import { preferences, updatePreferences } from '@vben/preferences';
 import { useUserStore } from '@vben/stores';
 
 import { Alert, Button, message, Table } from 'ant-design-vue';
@@ -194,6 +195,7 @@ async function loadData() {
       processStatus: BpmProcessInstanceStatus.NOT_START,
       createTime: new Date(),
       paymentStatus: 0,
+      billType: 2,
       billCode: '',
       details: [],
       attachments: [],
@@ -335,8 +337,24 @@ defineExpose({
 });
 
 onMounted(() => {
+  // 从发起流程进入时，隐藏侧边栏
+  if (route.query.from === 'startProcess') {
+    updatePreferences({ sidebar: { hidden: true } });
+  }
   initFormSchema();
   loadData();
+});
+
+onBeforeUnmount(() => {
+  if (preferences.sidebar.hidden) {
+    updatePreferences({ sidebar: { hidden: false } });
+  }
+});
+
+onBeforeRouteLeave(() => {
+  if (preferences.sidebar.hidden) {
+    updatePreferences({ sidebar: { hidden: false } });
+  }
 });
 </script>
 

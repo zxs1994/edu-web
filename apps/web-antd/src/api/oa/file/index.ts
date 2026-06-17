@@ -227,7 +227,7 @@ export function checkFilePermission(fileId: number) {
 
 /** 导出文件信息 */
 export function exportFileInfo(params: any) {
-  return requestClient.download('/oa/file/export-excel', params);
+  return requestClient.download('/oa/file/export-excel', { params });
 }
 
 // ==================== 文件存储统计相关接口 ====================

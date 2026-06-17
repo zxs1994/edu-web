@@ -75,7 +75,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
 
 <template>
   <Page auto-content-height>
-    <Grid table-title="已办任务">
+    <Grid>
       <template #actions="{ row }">
         <TableAction
           :actions="[

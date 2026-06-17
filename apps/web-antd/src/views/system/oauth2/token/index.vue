@@ -102,7 +102,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
 <template>
   <Page auto-content-height>
 
-    <Grid table-title="令牌列表">
+    <Grid>
       <template #toolbar-tools>
         <TableAction
           :actions="[

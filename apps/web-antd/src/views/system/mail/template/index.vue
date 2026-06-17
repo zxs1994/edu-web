@@ -144,7 +144,7 @@ onMounted(async () => {
 
     <FormModal @success="handleRefresh" />
     <SendModal />
-    <Grid table-title="邮件模板列表">
+    <Grid>
       <template #toolbar-tools>
         <TableAction
           :actions="[

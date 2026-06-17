@@ -47,7 +47,7 @@ export function useGridColumns(): VxeTableGridOptions<IncomingDocumentBillApi.In
     createRouterLinkColumn({
       field: 'billCode',
       title: '单据编号',
-      path: '/oa/incoming-document-info',
+      path: '/oa/document/incoming-document-info',
       idField: 'id',
       queryParam: 'id',
     }),

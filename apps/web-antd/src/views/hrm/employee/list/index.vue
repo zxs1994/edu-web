@@ -220,7 +220,7 @@ onActivated(() => {
 
 <template>
   <Page auto-content-height>
-    <Grid table-title="员工档案列表">
+    <Grid>
       <template #toolbar-tools>
         <TableAction
           :actions="[

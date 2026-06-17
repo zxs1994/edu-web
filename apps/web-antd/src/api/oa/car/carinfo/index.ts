@@ -54,7 +54,7 @@ export function deleteCarListByIds(ids: number[]) {
 
 /** 导出车辆信息 */
 export function exportCar(params: any) {
-  return requestClient.download('/oa/car/export-excel', params);
+  return requestClient.download('/oa/car/export-excel', { params });
 }
 
 

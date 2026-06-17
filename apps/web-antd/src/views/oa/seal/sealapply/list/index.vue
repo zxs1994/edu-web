@@ -38,14 +38,14 @@ function onRefresh() {
 }
 
 /** 新增用印申请单 */
-function handleCreate() {
+/* function handleCreate() {
   router.push({
     path: '/seal/seal-apply-info',
     query: {
       t: Date.now(), // 添加时间戳作为随机串
     },
   });
-}
+} */
 
 /** 查看用印申请单详情 */
 function handleDetail(row: SealApplyBillApi.SealApplyBill) {
@@ -181,17 +181,17 @@ onActivated(() => {
 
 <template>
   <Page auto-content-height>
-    <Grid table-title="用印申请单列表">
+    <Grid>
       <template #toolbar-tools>
         <TableAction
           :actions="[
-            {
+            /* {
               label: $t('ui.actionTitle.create'),
               type: 'primary',
               icon: ACTION_ICON.ADD,
               auth: ['oa:seal-apply-bill:create'],
               onClick: handleCreate,
-            },
+            }, */
             {
               label: $t('ui.actionTitle.export'),
               type: 'primary',

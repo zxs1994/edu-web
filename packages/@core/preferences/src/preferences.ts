@@ -19,8 +19,12 @@ import { updateCSSVariables } from './update-css-variables';
 const STORAGE_KEYS = {
   MAIN: 'preferences',
   LOCALE: 'preferences-locale',
+  MIGRATION_VERSION: 'migration-version',
   THEME: 'preferences-theme',
 } as const;
+
+// 偏好设置迁移版本号，每次需要强制覆盖旧缓存中的默认值时递增
+const MIGRATION_VERSION = 5;
 
 class PreferenceManager {
   private cache: StorageManager;
@@ -86,6 +90,20 @@ class PreferenceManager {
       cachedPreferences,
       this.initialPreferences,
     );
+
+    // 执行版本迁移，强制覆盖旧缓存中的默认值
+    const cachedVersion =
+      this.cache.getItem<number>(STORAGE_KEYS.MIGRATION_VERSION) ?? 0;
+    if (cachedVersion < MIGRATION_VERSION) {
+      // v1: 默认展开所有菜单
+      if (MIGRATION_VERSION >= 1) {
+        mergedPreference.navigation = {
+          ...mergedPreference.navigation,
+          expandAllMenus: defaultPreferences.navigation.expandAllMenus,
+        };
+      }
+      this.cache.setItem(STORAGE_KEYS.MIGRATION_VERSION, MIGRATION_VERSION);
+    }
 
     // 更新偏好设置
     this.updatePreferences(mergedPreference);

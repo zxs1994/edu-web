@@ -186,7 +186,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
 
     <FormModal @success="handleRefresh" />
     <DetailModal />
-    <Grid table-title="定时任务列表">
+    <Grid>
       <template #toolbar-tools>
         <TableAction
           :actions="[

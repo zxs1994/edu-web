@@ -168,7 +168,7 @@ onActivated(() => {
 
 <template>
   <Page auto-content-height>
-    <Grid table-title="员工离职申请单列表">
+    <Grid>
       <template #toolbar-tools>
         <TableAction
           :actions="[

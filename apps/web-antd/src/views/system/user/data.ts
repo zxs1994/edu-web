@@ -1,6 +1,7 @@
 import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { SystemPostApi } from '#/api/system/post';
+import type { SystemRoleApi } from '#/api/system/role';
 import type { SystemUserApi } from '#/api/system/user';
 
 import { CommonStatusEnum, DICT_TYPE } from '@vben/constants';
@@ -297,9 +298,13 @@ export function useGridColumns(
     row: SystemUserApi.User,
   ) => PromiseLike<boolean | undefined>,
   postList?: SystemPostApi.Post[],
+  roleList?: SystemRoleApi.Role[],
 ): VxeTableGridOptions['columns'] {
   const postMap = new Map(
     (postList ?? []).map((p) => [Number(p.id), p]),
+  );
+  const roleMap = new Map(
+    (roleList ?? []).map((r) => [Number(r.id), r]),
   );
   return [
     { type: 'checkbox', width: 40 },
@@ -338,6 +343,18 @@ export function useGridColumns(
         return post?.sort ?? Number.MAX_SAFE_INTEGER;
       },
     },
+    {
+      field: 'roleIds',
+      title: '角色',
+      minWidth: 140,
+      formatter({ row }) {
+        const ids: (number | string)[] = row.roleIds ?? [];
+        return ids
+          .map((id: number | string) => roleMap.get(Number(id))?.name ?? '')
+          .filter(Boolean)
+          .join('、');
+      },
+    },
     // {
     //   field: 'mobile',
     //   title: '手机号码',
@@ -356,12 +373,6 @@ export function useGridColumns(
           unCheckedValue: CommonStatusEnum.DISABLE,
         },
       },
-    },
-    {
-      field: 'createTime',
-      title: '创建时间',
-      minWidth: 180,
-      formatter: 'formatDateTime',
     },
     {
       title: '操作',

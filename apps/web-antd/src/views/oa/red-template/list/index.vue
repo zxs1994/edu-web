@@ -120,7 +120,7 @@ onActivated(() => {
 <template>
   <Page auto-content-height>
     <FormModal @success="onRefresh" />
-    <Grid table-title="套红模板列表">
+    <Grid>
       <template #toolbar-tools>
         <TableAction
           :actions="[

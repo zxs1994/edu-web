@@ -36,16 +36,16 @@ function onRefresh() {
   gridApi.query();
 }
 
-function handleCreate() {
+/* function handleCreate() {
   router.push({
-    path: '/oa/document-dispatch-info',
+    path: '/oa/document/document-dispatch-info',
     query: { t: Date.now() },
   });
-}
+} */
 
 function handleDetail(row: DocumentDispatchBillApi.DocumentDispatchBill) {
   router.push({
-    path: '/oa/document-dispatch-info',
+    path: '/oa/document/document-dispatch-info',
     query: { id: row.id },
   });
 }
@@ -162,17 +162,17 @@ onActivated(async () => {
 
 <template>
   <Page auto-content-height>
-    <Grid table-title="公文发文列表">
+    <Grid>
       <template #toolbar-tools>
         <TableAction
           :actions="[
-            {
+            /* {
               label: '新增公文发文',
               type: 'primary',
               icon: ACTION_ICON.ADD,
               auth: ['oa:document-dispatch-bill:create'],
               onClick: handleCreate,
-            },
+            }, */
             {
               label: $t('ui.actionTitle.export'),
               type: 'primary',

@@ -220,7 +220,7 @@ onActivated(() => {
 
 <template>
   <Page auto-content-height>
-    <Grid table-title="会议室预定申请单列表">
+    <Grid>
       <template #toolbar-tools>
         <TableAction
           :actions="[

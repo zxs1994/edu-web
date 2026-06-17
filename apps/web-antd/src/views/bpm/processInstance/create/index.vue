@@ -144,6 +144,7 @@ async function handleSelect(
     if (row.formCustomCreatePath) {
       await router.push({
         path: row.formCustomCreatePath,
+        query: { from: 'startProcess' },
       });
     } else {
       message.error('流程定义中未配置业务表单路径');

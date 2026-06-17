@@ -2,8 +2,8 @@
 import type { VbenFormSchema } from '#/adapter/form';
 import type { SealApplyBillApi } from '#/api/oa/seal/sealapply';
 
-import { nextTick, onMounted, ref, shallowRef } from 'vue';
-import { useRoute } from 'vue-router';
+import { nextTick, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
+import { onBeforeRouteLeave, useRoute } from 'vue-router';
 
 import { Loading } from '@vben/common-ui';
 import {
@@ -11,6 +11,7 @@ import {
   BpmProcessInstanceStatusEditValue,
 } from '@vben/constants';
 import { useTabs } from '@vben/hooks';
+import { preferences, updatePreferences } from '@vben/preferences';
 import { useUserStore } from '@vben/stores';
 
 import { Button, message } from 'ant-design-vue';
@@ -309,8 +310,24 @@ defineExpose({
 });
 
 onMounted(() => {
+  // 从发起流程进入时，隐藏侧边栏
+  if (route.query.from === 'startProcess') {
+    updatePreferences({ sidebar: { hidden: true } });
+  }
   initFormSchema();
   loadData();
+});
+
+onBeforeUnmount(() => {
+  if (preferences.sidebar.hidden) {
+    updatePreferences({ sidebar: { hidden: false } });
+  }
+});
+
+onBeforeRouteLeave(() => {
+  if (preferences.sidebar.hidden) {
+    updatePreferences({ sidebar: { hidden: false } });
+  }
 });
 </script>
 

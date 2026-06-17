@@ -132,7 +132,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
 <template>
   <div class="h-full">
     <TypeFormModal @success="handleRefresh" />
-    <Grid table-title="字典类型列表">
+    <Grid>
       <template #toolbar-tools>
         <TableAction
           :actions="[

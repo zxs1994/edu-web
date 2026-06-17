@@ -47,10 +47,17 @@ export function useGridColumns(): VxeTableGridOptions<ExpenseReimburseBillApi.Ex
     createRouterLinkColumn({
       field: 'billCode',
       title: '单据编号',
-      path: '/oa/expense-reimburse-info',
+      path: '/oa/expense-travel/expense-reimburse-info',
       idField: 'id',
       queryParam: 'id',
     }),
+    {
+      field: 'billType',
+      title: '报销类型',
+      width: 100,
+      formatter: ({ cellValue }: { cellValue: number }) =>
+        cellValue === 1 ? '日常报销' : '差旅报销',
+    },
     {
       field: 'processStatus',
       title: '单据状态',

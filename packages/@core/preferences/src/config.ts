@@ -70,7 +70,7 @@ const defaultPreferences: Preferences = {
   navigation: {
     accordion: true,
     showIcon: true,
-    expandAllMenus: false,
+    expandAllMenus: true,
     split: true,
     styleType: 'rounded',
   },

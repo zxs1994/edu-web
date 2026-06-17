@@ -62,7 +62,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
   <Page auto-content-height>
 
     <DetailModal @success="handleRefresh" />
-    <Grid table-title="邮件日志列表">
+    <Grid>
       <template #userInfo="{ row }">
         <div v-if="row.userType && row.userId" class="flex items-center gap-1">
           <DictTag :type="DICT_TYPE.USER_TYPE" :value="row.userType" />

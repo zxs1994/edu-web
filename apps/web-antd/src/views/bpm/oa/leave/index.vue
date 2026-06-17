@@ -136,7 +136,7 @@ onActivated(() => {
 <template>
   <Page auto-content-height>
 
-    <Grid table-title="请假列表">
+    <Grid>
       <template #toolbar-tools>
         <TableAction
           :actions="[

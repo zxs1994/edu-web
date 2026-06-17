@@ -52,6 +52,7 @@ export namespace BpmProcessInstanceApi {
     nickname: string;
     avatar: string;
     deptName?: string;
+    postName?: string;
   }
 
   /** 审批详情 */
@@ -98,6 +99,7 @@ export namespace BpmProcessInstanceApi {
     processInstanceId: string;
     processInstanceName: string;
     processInstanceStartTime: number;
+    readStatus?: number;
     reason: string;
     startUser: User;
     summary: {
@@ -236,4 +238,14 @@ export async function deleteProcessInstance(id: string) {
   return requestClient.delete<boolean>('/bpm/process-instance/delete', {
     params: { id },
   });
+}
+
+/** 获取当前用户的未读抄送数量 */
+export async function getUnreadCopyCount() {
+  return requestClient.get<number>('/bpm/process-instance/copy/unread-count');
+}
+
+/** 将当前用户的所有未读抄送标记为已读 */
+export async function markAllCopyAsRead() {
+  return requestClient.put<boolean>('/bpm/process-instance/copy/mark-all-read');
 }

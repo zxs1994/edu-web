@@ -36,14 +36,14 @@ function onRefresh() {
 }
 
 /** 新增用车申请单 */
-function handleCreate() {
+/* function handleCreate() {
   router.push({
     path: '/car/car-apply-info',
     query: {
       t: Date.now(), // 添加时间戳作为随机串
     },
   });
-}
+} */
 
 /** 查看用车申请单详情 */
 function handleDetail(row: CarApplyBillApi.CarApplyBill) {
@@ -179,17 +179,17 @@ onActivated(() => {
 
 <template>
   <Page auto-content-height>
-    <Grid table-title="用车申请单列表">
+    <Grid>
       <template #toolbar-tools>
         <TableAction
           :actions="[
-            {
+            /* {
               label: $t('ui.actionTitle.create'),
               type: 'primary',
               icon: ACTION_ICON.ADD,
               auth: ['oa:car-apply-bill:create'],
               onClick: handleCreate,
-            },
+            }, */
             {
               label: $t('ui.actionTitle.export'),
               type: 'primary',

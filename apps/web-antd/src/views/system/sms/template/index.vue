@@ -139,7 +139,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
 
     <FormModal @success="handleRefresh" />
     <SendModal />
-    <Grid table-title="短信模板列表">
+    <Grid>
       <template #toolbar-tools>
         <TableAction
           :actions="[

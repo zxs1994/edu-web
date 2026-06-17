@@ -101,7 +101,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
 <template>
   <Page auto-content-height>
 
-    <Grid table-title="流程实例">
+    <Grid>
       <template #tasks="{ row }">
         <template v-if="row.tasks && row.tasks.length > 0">
           <Button

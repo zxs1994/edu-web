@@ -35,16 +35,16 @@ function onRefresh() {
   gridApi.query();
 }
 
-function handleCreate() {
+/* function handleCreate() {
   router.push({
-    path: '/oa/incoming-document-info',
+    path: '/oa/document/incoming-document-info',
     query: { t: Date.now() },
   });
-}
+} */
 
 function handleDetail(row: IncomingDocumentBillApi.IncomingDocumentBill) {
   router.push({
-    path: '/oa/incoming-document-info',
+    path: '/oa/document/incoming-document-info',
     query: { id: row.id },
   });
 }
@@ -154,17 +154,17 @@ onActivated(() => {
 
 <template>
   <Page auto-content-height>
-    <Grid table-title="公文收文列表">
+    <Grid>
       <template #toolbar-tools>
         <TableAction
           :actions="[
-            {
+            /* {
               label: $t('ui.actionTitle.create'),
               type: 'primary',
               icon: ACTION_ICON.ADD,
               auth: ['oa:incoming-document-bill:create'],
               onClick: handleCreate,
-            },
+            }, */
             {
               label: $t('ui.actionTitle.export'),
               type: 'primary',

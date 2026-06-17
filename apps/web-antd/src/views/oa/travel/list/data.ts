@@ -47,7 +47,7 @@ export function useGridColumns(): VxeTableGridOptions<TravelApplyBillApi.TravelA
     createRouterLinkColumn({
       field: 'billCode',
       title: '单据编号',
-      path: '/oa/travel-apply-info',
+      path: '/oa/expense-travel/travel-apply-info',
       idField: 'id',
       queryParam: 'id',
     }),

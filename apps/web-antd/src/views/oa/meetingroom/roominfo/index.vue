@@ -180,7 +180,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
       :show-today-approved="true"
     />
 
-    <Grid table-title="会议室信息列表">
+    <Grid>
       <template #toolbar-tools>
         <TableAction
           :actions="[

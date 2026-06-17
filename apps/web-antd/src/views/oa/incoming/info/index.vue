@@ -2,8 +2,8 @@
 import type { VbenFormSchema } from '#/adapter/form';
 import type { IncomingDocumentBillApi } from '#/api/oa/incoming';
 
-import { nextTick, onMounted, ref, shallowRef } from 'vue';
-import { useRoute } from 'vue-router';
+import { nextTick, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
+import { onBeforeRouteLeave, useRoute } from 'vue-router';
 
 import { Loading } from '@vben/common-ui';
 import {
@@ -12,6 +12,7 @@ import {
 } from '@vben/constants';
 import { useTabs } from '@vben/hooks';
 import { useUserStore } from '@vben/stores';
+import { preferences, updatePreferences } from '@vben/preferences';
 
 import { Button, message } from 'ant-design-vue';
 
@@ -206,8 +207,25 @@ defineExpose({
 });
 
 onMounted(() => {
+  // 从发起流程进入时，隐藏侧边栏
+  if (route.query.from === 'startProcess') {
+    updatePreferences({ sidebar: { hidden: true } });
+  }
+
   initFormSchema();
   loadData();
+});
+
+onBeforeUnmount(() => {
+  if (preferences.sidebar.hidden) {
+    updatePreferences({ sidebar: { hidden: false } });
+  }
+});
+
+onBeforeRouteLeave(() => {
+  if (preferences.sidebar.hidden) {
+    updatePreferences({ sidebar: { hidden: false } });
+  }
 });
 </script>
 

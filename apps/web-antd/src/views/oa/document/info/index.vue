@@ -3,8 +3,8 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { DocumentDispatchBillApi } from '#/api/oa/document';
 import type { RedTemplateApi } from '#/api/oa/red-template';
 
-import { computed, onMounted, ref, shallowRef, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
+import { onBeforeRouteLeave, useRoute } from 'vue-router';
 
 import { Loading, Page } from '@vben/common-ui';
 import {
@@ -13,6 +13,7 @@ import {
 } from '@vben/constants';
 import { useTabs } from '@vben/hooks';
 import { useUserStore } from '@vben/stores';
+import { preferences, updatePreferences } from '@vben/preferences';
 
 import { Button, message, Spin } from 'ant-design-vue';
 
@@ -414,6 +415,11 @@ defineExpose({
 });
 
 onMounted(() => {
+  // 从发起流程进入时，隐藏侧边栏
+  if (route.query.from === 'startProcess') {
+    updatePreferences({ sidebar: { hidden: true } });
+  }
+
   initFormSchema();
   initForm();
   loadData();
@@ -421,6 +427,18 @@ onMounted(() => {
   if (formData.value.processInstanceId) {
     getProcessModelView();
     getApprovalDetailData();
+  }
+});
+
+onBeforeUnmount(() => {
+  if (preferences.sidebar.hidden) {
+    updatePreferences({ sidebar: { hidden: false } });
+  }
+});
+
+onBeforeRouteLeave(() => {
+  if (preferences.sidebar.hidden) {
+    updatePreferences({ sidebar: { hidden: false } });
   }
 });
 </script>

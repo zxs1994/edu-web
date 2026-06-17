@@ -10,6 +10,7 @@ export namespace SystemUserApi {
     nickname: string;
     deptId: number;
     postIds: string[];
+    roleIds: string[];
     email: string;
     mobile: string;
     sex: number;

@@ -1,14 +1,20 @@
 <script lang="ts" setup>
 import { computed, nextTick, onActivated, onBeforeUnmount, onMounted, ref } from 'vue';
 
-import { Badge, Table, Tabs } from 'ant-design-vue';
+import { Badge, message, Modal, Table, Tabs } from 'ant-design-vue';
 
 import { ACTION_ICON, TableAction } from '#/adapter/vxe-table';
 import {
+  deleteProcessInstance,
   getProcessInstanceCopyPage,
   getProcessInstanceMyPage,
 } from '#/api/bpm/processInstance';
-import { getTaskDonePage, getTaskTodoPage } from '#/api/bpm/task';
+import {
+  getTaskDonePage,
+  getTaskTodoPage,
+  getWorkbenchUnreadCounts,
+  markWorkbenchTabAsRead,
+} from '#/api/bpm/task';
 import { router } from '#/router';
 
 interface Props {
@@ -39,12 +45,20 @@ const statistics = ref({
   copy: 0,
 });
 
+// 各 Tab 未读数量（来自后端水位线接口，持久化）
+const unreadCounts = ref<Record<string, number>>({
+  todo: 0,
+  myBill: 0,
+  done: 0,
+  copy: 0,
+});
+
 // Tab配置
 const tabs = computed(() => [
-  { key: 'todo', label: '待办任务', count: statistics.value.todo },
-  { key: 'myBill', label: '我的单据', count: statistics.value.myBill },
-  { key: 'done', label: '已办任务', count: statistics.value.done },
-  { key: 'copy', label: '抄送我的', count: statistics.value.copy },
+  { key: 'todo', label: '待办任务', count: unreadCounts.value.todo },
+  { key: 'myBill', label: '我的单据', count: unreadCounts.value.myBill },
+  { key: 'done', label: '已办任务', count: unreadCounts.value.done },
+  { key: 'copy', label: '抄送我的', count: unreadCounts.value.copy },
 ]);
 
 // 格式化摘要
@@ -349,7 +363,13 @@ async function loadData(tab: TabKey) {
 // Tab切换事件
 function handleTabChange(key: number | string) {
   activeTab.value = String(key) as TabKey;
+  // 立即清零该 Tab 的未读徽标（先更新 UI，再持久化）
+  unreadCounts.value[activeTab.value] = 0;
   loadData(activeTab.value);
+  // 异步调用后端标记该 Tab 为已读（更新水位线）
+  markWorkbenchTabAsRead(activeTab.value).catch((error) => {
+    console.error('标记 Tab 已读失败:', error);
+  });
 }
 
 // 单据编号点击
@@ -468,6 +488,22 @@ function handleDetail(record: any) {
   }
 }
 
+// 删除未提交的单据（我的单据 Tab）
+function handleDeleteBill(record: any) {
+  Modal.confirm({
+    title: '确认删除',
+    content: '确定删除该未提交的单据吗？删除后不可恢复。',
+    okText: '确认删除',
+    okType: 'danger',
+    cancelText: '取消',
+    async onOk() {
+      await deleteProcessInstance(record.id.toString());
+      message.success('删除成功');
+      loadData(activeTab.value);
+    },
+  });
+}
+
 // 查看更多
 function handleViewMore() {
   const routeNameMap: Record<TabKey, string> = {
@@ -483,7 +519,7 @@ function handleViewMore() {
   }
 }
 
-// 加载所有数据（当前tab数据 + 其他tab统计）
+// 加载所有数据（当前tab数据 + 其他tab统计 + 各tab未读数）
 async function loadAllData() {
   const currentTab = activeTab.value;
 
@@ -516,12 +552,26 @@ async function loadAllData() {
       }
     });
 
-    const results = await Promise.all(promises);
+    // 同时获取各 Tab 未读数（水位线接口，一次请求返回所有 Tab 的未读数）
+    const [results, unreadResult] = await Promise.all([
+      Promise.all(promises),
+      getWorkbenchUnreadCounts().catch(() => null),
+    ]);
 
     // 更新其他tab的统计数据
     otherTabs.forEach((tab, index) => {
       statistics.value[tab] = results[index]?.total || 0;
     });
+
+    // 更新各 Tab 未读数
+    if (unreadResult) {
+      unreadCounts.value = {
+        todo: unreadResult.todo ?? 0,
+        myBill: unreadResult.myBill ?? 0,
+        done: unreadResult.done ?? 0,
+        copy: unreadResult.copy ?? 0,
+      };
+    }
   } catch (error) {
     console.error('加载其他tab统计数据失败:', error);
   }
@@ -562,7 +612,7 @@ onBeforeUnmount(() => {
   resizeObserver = null;
 });
 
-// 页面被KeepAlive缓存后重新激活时，自动刷新数据
+// 页面被KeepAlive缓存后重新激活时，自动刷新数据（含未读数）
 onActivated(() => {
   loadAllData();
 });
@@ -672,7 +722,28 @@ onActivated(() => {
                 ]"
               />
             </template>
-            <!-- 我的单据、已办和抄送：显示详情按钮 -->
+            <!-- 我的单据：显示详情按钮，未提交时额外显示删除按钮 -->
+            <template v-else-if="activeTab === 'myBill'">
+              <TableAction
+                :actions="[
+                  {
+                    label: '详情',
+                    type: 'link',
+                    icon: ACTION_ICON.VIEW,
+                    onClick: () => handleDetail(record),
+                  },
+                  {
+                    label: '删除',
+                    type: 'link',
+                    danger: true,
+                    icon: ACTION_ICON.DELETE,
+                    ifShow: record.status === -1,
+                    onClick: () => handleDeleteBill(record),
+                  },
+                ]"
+              />
+            </template>
+            <!-- 已办和抄送：显示详情按钮 -->
             <template v-else>
               <TableAction
                 :actions="[

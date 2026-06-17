@@ -152,7 +152,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
     <FormModal @success="handleRefresh" />
     <AssignDataPermissionFormModel @success="handleRefresh" />
     <AssignMenuFormModel @success="handleRefresh" />
-    <Grid table-title="角色列表">
+    <Grid>
       <template #toolbar-tools>
         <TableAction
           :actions="[

@@ -56,7 +56,7 @@ const [Grid] = useVbenVxeGrid({
   <Page auto-content-height>
 
     <DetailModal />
-    <Grid table-title="社交用户列表">
+    <Grid>
       <template #actions="{ row }">
         <TableAction
           :actions="[

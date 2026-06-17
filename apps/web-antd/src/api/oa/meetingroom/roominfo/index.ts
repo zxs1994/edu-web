@@ -66,7 +66,7 @@ export function deleteMeetingRoomListByIds(ids: number[]) {
 
 /** 导出会议室信息 */
 export function exportMeetingRoom(params: any) {
-  return requestClient.download('/oa/meeting-room/export-excel', params);
+  return requestClient.download('/oa/meeting-room/export-excel', { params });
 }
 
 /** 获取会议室下拉列表（用于选择器） */

@@ -138,8 +138,18 @@ export function useGridColumns(): VxeTableGridOptions['columns'] {
       minWidth: 200,
       fixed: 'left',
     },
+        // 流程状态
+        {
+          field: 'status',
+          title: '流程状态',
+          minWidth: 250,
+          align: 'center',
+          slots: {
+            default: 'slot-status',
+          },
+        },
     {
-      field: 'billCode',
+      field: 'formVariables.billCode',
       title: '单据编号',
       minWidth: 160,
       align: 'center',
@@ -174,24 +184,9 @@ export function useGridColumns(): VxeTableGridOptions['columns'] {
       },
     },
     {
-      field: 'companyName',
-      title: '所属公司',
-      minWidth: 160,
-    },
-    {
-      field: 'deptName',
+      field: 'startUser.deptName',
       title: '所属部门',
       minWidth: 160,
-    },
-
-    // 流程状态
-    {
-      field: 'status',
-      title: '流程状态',
-      minWidth: 250,
-      slots: {
-        default: 'slot-status',
-      },
     },
 
     {

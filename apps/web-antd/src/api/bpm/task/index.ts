@@ -146,3 +146,17 @@ export const withdrawTask = async (taskId: string) => {
 export const withdrawProcessToStart = async (data: any) => {
   return await requestClient.put('/bpm/task/withdraw-to-start', data);
 };
+
+/** 获取工作台各 Tab 未读数量 */
+export const getWorkbenchUnreadCounts = async () => {
+  return requestClient.get<Record<string, number>>(
+    '/bpm/task/workbench/unread-counts',
+  );
+};
+
+/** 标记工作台 Tab 为已读 */
+export const markWorkbenchTabAsRead = async (tabKey: string) => {
+  return requestClient.put('/bpm/task/workbench/mark-read', null, {
+    params: { tabKey },
+  });
+};

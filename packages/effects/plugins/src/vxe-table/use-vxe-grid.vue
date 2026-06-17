@@ -37,6 +37,8 @@ import {
   mergeWithArrayOverride,
 } from '@vben/utils';
 
+import { useRoute } from 'vue-router';
+
 import { VbenHelpTooltip, VbenLoading } from '@vben-core/shadcn-ui';
 
 import { VxeButton } from 'vxe-pc-ui';
@@ -76,6 +78,13 @@ const {
   showSearchForm,
   separator,
 } = usePriorityValues(props, state);
+
+const route = useRoute();
+const computedTableTitle = computed(() => {
+  if (tableTitle.value) return tableTitle.value;
+  const title = route.meta?.title as string;
+  return title ? $t(title) : '';
+});
 
 const { isMobile } = usePreferences();
 const isSeparator = computed(() => {
@@ -130,7 +139,7 @@ const [Form, formApi] = useTableForm({
 });
 
 const showTableTitle = computed(() => {
-  return !!slots[TABLE_TITLE]?.() || tableTitle.value;
+  return !!slots[TABLE_TITLE]?.() || computedTableTitle.value;
 });
 
 const showToolbar = computed(() => {
@@ -382,7 +391,7 @@ onUnmounted(() => {
           <div
             class="flex items-center justify-center gap-1 text-[1rem] font-bold"
           >
-            {{ tableTitle }}
+            {{ computedTableTitle }}
             <VbenHelpTooltip v-if="tableTitleHelp">
               {{ tableTitleHelp }}
             </VbenHelpTooltip>

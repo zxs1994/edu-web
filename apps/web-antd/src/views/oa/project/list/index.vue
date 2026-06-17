@@ -35,23 +35,23 @@ function onRefresh() {
   gridApi.query();
 }
 
-function handleCreate() {
+/* function handleCreate() {
   router.push({
-    path: '/oa/project-initiation-info',
+    path: '/oa/contract/project-initiation-info',
     query: { t: Date.now() },
   });
-}
+} */
 
 function handleEdit(row: ProjectInitiationBillApi.ProjectInitiationBill) {
   router.push({
-    path: '/oa/project-initiation-info',
+    path: '/oa/contract/project-initiation-info',
     query: { id: row.id },
   });
 }
 
 function handleDetail(row: ProjectInitiationBillApi.ProjectInitiationBill) {
   router.push({
-    path: '/oa/project-initiation-info',
+    path: '/oa/contract/project-initiation-info',
     query: { id: row.id },
   });
 }
@@ -161,17 +161,17 @@ onActivated(() => {
 
 <template>
   <Page auto-content-height>
-    <Grid table-title="立项管理列表">
+    <Grid>
       <template #toolbar-tools>
         <TableAction
           :actions="[
-            {
+            /* {
               label: $t('ui.actionTitle.create'),
               type: 'primary',
               icon: ACTION_ICON.ADD,
               auth: ['oa:project-initiation-bill:create'],
               onClick: handleCreate,
-            },
+            }, */
             {
               label: $t('ui.actionTitle.export'),
               type: 'primary',

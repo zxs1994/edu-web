@@ -145,7 +145,7 @@ watch(
   <div class="flex h-full flex-col">
     <DataFormModal @success="handleRefresh" />
 
-    <Grid table-title="字典数据列表">
+    <Grid>
       <template #toolbar-tools>
         <TableAction
           :actions="[

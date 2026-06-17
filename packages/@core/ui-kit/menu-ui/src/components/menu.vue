@@ -96,6 +96,16 @@ watch(
   },
 );
 
+// 当 defaultOpeneds 变化时（如菜单数据异步加载完成），同步更新已打开的菜单
+watch(
+  () => props.defaultOpeneds,
+  (val) => {
+    if (val && val.length > 0 && !props.collapse) {
+      openedMenus.value = [...val];
+    }
+  },
+);
+
 watch(items.value, initMenu);
 
 watch(

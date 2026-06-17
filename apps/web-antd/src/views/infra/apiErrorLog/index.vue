@@ -93,7 +93,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
   <Page auto-content-height>
 
     <DetailModal @success="handleRefresh" />
-    <Grid table-title="API 错误日志列表">
+    <Grid>
       <template #toolbar-tools>
         <TableAction
           :actions="[

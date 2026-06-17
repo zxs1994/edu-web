@@ -57,7 +57,7 @@ export function useGridColumns(): VxeTableGridOptions<ProjectInitiationBillApi.P
     createRouterLinkColumn({
       field: 'billCode',
       title: '项目编号',
-      path: '/oa/project-initiation-info',
+      path: '/oa/contract/project-initiation-info',
       idField: 'id',
       queryParam: 'id',
     }),

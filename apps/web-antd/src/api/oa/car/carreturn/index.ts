@@ -76,7 +76,7 @@ export function deleteCarReturnBillList(ids: number[]) {
 
 /** 导出还车申请单 */
 export function exportCarReturnBill(params: any) {
-  return requestClient.download('/oa/car-return-bill/export-excel', params);
+  return requestClient.download('/oa/car-return-bill/export-excel', { params });
 }
 
 

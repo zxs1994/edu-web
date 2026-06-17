@@ -2,6 +2,7 @@
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { SystemDeptApi } from '#/api/system/dept';
 import type { SystemPostApi } from '#/api/system/post';
+import type { SystemRoleApi } from '#/api/system/role';
 import type { SystemUserApi } from '#/api/system/user';
 
 import { onMounted, ref } from 'vue';
@@ -15,6 +16,7 @@ import { Card, message } from 'ant-design-vue';
 
 import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import { getSimplePostList } from '#/api/system/post';
+import { getSimpleRoleList } from '#/api/system/role';
 import {
   deleteUser,
   deleteUserList,
@@ -159,11 +161,14 @@ async function handleStatusChange(
 
 /** 岗位列表（用于在表格中展示岗位名称） */
 const postList = ref<SystemPostApi.Post[]>([]);
+/** 角色列表（用于在表格中展示角色名称） */
+const roleList = ref<SystemRoleApi.Role[]>([]);
 
 onMounted(async () => {
   postList.value = await getSimplePostList();
-  // 岗位加载完成后刷新表格列配置
-  gridApi.setGridOptions({ columns: useGridColumns(handleStatusChange, postList.value) });
+  roleList.value = await getSimpleRoleList();
+  // 岗位和角色加载完成后刷新表格列配置
+  gridApi.setGridOptions({ columns: useGridColumns(handleStatusChange, postList.value, roleList.value) });
   gridApi.query();
 });
 
@@ -218,7 +223,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
       </Card>
       <!-- 右侧用户列表 -->
       <div class="w-5/6">
-        <Grid table-title="用户列表">
+        <Grid>
           <template #toolbar-tools>
             <TableAction
               :actions="[

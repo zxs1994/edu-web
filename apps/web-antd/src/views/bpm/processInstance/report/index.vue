@@ -133,7 +133,7 @@ onMounted(async () => {
 
 <template>
   <Page auto-content-height>
-    <Grid table-title="流程实例列表">
+    <Grid>
       <template #actions="{ row }">
         <TableAction
           :actions="[

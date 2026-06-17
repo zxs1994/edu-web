@@ -120,7 +120,7 @@ onActivated(() => {
   <Page auto-content-height>
 
     <DetailModal />
-    <Grid table-title="流程表单">
+    <Grid>
       <template #toolbar-tools>
         <TableAction
           :actions="[

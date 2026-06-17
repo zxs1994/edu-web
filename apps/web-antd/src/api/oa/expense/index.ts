@@ -24,8 +24,10 @@ export namespace ExpenseReimburseBillApi {
     billCode: string;
     processInstanceId?: string;
     processStatus?: number;
+    billType?: number;
     travelBillCode?: string;
     travelCause?: string;
+    cause?: string;
     totalAmount: number;
     paymentStatus?: number;
     creator?: number;
@@ -42,6 +44,7 @@ export namespace ExpenseReimburseBillApi {
   }
 
   export interface ExpenseReimburseBillPageReqVO extends PageParam {
+    billType?: number;
     billCode?: string;
     processStatus?: number;
     deptName?: string;

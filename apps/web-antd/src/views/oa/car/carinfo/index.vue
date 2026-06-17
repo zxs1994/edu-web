@@ -195,7 +195,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
 
       <!-- 右侧表格 -->
       <div class="min-w-0 flex-1">
-        <Grid table-title="车辆信息列表">
+        <Grid>
           <template #toolbar-tools>
             <TableAction
               :actions="[

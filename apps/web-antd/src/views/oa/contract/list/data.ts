@@ -61,7 +61,7 @@ export function useGridColumns(): VxeTableGridOptions<ContractBillApi.ContractBi
     createRouterLinkColumn({
       field: 'billCode',
       title: '单据编号',
-      path: '/oa/contract-bill-info',
+      path: '/oa/contract/contract-bill-info',
       idField: 'id',
       queryParam: 'id',
     }),

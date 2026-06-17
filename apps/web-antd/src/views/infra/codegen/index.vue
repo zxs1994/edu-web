@@ -197,7 +197,7 @@ initDataSourceConfig();
 
     <ImportModal @success="handleRefresh" />
     <PreviewModal />
-    <Grid table-title="代码生成列表">
+    <Grid>
       <template #toolbar-tools>
         <TableAction
           :actions="[

@@ -56,7 +56,7 @@ export function deleteSealListByIds(ids: number[]) {
 
 /** 导出印章信息 */
 export function exportSeal(params: any) {
-  return requestClient.download('/oa/seal/export-excel', params);
+  return requestClient.download('/oa/seal/export-excel', { params });
 }
 
 

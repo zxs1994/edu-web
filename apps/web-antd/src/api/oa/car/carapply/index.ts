@@ -78,5 +78,5 @@ export function deleteCarApplyBillListByIds(ids: number[]) {
 
 /** 导出用车申请单 */
 export function exportCarApplyBill(params: any) {
-  return requestClient.download('/oa/car-apply-bill/export-excel', params);
+  return requestClient.download('/oa/car-apply-bill/export-excel', { params });
 }

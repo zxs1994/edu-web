@@ -89,7 +89,7 @@ export function useGridColumns(): VxeTableGridOptions<CarReturnBillApi.CarReturn
     createRouterLinkColumn({
       field: 'billCode',
       title: '单据编号',
-      path: '/car/car-return-info',
+      path: '/oa/car/car-return-info',
       idField: 'id',
       queryParam: 'id',
     }),

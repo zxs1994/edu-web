@@ -35,16 +35,16 @@ function onRefresh() {
   gridApi.query();
 }
 
-function handleCreate() {
+/* function handleCreate() {
   router.push({
-    path: '/oa/contract-bill-info',
+    path: '/oa/contract/contract-bill-info',
     query: { t: Date.now() },
   });
-}
+} */
 
 function handleDetail(row: ContractBillApi.ContractBill) {
   router.push({
-    path: '/oa/contract-bill-info',
+    path: '/oa/contract/contract-bill-info',
     query: { id: row.id },
   });
 }
@@ -150,17 +150,17 @@ onActivated(() => {
 
 <template>
   <Page auto-content-height>
-    <Grid table-title="合同审批列表">
+    <Grid>
       <template #toolbar-tools>
         <TableAction
           :actions="[
-            {
+            /* {
               label: $t('ui.actionTitle.create'),
               type: 'primary',
               icon: ACTION_ICON.ADD,
               auth: ['oa:contract-bill:create'],
               onClick: handleCreate,
-            },
+            }, */
             {
               label: $t('ui.actionTitle.export'),
               type: 'primary',

@@ -73,7 +73,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
       @close="handleClosePreview"
       @refresh="handleRefresh"
     />
-    <Grid table-title="通知公告">
+    <Grid>
       <template #actions="{ row }">
         <TableAction
           :actions="[
