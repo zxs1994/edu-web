@@ -27,6 +27,11 @@ export type headerDataProps = {
    */
   createTime?: Date | string;
   /**
+   * 单据创建人ID（用于权限校验，只有创建人才能编辑）
+   */
+  creator?: number | string;
+
+  /**
    * 申请人
    */
   creatorName?: string;

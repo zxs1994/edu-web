@@ -7,6 +7,7 @@ import { getDictOptions } from '@vben/hooks';
 
 import { createRouterLinkColumn } from '#/adapter/vxe-table';
 import { getRangePickerDefaultProps } from '#/utils';
+import { resolveOaDetailRoute } from '#/utils/oa-route-resolver';
 
 /** 列表的搜索表单 */
 export function useGridFormSchema(): VbenFormSchema[] {
@@ -62,6 +63,7 @@ export function useGridColumns(): VxeTableGridOptions<LeaveCancelBillApi.LeaveCa
       path: '/hrm/attendance/leave-cancel-info',
       idField: 'id',
       queryParam: 'id',
+      resolveRoute: resolveOaDetailRoute('/hrm/attendance/leave-cancel-info'),
     }),
     {
       field: 'processStatus',

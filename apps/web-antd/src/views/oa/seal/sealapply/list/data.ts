@@ -9,6 +9,7 @@ import { handleTree } from '@vben/utils';
 import { createRouterLinkColumn } from '#/adapter/vxe-table';
 import { getCompanyList } from '#/api/system/dept';
 import { getRangePickerDefaultProps } from '#/utils';
+import { resolveOaDetailRoute } from '#/utils/oa-route-resolver';
 import { getCurrentUserCompanyDeptTree } from '#/utils/dept-tree';
 
 /** 列表的搜索表单 */
@@ -153,6 +154,7 @@ export function useGridColumns(): VxeTableGridOptions<SealApplyBillApi.SealApply
       path: '/seal/seal-apply-info',
       idField: 'id',
       queryParam: 'id',
+      resolveRoute: resolveOaDetailRoute('/seal/seal-apply-info'),
     }),
     {
       field: 'processStatus',

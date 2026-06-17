@@ -7,7 +7,6 @@ import { useRouter } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
 import { BpmProcessInstanceStatusEditValue } from '@vben/constants';
-import { useUserStore } from '@vben/stores';
 import { downloadFileFromBlobPart, isEmpty } from '@vben/utils';
 
 import { message } from 'ant-design-vue';
@@ -20,11 +19,11 @@ import {
   getCarReturnBillPage,
 } from '#/api/oa/car/carreturn';
 import { $t } from '#/locales';
+import { getOaDetailRoute } from '#/utils/oa-route-resolver';
 
 import { CarSelectModal } from '../../components';
 import { useGridColumns, useGridFormSchema } from './data';
 
-const userStore = useUserStore();
 const router = useRouter();
 
 // 车辆选择弹窗引用
@@ -47,12 +46,8 @@ function onRefresh() {
 
 /** 查看还车申请单详情 */
 function handleDetail(row: CarReturnBillApi.CarReturnBill) {
-  router.push({
-    path: '/oa/car/car-return-info',
-    query: {
-      id: row.id,
-    },
-  });
+  const route = getOaDetailRoute(row, '/oa/car/car-return-info');
+  router.push(route);
 }
 
 /** 删除还车申请单 */
@@ -152,7 +147,6 @@ const [Grid, gridApi] = useVbenVxeGrid({
             pageNo: page.currentPage,
             pageSize: page.pageSize,
             ...formValues,
-            creator: userStore.userInfo?.id,
           });
         },
       },

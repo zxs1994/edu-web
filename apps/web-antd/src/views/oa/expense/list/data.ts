@@ -7,6 +7,7 @@ import { getDictOptions } from '@vben/hooks';
 
 import { createRouterLinkColumn } from '#/adapter/vxe-table';
 import { getRangePickerDefaultProps } from '#/utils';
+import { resolveOaDetailRoute } from '#/utils/oa-route-resolver';
 
 export function useGridFormSchema(): VbenFormSchema[] {
   return [
@@ -50,6 +51,7 @@ export function useGridColumns(): VxeTableGridOptions<ExpenseReimburseBillApi.Ex
       path: '/oa/expense-travel/expense-reimburse-info',
       idField: 'id',
       queryParam: 'id',
+      resolveRoute: resolveOaDetailRoute('/oa/expense-travel/expense-reimburse-info'),
     }),
     {
       field: 'billType',

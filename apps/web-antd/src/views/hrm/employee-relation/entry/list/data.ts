@@ -7,6 +7,7 @@ import { getDictOptions } from '@vben/hooks';
 
 import { createRouterLinkColumn } from '#/adapter/vxe-table';
 import { getRangePickerDefaultProps } from '#/utils';
+import { resolveOaDetailRoute } from '#/utils/oa-route-resolver';
 import { getCurrentUserCompanyDeptTree } from '#/utils/dept-tree';
 
 /** 列表的搜索表单 */
@@ -105,6 +106,7 @@ export function useGridColumns(): VxeTableGridOptions<EmployeeEntryBillApi.Emplo
       path: '/hrm/employee-relation/entry-info',
       idField: 'id',
       queryParam: 'id',
+      resolveRoute: resolveOaDetailRoute('/hrm/employee-relation/entry-info'),
     }),
     {
       field: 'processStatus',

@@ -7,6 +7,7 @@ import { getDictOptions } from '@vben/hooks';
 
 import { createRouterLinkColumn } from '#/adapter/vxe-table';
 import { getRangePickerDefaultProps } from '#/utils';
+import { resolveOaDetailRoute } from '#/utils/oa-route-resolver';
 
 export function useGridFormSchema(): VbenFormSchema[] {
   return [
@@ -60,6 +61,7 @@ export function useGridColumns(): VxeTableGridOptions<ProjectInitiationBillApi.P
       path: '/oa/contract/project-initiation-info',
       idField: 'id',
       queryParam: 'id',
+      resolveRoute: resolveOaDetailRoute('/oa/contract/project-initiation-info'),
     }),
     { field: 'projectName', title: '项目名称', minWidth: 150 },
     {

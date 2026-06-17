@@ -16,6 +16,8 @@ import {
   BpmProcessInstanceStatusEditValue,
 } from '@vben/constants';
 
+import { useUserStore } from '@vben/stores';
+
 import {
   Button,
   Form,
@@ -64,6 +66,11 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  /** 单据创建人ID（用于权限校验，只有创建人才能看到编辑按钮） */
+  creator: {
+    type: [String, Number] as any,
+    default: undefined,
+  },
 });
 const emit = defineEmits([
   'close',
@@ -81,6 +88,14 @@ const isEndStatus = computed(() => {
     props.processStatus === BpmProcessInstanceStatus.REJECT ||
     props.processStatus === BpmProcessInstanceStatus.CANCEL
   );
+});
+
+/** 当前用户是否为单据创建人（新建未保存的单据也视为创建人） */
+const userStore = useUserStore();
+const isCreator = computed(() => {
+  // 新建未保存的单据，creator为空，默认允许操作
+  if (!props.creator) return true;
+  return String(userStore.userInfo?.id) === String(props.creator);
 });
 
 // 撤回弹窗相关
@@ -160,7 +175,8 @@ const confirmRevoke = async () => {
       v-if="
         !hideSubmit &&
         processStatus &&
-        BpmProcessInstanceStatusEditValue.includes(processStatus)
+        BpmProcessInstanceStatusEditValue.includes(processStatus) &&
+        isCreator
       "
     >
       {{ $t('common.submit') }}
@@ -171,24 +187,25 @@ const confirmRevoke = async () => {
       v-if="
         !hideSave &&
         processStatus &&
-        BpmProcessInstanceStatusEditValue.includes(processStatus)
+        BpmProcessInstanceStatusEditValue.includes(processStatus) &&
+        isCreator
       "
     >
       {{ $t('common.save') }}
     </Button>
-    <!-- 【撤回】按钮 -->
+    <!-- 【撤回】按钮 - 已禁用 -->
+    <!--
     <Popover
       v-model:open="revokePopoverVisible"
       placement="top"
       :overlay-style="{ minWidth: '400px' }"
       trigger="click"
-      v-if="processStatus === BpmProcessInstanceStatus.RUNNING"
+      v-if="false"
     >
       <Button type="primary" @click="openRevokePopover">
         {{ $t('common.revoke') }}
       </Button>
       <template #content>
-        <!-- 撤回表单 -->
         <div class="flex flex-1 flex-col px-5 pt-5">
           <Form
             layout="vertical"
@@ -213,6 +230,7 @@ const confirmRevoke = async () => {
         </div>
       </template>
     </Popover>
+    -->
     <!-- 【删除】按钮 -->
     <Popover
       v-model:open="deletePopoverVisible"
@@ -223,7 +241,8 @@ const confirmRevoke = async () => {
         !hideDelete &&
         billCode &&
         processStatus &&
-        BpmProcessInstanceStatusEditValue.includes(processStatus)
+        BpmProcessInstanceStatusEditValue.includes(processStatus) &&
+        isCreator
       "
     >
       <Button danger type="primary" @click="openDeletePopover">

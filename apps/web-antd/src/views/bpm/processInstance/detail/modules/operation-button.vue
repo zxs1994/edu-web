@@ -11,6 +11,7 @@ import { useVbenModal } from '@vben/common-ui';
 import {
   BpmCandidateStrategyEnum,
   BpmModelFormType,
+  BpmNodeIdEnum,
   BpmNodeTypeEnum,
   BpmProcessInstanceStatus,
   BpmTaskOperationButtonTypeEnum,
@@ -91,7 +92,6 @@ const popOverVisible: any = ref({
   cancel: false,
   deleteSign: false,
 }); // 气泡卡是否展示
-const returnList = ref([] as any); // 退回节点
 
 // ========== 审批信息 ==========
 const runningTask = ref<any>(); // 运行中的任务
@@ -214,15 +214,11 @@ const deleteSignFormRule: Record<string, Rule[]> = reactive({
 // 退回表单
 const returnFormRef = ref<FormInstance>();
 const returnForm = reactive({
-  targetTaskDefinitionKey: undefined,
   returnReason: '',
 });
 const returnFormRule: Record<string, Rule[]> = reactive({
-  targetTaskDefinitionKey: [
-    { required: true, message: '退回节点不能为空', trigger: 'change' },
-  ],
   returnReason: [
-    { required: true, message: '退回理由不能为空', trigger: 'blur' },
+    { required: true, message: '驳回理由不能为空', trigger: 'blur' },
   ],
 });
 
@@ -261,19 +257,9 @@ async function openPopover(type: string) {
     }
     initNextAssigneesFormField();
   }
-  if (type === 'return') {
-    // 获取退回节点
-    returnList.value = await TaskApi.getTaskListByReturn(runningTask.value.id);
-    if (returnList.value.length === 0) {
-      message.warning('当前没有可退回的节点');
-      return;
-    }
-  }
   Object.keys(popOverVisible.value).forEach((item) => {
     if (popOverVisible.value[item]) popOverVisible.value[item] = item === type;
   });
-  // await nextTick()
-  // formRef.value.resetFields()
 }
 
 /** 关闭气泡卡 */
@@ -519,18 +505,18 @@ async function handlerAddSign(type: string) {
   }
 }
 
-/** 处理退回 */
+/** 处理驳回（默认驳回至发起人） */
 async function handleReturn() {
   formLoading.value = true;
   try {
     // 1.1 校验表单
     if (!returnFormRef.value) return;
     await returnFormRef.value.validate();
-    // 1.2 提交退回
+    // 1.2 提交驳回，默认退回至发起人节点
     const data = {
       id: runningTask.value.id,
       reason: returnForm.returnReason,
-      targetTaskDefinitionKey: returnForm.targetTaskDefinitionKey,
+      targetTaskDefinitionKey: BpmNodeIdEnum.START_USER_NODE_ID,
     };
 
     await TaskApi.returnTask(data);
@@ -830,7 +816,7 @@ defineExpose({ loadTodoTask });
         </template>
       </Popover>
 
-      <!-- 【退回】按钮 - 改为拒绝样式 -->
+      <!-- 【驳回】按钮 - 默认驳回至发起人 -->
       <Popover
         v-model:open="popOverVisible.return"
         placement="top"
@@ -855,27 +841,11 @@ defineExpose({ loadTodoTask });
               :rules="returnFormRule"
               label-width="100px"
             >
-              <FormItem label="退回节点" name="targetTaskDefinitionKey">
-                <Select
-                  v-model:value="returnForm.targetTaskDefinitionKey"
-                  :allow-clear="true"
-                  style="width: 100%"
-                >
-                  <SelectOption
-                    v-for="item in returnList"
-                    :key="item.taskDefinitionKey"
-                    :label="item.name"
-                    :value="item.taskDefinitionKey"
-                  >
-                    {{ item.name }}
-                  </SelectOption>
-                </Select>
-              </FormItem>
-              <FormItem label="退回理由" name="returnReason">
+              <FormItem label="驳回理由" name="returnReason">
                 <Textarea
                   v-model:value="returnForm.returnReason"
                   allow-clear
-                  placeholder="请输入退回理由"
+                  placeholder="请输入驳回理由"
                   :rows="3"
                 />
               </FormItem>
@@ -887,11 +857,7 @@ defineExpose({ loadTodoTask });
                     type="primary"
                     @click="handleReturn()"
                   >
-                    {{
-                      getButtonDisplayName(
-                        BpmTaskOperationButtonTypeEnum.REJECT,
-                      )
-                    }}
+                    驳回
                   </Button>
                   <Button @click="closePopover('return', returnFormRef)">
                     取消
@@ -955,17 +921,14 @@ defineExpose({ loadTodoTask });
         </template>
       </Popover>
 
-      <!-- 【抄送】按钮 -->
+      <!-- 【抄送】按钮 - 已禁用 -->
+      <!--
       <Popover
         v-model:open="popOverVisible.copy"
         placement="top"
         :overlay-style="{ width: '400px' }"
         trigger="click"
-        v-if="
-          runningTask &&
-          isHandleTaskStatus() &&
-          isShowButton(BpmTaskOperationButtonTypeEnum.COPY)
-        "
+        v-if="false"
       >
         <Button @click="openPopover('copy')">
           {{ getButtonDisplayName(BpmTaskOperationButtonTypeEnum.COPY) }}
@@ -1025,18 +988,16 @@ defineExpose({ loadTodoTask });
           </div>
         </template>
       </Popover>
+      -->
 
-      <!-- 【转办】按钮 -->
+      <!-- 【转办】按钮 - 已禁用 -->
+      <!--
       <Popover
         v-model:open="popOverVisible.transfer"
         placement="top"
         :overlay-style="{ width: '400px' }"
         trigger="click"
-        v-if="
-          runningTask &&
-          isHandleTaskStatus() &&
-          isShowButton(BpmTaskOperationButtonTypeEnum.TRANSFER)
-        "
+        v-if="false"
       >
         <Button @click="openPopover('transfer')">
           {{ getButtonDisplayName(BpmTaskOperationButtonTypeEnum.TRANSFER) }}
@@ -1097,18 +1058,16 @@ defineExpose({ loadTodoTask });
           </div>
         </template>
       </Popover>
+      -->
 
-      <!-- 【委派】按钮 -->
+      <!-- 【委派】按钮 - 已禁用 -->
+      <!--
       <Popover
         v-model:open="popOverVisible.delegate"
         placement="top"
         :overlay-style="{ width: '400px' }"
         trigger="click"
-        v-if="
-          runningTask &&
-          isHandleTaskStatus() &&
-          isShowButton(BpmTaskOperationButtonTypeEnum.DELEGATE)
-        "
+        v-if="false"
       >
         <Button @click="openPopover('delegate')">
           {{ getButtonDisplayName(BpmTaskOperationButtonTypeEnum.DELEGATE) }}
@@ -1169,18 +1128,17 @@ defineExpose({ loadTodoTask });
           </div>
         </template>
       </Popover>
+      -->
 
-      <!-- 【加签】按钮 当前任务审批人为A，向前加签选了一个C，则需要C先审批，然后再是A审批，向后加签B，A审批完，需要B再审批完，才算完成这个任务节点 -->
+      <!-- 【加签】按钮 - 已禁用 -->
+      <!-- 当前任务审批人为A，向前加签选了一个C，则需要C先审批，然后再是A审批，向后加签B，A审批完，需要B再审批完，才算完成这个任务节点 -->
+      <!--
       <Popover
         v-model:open="popOverVisible.addSign"
         placement="top"
         :overlay-style="{ width: '400px' }"
         trigger="click"
-        v-if="
-          runningTask &&
-          isHandleTaskStatus() &&
-          isShowButton(BpmTaskOperationButtonTypeEnum.ADD_SIGN)
-        "
+        v-if="false"
       >
         <Button @click="openPopover('addSign')">
           {{ getButtonDisplayName(BpmTaskOperationButtonTypeEnum.ADD_SIGN) }}
@@ -1253,14 +1211,16 @@ defineExpose({ loadTodoTask });
           </div>
         </template>
       </Popover>
+      -->
 
-      <!-- 【减签】按钮 -->
+      <!-- 【减签】按钮 - 已禁用 -->
+      <!--
       <Popover
         v-model:open="popOverVisible.deleteSign"
         placement="top"
         :overlay-style="{ width: '400px' }"
         trigger="click"
-        v-if="runningTask?.children.length > 0"
+        v-if="false"
       >
         <Button @click="openPopover('deleteSign')"> 减签 </Button>
         <template #content>
@@ -1317,17 +1277,15 @@ defineExpose({ loadTodoTask });
           </div>
         </template>
       </Popover>
+      -->
 
-      <!--【取消】按钮 这个对应发起人的取消, 只有发起人可以取消 -->
+      <!--【取消】按钮 已注释：发起流程后不允许取消
       <Popover
         v-model:open="popOverVisible.cancel"
         placement="top"
         :width="500"
         trigger="click"
-        v-if="
-          userId === processInstance?.startUser?.id &&
-          !isEndProcessStatus(processInstance?.status)
-        "
+        v-if="false"
       >
         <Button @click="openPopover('cancel')"> 取消 </Button>
         <template #content>
@@ -1377,6 +1335,7 @@ defineExpose({ loadTodoTask });
           </div>
         </template>
       </Popover>
+      -->
       <!-- 【再次提交】 按钮-->
       <Button
         @click="handleReCreate()"

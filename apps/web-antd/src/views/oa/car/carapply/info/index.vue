@@ -2,7 +2,7 @@
 import type { VbenFormSchema } from '#/adapter/form';
 import type { CarApplyBillApi } from '#/api/oa/car/carapply';
 
-import { nextTick, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
 import { onBeforeRouteLeave, useRoute } from 'vue-router';
 
 import { Loading } from '@vben/common-ui';
@@ -39,6 +39,12 @@ const props = defineProps<{
 }>();
 const route = useRoute();
 const userStore = useUserStore();
+/** 当前用户是否为单据创建人 */
+const isCreator = computed(() => {
+  const creator = formData.value?.creator;
+  if (!creator) return true;
+  return String(userStore.userInfo?.id) === String(creator);
+});
 
 const { closeCurrentTab } = useTabs();
 
@@ -174,7 +180,7 @@ async function loadData() {
         ? props.isApproval
         : !BpmProcessInstanceStatusEditValue.includes(
             formData.value.processStatus as number,
-          );
+          ) || !isCreator.value;
 
     // 设置表单值
     if (basicFormRef.value) {

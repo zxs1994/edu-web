@@ -7,6 +7,7 @@ import { getDictOptions } from '@vben/hooks';
 
 import { createRouterLinkColumn } from '#/adapter/vxe-table';
 import { getRangePickerDefaultProps } from '#/utils';
+import { resolveOaDetailRoute } from '#/utils/oa-route-resolver';
 
 export function useGridFormSchema(): VbenFormSchema[] {
   return [
@@ -74,6 +75,7 @@ export function useGridColumns(): VxeTableGridOptions<CorrectionBillApi.Correcti
       path: '/oa/correction/correction-info',
       idField: 'id',
       queryParam: 'id',
+      resolveRoute: resolveOaDetailRoute('/oa/correction/correction-info'),
     }),
     {
       field: 'processStatus',

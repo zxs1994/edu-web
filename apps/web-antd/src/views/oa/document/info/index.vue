@@ -79,8 +79,15 @@ let formApi: null | ReturnType<typeof useVbenForm>[1] = null;
 let FormComponent: null | ReturnType<typeof useVbenForm>[0] = null;
 const formRef = ref();
 
+/** 当前用户是否为单据创建人（新建未保存的单据 creator 为空，默认允许操作） */
+const isCreator = computed(() => {
+  const creator = formData.value.creator;
+  if (!creator) return true;
+  return String(userStore.userInfo?.id) === String(creator);
+});
+
 /** 是否禁用表单 */
-const isDisabled = computed(() => props.isCopy || readonly.value);
+const isDisabled = computed(() => props.isCopy || readonly.value || !isCreator.value);
 
 /** 是否隐藏底部操作栏 */
 const hideFooter = computed(() => props.isApproval && !props.isCopy);
@@ -577,6 +584,7 @@ onBeforeRouteLeave(() => {
             <FooterForm
               :process-status="formData.processStatus"
               :bill-code="formData.billCode"
+              :creator="formData.creator"
               :hide-submit="props.isCopy"
               :hide-save="props.isCopy"
               :hide-delete="props.isCopy"
@@ -702,6 +710,10 @@ onBeforeRouteLeave(() => {
 }
 
 .footer-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
   padding: 10px 16px;
 }
 

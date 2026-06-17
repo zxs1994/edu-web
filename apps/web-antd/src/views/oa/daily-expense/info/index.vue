@@ -2,7 +2,7 @@
 import type { VbenFormSchema } from '#/adapter/form';
 import type { ExpenseReimburseBillApi } from '#/api/oa/expense';
 
-import { nextTick, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
 import { onBeforeRouteLeave, useRoute } from 'vue-router';
 
 import { Loading } from '@vben/common-ui';
@@ -50,6 +50,12 @@ const props = defineProps<{
 
 const route = useRoute();
 const userStore = useUserStore();
+/** 当前用户是否为单据创建人 */
+const isCreator = computed(() => {
+  const creator = formData.value?.creator;
+  if (!creator) return true;
+  return String(userStore.userInfo?.id) === String(creator);
+});
 const { closeCurrentTab } = useTabs();
 
 const formData = ref<Partial<ExpenseReimburseBillApi.ExpenseReimburseBill>>(
@@ -186,7 +192,7 @@ async function loadData() {
         ? props.isApproval
         : !BpmProcessInstanceStatusEditValue.includes(
             data.processStatus as number,
-          );
+          ) || !isCreator.value;
 
     const details = (data.details || []).map((item, index) =>
       normalizeExpenseDetail(item, index),

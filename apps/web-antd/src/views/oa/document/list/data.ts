@@ -5,6 +5,8 @@ import type { DocumentDispatchBillApi } from '#/api/oa/document';
 import { DICT_TYPE } from '@vben/constants';
 import { getDictOptions } from '@vben/hooks';
 
+import { resolveOaDetailRoute } from '#/utils/oa-route-resolver';
+
 import { createRouterLinkColumn } from '#/adapter/vxe-table';
 
 /** 缓存部门列表，供 mainRecipients ID→名称映射 */
@@ -58,6 +60,7 @@ export function useGridColumns(): VxeTableGridOptions<DocumentDispatchBillApi.Do
       path: '/oa/document/document-dispatch-info',
       idField: 'id',
       queryParam: 'id',
+      resolveRoute: resolveOaDetailRoute('/oa/document/document-dispatch-info'),
     }),
     { field: 'docTitle', title: '公文标题', minWidth: 150 },
     {

@@ -50,6 +50,12 @@ const props = defineProps<{
 
 const route = useRoute();
 const userStore = useUserStore();
+/** 当前用户是否为单据创建人 */
+const isCreator = computed(() => {
+  const creator = formData.value?.creator;
+  if (!creator) return true;
+  return String(userStore.userInfo?.id) === String(creator);
+});
 const { closeCurrentTab } = useTabs();
 
 const formData = ref<Partial<ExpenseReimburseBillApi.ExpenseReimburseBill>>({});
@@ -212,7 +218,7 @@ async function loadData() {
         ? props.isApproval
         : !BpmProcessInstanceStatusEditValue.includes(
             data.processStatus as number,
-          );
+          ) || !isCreator.value;
 
     // 优先使用接口返回的关联差旅申请单，否则按单号查询
     if (data.travelBills?.length) {

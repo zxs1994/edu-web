@@ -7,6 +7,7 @@ import { getDictOptions } from '@vben/hooks';
 
 import { createRouterLinkColumn } from '#/adapter/vxe-table';
 import { getRangePickerDefaultProps } from '#/utils';
+import { resolveOaDetailRoute } from '#/utils/oa-route-resolver';
 import { getCurrentUserCompanyDeptTree } from '#/utils/dept-tree';
 
 /** 列表的搜索表单 */
@@ -92,6 +93,7 @@ export function useGridColumns(): VxeTableGridOptions<CarReturnBillApi.CarReturn
       path: '/oa/car/car-return-info',
       idField: 'id',
       queryParam: 'id',
+      resolveRoute: resolveOaDetailRoute('/oa/car/car-return-info'),
     }),
     {
       field: 'processInstanceId',

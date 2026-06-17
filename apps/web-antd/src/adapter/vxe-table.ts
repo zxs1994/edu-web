@@ -230,7 +230,14 @@ setupVbenVxeTable({
           return current;
         };
 
-        if (!props?.path && !props?.name) {
+        // 支持 resolveRoute 动态路由：根据行数据决定跳转目标
+        // 用于 OA 列表页：RUNNING 状态跳 BPM 详情页（有审批按钮），否则跳 OA info 页
+        let resolvedRoute: any = null;
+        if (typeof props?.resolveRoute === 'function') {
+          resolvedRoute = props.resolveRoute(row, column, params);
+        }
+
+        if (!resolvedRoute && !props?.path && !props?.name) {
           console.warn('CellRouterLink: 需要提供 path 或 name 属性');
           return row[column.field];
         }
@@ -238,32 +245,42 @@ setupVbenVxeTable({
         const handleClick = () => {
           const routeConfig: any = {};
 
-          if (props.name) {
-            routeConfig.name = props.name;
-          } else if (props.path) {
-            routeConfig.path = props.path;
-          }
-
-          // 初始化 query 对象
-          routeConfig.query = {};
-
-          // 1. 基础单一 id 传参（向后兼容）
-          if (props.idField) {
-            const idVal =
-              getValueByPath(row, props.idField) ?? row[props.idField];
-            if (idVal !== undefined) {
-              routeConfig.query[props.queryParam || 'id'] = idVal;
+          // resolveRoute 返回的路由配置优先级最高
+          if (resolvedRoute) {
+            if (resolvedRoute.name) {
+              routeConfig.name = resolvedRoute.name;
+            } else if (resolvedRoute.path) {
+              routeConfig.path = resolvedRoute.path;
             }
-          }
+            routeConfig.query = { ...(resolvedRoute.query || {}) };
+          } else {
+            if (props.name) {
+              routeConfig.name = props.name;
+            } else if (props.path) {
+              routeConfig.path = props.path;
+            }
 
-          // 2. 批量 query 参数：[{ key, field }]
-          if (Array.isArray(props.queryFields)) {
-            props.queryFields.forEach((q: any) => {
-              const val = getValueByPath(row, q.field) ?? row[q.field];
-              if (val !== undefined) {
-                routeConfig.query[q.key] = val;
+            // 初始化 query 对象
+            routeConfig.query = {};
+
+            // 1. 基础单一 id 传参（向后兼容）
+            if (props.idField) {
+              const idVal =
+                getValueByPath(row, props.idField) ?? row[props.idField];
+              if (idVal !== undefined) {
+                routeConfig.query[props.queryParam || 'id'] = idVal;
               }
-            });
+            }
+
+            // 2. 批量 query 参数：[{ key, field }]
+            if (Array.isArray(props.queryFields)) {
+              props.queryFields.forEach((q: any) => {
+                const val = getValueByPath(row, q.field) ?? row[q.field];
+                if (val !== undefined) {
+                  routeConfig.query[q.key] = val;
+                }
+              });
+            }
           }
 
           // 3. 固定查询参数（优先级：中等）
@@ -600,6 +617,7 @@ export function createRouterLinkColumn(config: {
   path: string;
   queryFields?: Array<{ field: string; key: string }>;
   queryParam?: string;
+  resolveRoute?: (row: any, column?: any, params?: any) => { path?: string; name?: string; query?: Record<string, any> } | null;
   title: string;
 }) {
   return {
@@ -617,6 +635,7 @@ export function createRouterLinkColumn(config: {
         idField: config.idField,
         queryParam: config.queryParam,
         queryFields: config.queryFields,
+        resolveRoute: config.resolveRoute,
       },
     },
   };

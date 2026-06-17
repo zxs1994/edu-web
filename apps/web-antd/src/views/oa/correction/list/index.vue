@@ -6,7 +6,6 @@ import { onActivated } from 'vue';
 // import { useRouter } from 'vue-router'; // 新增按钮已注释，暂不需要
 
 import { Page } from '@vben/common-ui';
-import { useUserStore } from '@vben/stores';
 import { downloadFileFromBlobPart } from '@vben/utils';
 
 import { message } from 'ant-design-vue';
@@ -26,7 +25,6 @@ import { $t } from '#/locales';
 
 import { useGridColumns, useGridFormSchema } from './data';
 
-const userStore = useUserStore();
 // const router = useRouter(); // 新增按钮已注释，暂不需要
 defineOptions({ name: 'OaCorrectionBillList' });
 
@@ -91,7 +89,6 @@ const [Grid, gridApi] = useVbenVxeGrid({
             pageNo: page.currentPage,
             pageSize: page.pageSize,
             ...formValues,
-            creator: userStore.userInfo?.id,
           });
         },
       },

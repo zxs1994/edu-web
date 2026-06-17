@@ -7,7 +7,6 @@ import { useRouter } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
 import { BpmProcessInstanceStatusEditValue } from '@vben/constants';
-import { useUserStore } from '@vben/stores';
 import { downloadFileFromBlobPart, isEmpty } from '@vben/utils';
 
 import { message } from 'ant-design-vue';
@@ -20,11 +19,11 @@ import {
   getSealApplyBillPage,
 } from '#/api/oa/seal/sealapply';
 import { $t } from '#/locales';
+import { getOaDetailRoute } from '#/utils/oa-route-resolver';
 
 import { SealSelectModal } from '../../components';
 import { useGridColumns, useGridFormSchema } from './data';
 
-const userStore = useUserStore();
 const router = useRouter();
 
 // 印章选择弹窗引用
@@ -49,12 +48,8 @@ function onRefresh() {
 
 /** 查看用印申请单详情 */
 function handleDetail(row: SealApplyBillApi.SealApplyBill) {
-  router.push({
-    path: '/seal/seal-apply-info',
-    query: {
-      id: row.id,
-    },
-  });
+  const route = getOaDetailRoute(row, '/seal/seal-apply-info');
+  router.push(route);
 }
 
 /** 删除用印申请单 */
@@ -153,7 +148,6 @@ const [Grid, gridApi] = useVbenVxeGrid({
             pageNo: page.currentPage,
             pageSize: page.pageSize,
             ...formValues,
-            creator: userStore.userInfo?.id,
           });
         },
       },

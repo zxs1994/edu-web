@@ -7,7 +7,6 @@ import { useRouter } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
 import { BpmProcessInstanceStatusEditValue } from '@vben/constants';
-import { useUserStore } from '@vben/stores';
 import { downloadFileFromBlobPart, isEmpty } from '@vben/utils';
 
 import { message } from 'ant-design-vue';
@@ -25,9 +24,10 @@ import {
 } from '#/api/oa/contract';
 import { $t } from '#/locales';
 
+import { getOaDetailRoute } from '#/utils/oa-route-resolver';
+
 import { useGridColumns, useGridFormSchema } from './data';
 
-const userStore = useUserStore();
 const router = useRouter();
 defineOptions({ name: 'OaContractBillList' });
 
@@ -43,10 +43,8 @@ function onRefresh() {
 } */
 
 function handleDetail(row: ContractBillApi.ContractBill) {
-  router.push({
-    path: '/oa/contract/contract-bill-info',
-    query: { id: row.id },
-  });
+  const route = getOaDetailRoute(row, '/oa/contract/contract-bill-info');
+  router.push(route);
 }
 
 async function handleDelete(row: ContractBillApi.ContractBill) {
@@ -129,7 +127,6 @@ const [Grid, gridApi] = useVbenVxeGrid({
             pageNo: page.currentPage,
             pageSize: page.pageSize,
             ...formValues,
-            creator: userStore.userInfo?.id,
           });
         },
       },

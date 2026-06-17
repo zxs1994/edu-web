@@ -3,7 +3,7 @@ import type { MenuRecordRaw } from '@vben/types';
 import { computed, onBeforeMount, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
-import { preferences, usePreferences } from '@vben/preferences';
+import { preferences, updatePreferences, usePreferences } from '@vben/preferences';
 import { useAccessStore } from '@vben/stores';
 import { findRootMenuByPath } from '@vben/utils';
 
@@ -115,6 +115,11 @@ function useMixedMenu() {
    */
   const handleMenuOpen = (key: string, parentsPath: string[]) => {
     if (parentsPath.length <= 1 && preferences.sidebar.autoActivateChild) {
+      // 当前路由为隐藏子路由（如编辑/详情页 hideInMenu: true）时，
+      // initMenu 自动展开父菜单会触发此回调，不应执行导航，否则会将路由推回父页面
+      if (route.meta?.hideInMenu) {
+        return;
+      }
       navigation(
         defaultSubMap.has(key) ? (defaultSubMap.get(key) as string) : key,
       );
@@ -140,6 +145,19 @@ function useMixedMenu() {
   watch(
     () => route.path,
     (path) => {
+      // 从"发起流程"进入 OA 表单页时，保持菜单上下文不变（header Tab 留在工作台）
+      // 时序说明：route.query 在 watcher 触发时已可用，而 sidebar.hidden 由 info
+      // 页面 onMounted 设置，晚于 watcher，因此用 query.from 作为进入信号
+      if (route.query.from === 'startProcess') {
+        return;
+      }
+
+      // 离开 info 表单页时：onBeforeRouteLeave 已将 sidebar.hidden 恢复为 false，
+      // 此处兜底确保 sidebar 可见，然后正常重算菜单
+      if (preferences.sidebar.hidden) {
+        updatePreferences({ sidebar: { hidden: false } });
+      }
+
       const currentPath = route?.meta?.activePath ?? route?.meta?.link ?? path;
       if (willOpenedByWindow(currentPath)) {
         return;

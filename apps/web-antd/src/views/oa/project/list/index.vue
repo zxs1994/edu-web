@@ -7,7 +7,6 @@ import { useRouter } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
 import { BpmProcessInstanceStatusEditValue } from '@vben/constants';
-import { useUserStore } from '@vben/stores';
 import { downloadFileFromBlobPart, isEmpty } from '@vben/utils';
 
 import { message } from 'ant-design-vue';
@@ -24,10 +23,10 @@ import {
   getProjectInitiationBillPage,
 } from '#/api/oa/project';
 import { $t } from '#/locales';
+import { getOaDetailRoute } from '#/utils/oa-route-resolver';
 
 import { useGridColumns, useGridFormSchema } from './data';
 
-const userStore = useUserStore();
 const router = useRouter();
 defineOptions({ name: 'OaProjectInitiationBillList' });
 
@@ -50,10 +49,8 @@ function handleEdit(row: ProjectInitiationBillApi.ProjectInitiationBill) {
 }
 
 function handleDetail(row: ProjectInitiationBillApi.ProjectInitiationBill) {
-  router.push({
-    path: '/oa/contract/project-initiation-info',
-    query: { id: row.id },
-  });
+  const route = getOaDetailRoute(row, '/oa/contract/project-initiation-info');
+  router.push(route);
 }
 
 async function handleDelete(
@@ -140,7 +137,6 @@ const [Grid, gridApi] = useVbenVxeGrid({
             pageNo: page.currentPage,
             pageSize: page.pageSize,
             ...formValues,
-            creator: userStore.userInfo?.id,
           });
         },
       },

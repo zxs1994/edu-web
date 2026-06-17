@@ -7,6 +7,7 @@ import { getDictOptions } from '@vben/hooks';
 
 import { createRouterLinkColumn } from '#/adapter/vxe-table';
 import { getRangePickerDefaultProps } from '#/utils';
+import { resolveOaDetailRoute } from '#/utils/oa-route-resolver';
 
 export function useGridFormSchema(): VbenFormSchema[] {
   return [
@@ -64,6 +65,7 @@ export function useGridColumns(): VxeTableGridOptions<ContractBillApi.ContractBi
       path: '/oa/contract/contract-bill-info',
       idField: 'id',
       queryParam: 'id',
+      resolveRoute: resolveOaDetailRoute('/oa/contract/contract-bill-info'),
     }),
     {
       field: 'processStatus',

@@ -68,7 +68,60 @@ async function generateAccessible(
           root.children[index] = route;
         }
       } else {
-        root.children?.push(route);
+        // 按 name 未匹配时，尝试按 path 匹配：
+        // 静态路由（如 name:'bpm'）与后端路由（如 name:'工作流'）可能 name 不同但 path 相同，
+        // 不合并会导致同一 path 出现两个父路由，静态子路由（hideInMenu 的表单页等）无法被正确解析
+        const pathIndex = root.children?.findIndex(
+          (item) => item.path === route.path,
+        );
+        if (
+          pathIndex !== undefined &&
+          pathIndex !== -1 &&
+          root.children
+        ) {
+          const existingRoute = root.children[pathIndex];
+          if (!existingRoute) {
+            root.children.push(route);
+            return;
+          }
+          // 选择 children 更多的路由作为主路由，将另一个的独有子路由合并进去
+          const existingCount = existingRoute.children?.length ?? 0;
+          const newCount = route.children?.length ?? 0;
+          if (newCount >= existingCount) {
+            // 新路由 children 更多或相等，把旧路由的独有子路由合并到新路由
+            if (existingRoute.children?.length) {
+              const newChildNames = new Set(
+                (route.children || [])
+                  .map((c: RouteRecordRaw) => c.name)
+                  .filter(Boolean),
+              );
+              for (const child of existingRoute.children) {
+                if (child.name && !newChildNames.has(child.name)) {
+                  (route.children ||= []).push(child);
+                }
+              }
+            }
+            // 移除旧的，添加合并后的新路由
+            root.children.splice(pathIndex, 1, route);
+          } else {
+            // 旧路由 children 更多，把新路由的独有子路由合并到旧路由
+            if (route.children?.length && existingRoute.children) {
+              const existingChildNames = new Set(
+                existingRoute.children
+                  .map((c: RouteRecordRaw) => c.name)
+                  .filter(Boolean),
+              );
+              for (const child of route.children) {
+                if (child.name && !existingChildNames.has(child.name)) {
+                  existingRoute.children.push(child);
+                }
+              }
+            }
+            // 旧路由已包含所有子路由，无需替换
+          }
+        } else {
+          root.children?.push(route);
+        }
       }
     } else {
       router.addRoute(route);

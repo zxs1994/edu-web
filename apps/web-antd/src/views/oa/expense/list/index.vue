@@ -10,7 +10,6 @@ import {
   BpmProcessInstanceStatus,
   BpmProcessInstanceStatusEditValue,
 } from '@vben/constants';
-import { useUserStore } from '@vben/stores';
 import { downloadFileFromBlobPart, isEmpty } from '@vben/utils';
 
 import { message } from 'ant-design-vue';
@@ -28,10 +27,10 @@ import {
   updateExpenseReimburseBill,
 } from '#/api/oa/expense';
 import { $t } from '#/locales';
+import { getOaDetailRoute } from '#/utils/oa-route-resolver';
 
 import { useGridColumns, useGridFormSchema } from './data';
 
-const userStore = useUserStore();
 const router = useRouter();
 defineOptions({ name: 'OaExpenseReimburseBillList' });
 
@@ -117,13 +116,11 @@ async function handleExport() {
 }
 
 function handleDetail(row: ExpenseReimburseBillApi.ExpenseReimburseBill) {
-  const path = row.billType === 1
+  const oaInfoPath = row.billType === 1
     ? '/oa/expense-travel/daily-expense-info'
     : '/oa/expense-travel/expense-reimburse-info';
-  router.push({
-    path,
-    query: { id: row.id },
-  });
+  const route = getOaDetailRoute(row, oaInfoPath);
+  router.push(route);
 }
 
 async function handleMarkPaid(row: ExpenseReimburseBillApi.ExpenseReimburseBill) {
@@ -169,7 +166,6 @@ const [Grid, gridApi] = useVbenVxeGrid({
             pageNo: page.currentPage,
             pageSize: page.pageSize,
             ...formValues,
-            creator: userStore.userInfo?.id,
           });
         },
       },

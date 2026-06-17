@@ -7,7 +7,6 @@ import { useRouter } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
 import { BpmProcessInstanceStatusEditValue } from '@vben/constants';
-import { useUserStore } from '@vben/stores';
 import { downloadFileFromBlobPart, isEmpty } from '@vben/utils';
 
 import { message } from 'ant-design-vue';
@@ -25,10 +24,10 @@ import {
 } from '#/api/oa/document';
 import { getSimpleDeptList } from '#/api/system/dept';
 import { $t } from '#/locales';
+import { getOaDetailRoute } from '#/utils/oa-route-resolver';
 
 import { cachedDeptList, useGridColumns, useGridFormSchema } from './data';
 
-const userStore = useUserStore();
 const router = useRouter();
 defineOptions({ name: 'OaDocumentDispatchBillList' });
 
@@ -44,10 +43,8 @@ function onRefresh() {
 } */
 
 function handleDetail(row: DocumentDispatchBillApi.DocumentDispatchBill) {
-  router.push({
-    path: '/oa/document/document-dispatch-info',
-    query: { id: row.id },
-  });
+  const route = getOaDetailRoute(row, '/oa/document/document-dispatch-info');
+  router.push(route);
 }
 
 async function handleDelete(row: DocumentDispatchBillApi.DocumentDispatchBill) {
@@ -132,7 +129,6 @@ const [Grid, gridApi] = useVbenVxeGrid({
             pageNo: page.currentPage,
             pageSize: page.pageSize,
             ...formValues,
-            creator: userStore.userInfo?.id,
           });
         },
       },

@@ -13,10 +13,11 @@ import type { headerDataProps } from './typing';
 
 import type { VbenFormSchema } from '#/adapter/form';
 
-import { onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 
 import { Page } from '@vben/common-ui';
 import { BpmProcessInstanceStatus } from '@vben/constants';
+import { useUserStore } from '@vben/stores';
 
 import { Spin } from 'ant-design-vue';
 
@@ -89,6 +90,17 @@ const activityNodes = ref<any[]>(props.activityNodes || []);
 // 使用公共的 footerLeft composable
 const { footerLeft } = useFooterLeft();
 
+// 当前用户是否为单据创建人（新建未保存的单据 creator 为空，默认允许操作）
+const userStore = useUserStore();
+const isCreator = computed(() => {
+  const creator = props.headerData?.creator;
+  if (!creator) return true;
+  return String(userStore.userInfo?.id) === String(creator);
+});
+
+// 表单是否禁用（综合 props.disabled 和创建人校验）
+const formDisabled = computed(() => props.disabled || !isCreator.value);
+
 // 表单实例
 let formApi: null | ReturnType<typeof useVbenForm>[1] = null;
 let FormComponent: null | ReturnType<typeof useVbenForm>[0] = null;
@@ -104,7 +116,7 @@ function initForm() {
         },
         formItemClass: 'col-span-1', // 每行四列，所以每个表单项占1/4
         labelWidth: 120,
-        disabled: props.disabled,
+        disabled: formDisabled.value,
       },
       layout: 'horizontal',
       schema: props.formSchema,
@@ -247,9 +259,9 @@ watch(
   { immediate: true, deep: true },
 );
 
-// 监听disabled状态变化
+// 监听disabled状态变化（包含 props.disabled 和创建人校验）
 watch(
-  () => props.disabled,
+  formDisabled,
   (disabled) => {
     if (formApi && props.formSchema) {
       // 更新所有表单项的disabled状态
@@ -415,6 +427,7 @@ defineExpose({
             @delete="deleteForm"
             :process-status="props.headerData.processStatus"
             :bill-code="props.headerData.billCode"
+            :creator="props.headerData.creator"
             :hide-submit="props.hideSubmit"
             :hide-save="props.hideSave"
             :hide-delete="props.hideDelete"
@@ -539,6 +552,10 @@ defineExpose({
 }
 
 .footer-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
   padding: 10px 16px;
 }
 </style>

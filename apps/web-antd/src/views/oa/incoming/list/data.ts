@@ -5,6 +5,8 @@ import type { IncomingDocumentBillApi } from '#/api/oa/incoming';
 import { DICT_TYPE } from '@vben/constants';
 import { getDictOptions } from '@vben/hooks';
 
+import { resolveOaDetailRoute } from '#/utils/oa-route-resolver';
+
 import { createRouterLinkColumn } from '#/adapter/vxe-table';
 import { getRangePickerDefaultProps } from '#/utils';
 
@@ -50,6 +52,7 @@ export function useGridColumns(): VxeTableGridOptions<IncomingDocumentBillApi.In
       path: '/oa/document/incoming-document-info',
       idField: 'id',
       queryParam: 'id',
+      resolveRoute: resolveOaDetailRoute('/oa/document/incoming-document-info'),
     }),
     { field: 'docTitle', title: '公文标题', minWidth: 180 },
     { field: 'docNumber', title: '来文字号', minWidth: 130 },

@@ -10,7 +10,6 @@ import {
   BpmProcessInstanceStatus,
   BpmProcessInstanceStatusEditValue,
 } from '@vben/constants';
-import { useUserStore } from '@vben/stores';
 import { downloadFileFromBlobPart, isEmpty } from '@vben/utils';
 
 import { message } from 'ant-design-vue';
@@ -28,7 +27,6 @@ import { $t } from '#/locales';
 import { useGridColumns, useGridFormSchema } from './data';
 
 defineOptions({ name: 'OaMeetingRoomBookingList' });
-const userStore = useUserStore();
 const router = useRouter();
 
 /** 刷新表格 */
@@ -190,8 +188,6 @@ const [Grid, gridApi] = useVbenVxeGrid({
             pageNo: page.currentPage,
             pageSize: page.pageSize,
             ...formValues,
-            companyId: userStore.userInfo?.companyId,
-            creator: userStore.userInfo?.id,
           });
         },
       },

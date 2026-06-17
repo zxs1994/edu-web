@@ -2,7 +2,7 @@
 import type { VbenFormSchema } from '#/adapter/form';
 import type { IncomingDocumentBillApi } from '#/api/oa/incoming';
 
-import { nextTick, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
 import { onBeforeRouteLeave, useRoute } from 'vue-router';
 
 import { Loading } from '@vben/common-ui';
@@ -46,6 +46,12 @@ const props = defineProps<{
 
 const route = useRoute();
 const userStore = useUserStore();
+/** 当前用户是否为单据创建人 */
+const isCreator = computed(() => {
+  const creator = formData.value?.creator;
+  if (!creator) return true;
+  return String(userStore.userInfo?.id) === String(creator);
+});
 const { closeCurrentTab } = useTabs();
 
 const formData = ref<Partial<IncomingDocumentBillApi.IncomingDocumentBill>>({});
@@ -175,7 +181,7 @@ async function loadData() {
         ? props.isApproval
         : !BpmProcessInstanceStatusEditValue.includes(
             formData.value.processStatus as number,
-          );
+          ) || !isCreator.value;
 
     if (basicFormRef.value) {
       await basicFormRef.value.setFormValues(data);
