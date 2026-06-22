@@ -47,6 +47,7 @@ export function useFormSchema(travelApplyModalRef?: any): VbenFormSchema[] {
       fieldName: 'totalAmount',
       label: '报销总金额',
       rules: 'required',
+      defaultValue: 0,
       component: 'InputAmount',
       componentProps: {
         placeholder: '请输入报销总金额',

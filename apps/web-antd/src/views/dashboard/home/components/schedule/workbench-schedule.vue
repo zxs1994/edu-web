@@ -157,8 +157,7 @@ async function handleViewDetail(schedule: SystemScheduleApi.Schedule) {
 
 // 跳转到全部日程
 function handleViewAll() {
-  // 使用路径跳转，因为路由名称可能不同
-  router.push({ path: '/oa/schedule' });
+  router.push({ path: '/workspace/schedule' });
 }
 
 // 加载所有日程数据

@@ -49,12 +49,12 @@ const rightSlots = computed(() => {
     });
   }
 
-  if (preferencesButtonPosition.value.header) {
-    list.push({
-      index: REFERENCE_VALUE + 10,
-      name: 'preferences',
-    });
-  }
+  // if (preferencesButtonPosition.value.header) {
+  //   list.push({
+  //     index: REFERENCE_VALUE + 10,
+  //     name: 'preferences',
+  //   });
+  // }
   if (preferences.widget.themeToggle) {
     list.push({
       index: REFERENCE_VALUE + 20,

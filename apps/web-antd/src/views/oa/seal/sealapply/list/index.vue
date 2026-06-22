@@ -39,7 +39,7 @@ function onRefresh() {
 /** 新增用印申请单 */
 /* function handleCreate() {
   router.push({
-    path: '/seal/seal-apply-info',
+    path: '/oa/seal/seal-apply-info',
     query: {
       t: Date.now(), // 添加时间戳作为随机串
     },
@@ -48,7 +48,7 @@ function onRefresh() {
 
 /** 查看用印申请单详情 */
 function handleDetail(row: SealApplyBillApi.SealApplyBill) {
-  const route = getOaDetailRoute(row, '/seal/seal-apply-info');
+  const route = getOaDetailRoute(row, '/oa/seal/seal-apply-info');
   router.push(route);
 }
 

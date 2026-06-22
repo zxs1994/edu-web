@@ -28,7 +28,7 @@ import { getTravelApplyBillPage } from '#/api/oa/travel';
 import { AttachmentList } from '#/components/attachment-list';
 import { BasicForm, CardContainer } from '#/components/basic-form';
 import { ExpenseDetailList } from '#/components/expense-detail-list';
-import { filterEmptyExpenseDetails, normalizeExpenseDetail } from '#/components/expense-detail-list/data';
+import { filterEmptyExpenseDetails, normalizeExpenseDetail, normalizeTotalAmount } from '#/components/expense-detail-list/data';
 import { TravelApplySelectModal } from '#/views/oa/travel/components';
 import { $t } from '#/locales';
 
@@ -130,10 +130,12 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
 
     const validDetails = filterEmptyExpenseDetails(formData.value.details);
     formData.value.details = validDetails;
+    const totalAmount = normalizeTotalAmount(formValues.totalAmount, validDetails);
 
     const data = {
       ...formData.value,
       ...formValues,
+      totalAmount,
       details: validDetails,
     };
 
@@ -202,6 +204,7 @@ async function loadData() {
       createTime: new Date(),
       paymentStatus: 0,
       billType: 2,
+      totalAmount: 0,
       billCode: '',
       details: [],
       attachments: [],
@@ -232,17 +235,20 @@ async function loadData() {
     const details = (data.details || []).map((item, index) =>
       normalizeExpenseDetail(item, index),
     );
+    const totalAmount = normalizeTotalAmount(data.totalAmount, details);
 
     formData.value = {
       ...data,
       travelCause,
       details,
+      totalAmount,
     };
 
     if (basicFormRef.value) {
       await basicFormRef.value.setFormValues({
         ...data,
         travelCause,
+        totalAmount,
       });
     }
   } catch (error) {

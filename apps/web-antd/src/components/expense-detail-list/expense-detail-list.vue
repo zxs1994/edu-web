@@ -174,11 +174,20 @@ watch(
       tableData.value = [];
       await nextTick();
       gridApi.grid.reloadData([]);
+      emit('update:total', 0);
       return;
     }
     await nextTick();
     tableData.value = details.map((item, index) => normalizeExpenseDetail(item, index));
     gridApi.grid.reloadData(tableData.value);
+    emit(
+      'update:total',
+      Number(
+        tableData.value
+          .reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+          .toFixed(2),
+      ),
+    );
   },
   { immediate: true, deep: true },
 );

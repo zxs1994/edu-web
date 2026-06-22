@@ -164,9 +164,12 @@ async function initProcessInfo(row: any, formVariables?: any) {
     }
     // 情况二：业务表单
   } else if (row.formCustomCreatePath) {
-    // 这里暂时无需加载流程图，因为跳出到另外个 Tab；
     await router.push({
       path: row.formCustomCreatePath,
+      query: {
+        from: 'startProcess',
+        processDefinitionKey: row.key,
+      },
     });
   }
 }

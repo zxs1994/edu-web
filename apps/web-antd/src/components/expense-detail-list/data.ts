@@ -63,6 +63,31 @@ export function filterEmptyExpenseDetails(
   return (details || []).filter((item) => !isEmptyExpenseDetail(item));
 }
 
+/** 根据费用明细计算报销总金额 */
+export function calcExpenseDetailsTotal(
+  details?: ExpenseReimburseBillApi.ExpenseReimburseDetail[],
+): number {
+  return Number(
+    filterEmptyExpenseDetails(details)
+      .reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+      .toFixed(2),
+  );
+}
+
+/** 报销总金额：无明细或未填时默认为 0 */
+export function normalizeTotalAmount(
+  totalAmount: unknown,
+  details?: ExpenseReimburseBillApi.ExpenseReimburseDetail[],
+): number {
+  if (totalAmount !== null && totalAmount !== undefined && totalAmount !== '') {
+    const amount = Number(totalAmount);
+    if (!Number.isNaN(amount)) {
+      return amount;
+    }
+  }
+  return calcExpenseDetailsTotal(details);
+}
+
 /**
  * 标准化费用明细行，确保 VxeTable 能正确渲染
  */

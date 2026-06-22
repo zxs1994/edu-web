@@ -30,6 +30,7 @@ export namespace TravelApplyBillApi {
     companion: string;
     estimatedCost: number;
     reimbursementStatus?: number;
+    travelType?: number;
     creator?: number;
     creatorName?: string;
     companyId: number;

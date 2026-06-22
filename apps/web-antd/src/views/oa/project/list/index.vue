@@ -6,7 +6,7 @@ import { onActivated, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
-import { BpmProcessInstanceStatusEditValue } from '@vben/constants';
+import { BpmProcessInstanceStatus } from '@vben/constants';
 import { downloadFileFromBlobPart, isEmpty } from '@vben/utils';
 
 import { message } from 'ant-design-vue';
@@ -41,12 +41,12 @@ function onRefresh() {
   });
 } */
 
-function handleEdit(row: ProjectInitiationBillApi.ProjectInitiationBill) {
+/* function handleEdit(row: ProjectInitiationBillApi.ProjectInitiationBill) {
   router.push({
     path: '/oa/contract/project-initiation-info',
     query: { id: row.id },
   });
-}
+} */
 
 function handleDetail(row: ProjectInitiationBillApi.ProjectInitiationBill) {
   const route = getOaDetailRoute(row, '/oa/contract/project-initiation-info');
@@ -88,7 +88,7 @@ async function handleDeleteBatch() {
   const checkedRecords = gridApi.grid.getCheckboxRecords();
   const notAllowed = checkedRecords.filter(
     (r: ProjectInitiationBillApi.ProjectInitiationBill) =>
-      !BpmProcessInstanceStatusEditValue.includes(r.processStatus as number),
+      r.processStatus !== BpmProcessInstanceStatus.NOT_START,
   );
   if (notAllowed.length > 0) {
     message.warning(
@@ -191,6 +191,12 @@ onActivated(() => {
         <TableAction
           :actions="[
             {
+              label: $t('common.detail'),
+              type: 'link',
+              icon: ACTION_ICON.VIEW,
+              onClick: handleDetail.bind(null, row),
+            },
+            /* {
               label: $t('common.edit'),
               type: 'link',
               ifShow: () =>
@@ -199,26 +205,18 @@ onActivated(() => {
                 ),
               auth: ['oa:project-initiation-bill:update'],
               onClick: handleEdit.bind(null, row),
-            },
+            }, */
             {
               label: $t('common.delete'),
               type: 'link',
               danger: true,
               ifShow: () =>
-                BpmProcessInstanceStatusEditValue.includes(
-                  row.processStatus as number,
-                ),
+                row.processStatus === BpmProcessInstanceStatus.NOT_START,
               auth: ['oa:project-initiation-bill:delete'],
               popConfirm: {
                 title: $t('ui.actionMessage.deleteConfirm', [row.billCode]),
                 confirm: handleDelete.bind(null, row),
               },
-            },
-            {
-              label: $t('common.detail'),
-              type: 'link',
-              icon: ACTION_ICON.VIEW,
-              onClick: handleDetail.bind(null, row),
             },
           ]"
         />

@@ -27,7 +27,7 @@ import {
   updateExpenseReimburseBill,
 } from '#/api/oa/expense';
 import { $t } from '#/locales';
-import { getOaDetailRoute } from '#/utils/oa-route-resolver';
+import { getExpenseDetailRoute } from '#/utils/oa-route-resolver';
 
 import { useGridColumns, useGridFormSchema } from './data';
 
@@ -116,11 +116,7 @@ async function handleExport() {
 }
 
 function handleDetail(row: ExpenseReimburseBillApi.ExpenseReimburseBill) {
-  const oaInfoPath = row.billType === 1
-    ? '/oa/expense-travel/daily-expense-info'
-    : '/oa/expense-travel/expense-reimburse-info';
-  const route = getOaDetailRoute(row, oaInfoPath);
-  router.push(route);
+  router.push(getExpenseDetailRoute(row));
 }
 
 async function handleMarkPaid(row: ExpenseReimburseBillApi.ExpenseReimburseBill) {

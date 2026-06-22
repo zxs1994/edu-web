@@ -39,6 +39,11 @@ export function useFormSchema(): VbenFormSchema[] {
       component: 'Input',
       dependencies: { triggerFields: [''], show: () => false },
     },
+    {
+      fieldName: 'isImportant',
+      component: 'Input',
+      dependencies: { triggerFields: [''], show: () => false },
+    },
 
     // ===== 基本信息 =====
     {
@@ -119,6 +124,7 @@ export function useFormSchema(): VbenFormSchema[] {
     {
       fieldName: 'deptId',
       label: '发文部门',
+      rules: 'required',
       component: 'ApiTreeSelect',
       componentProps: {
         allowClear: true,

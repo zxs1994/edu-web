@@ -151,10 +151,10 @@ export function useGridColumns(): VxeTableGridOptions<SealApplyBillApi.SealApply
     createRouterLinkColumn({
       field: 'billCode',
       title: '单据编号',
-      path: '/seal/seal-apply-info',
+      path: '/oa/seal/seal-apply-info',
       idField: 'id',
       queryParam: 'id',
-      resolveRoute: resolveOaDetailRoute('/seal/seal-apply-info'),
+      resolveRoute: resolveOaDetailRoute('/oa/seal/seal-apply-info'),
     }),
     {
       field: 'processStatus',

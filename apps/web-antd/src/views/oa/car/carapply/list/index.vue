@@ -37,7 +37,7 @@ function onRefresh() {
 /** 新增用车申请单 */
 /* function handleCreate() {
   router.push({
-    path: '/car/car-apply-info',
+    path: '/oa/car/car-apply-info',
     query: {
       t: Date.now(), // 添加时间戳作为随机串
     },
@@ -46,7 +46,7 @@ function onRefresh() {
 
 /** 查看用车申请单详情 */
 function handleDetail(row: CarApplyBillApi.CarApplyBill) {
-  const route = getOaDetailRoute(row, '/car/car-apply-info');
+  const route = getOaDetailRoute(row, '/oa/car/car-apply-info');
   router.push(route);
 }
 

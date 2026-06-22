@@ -438,12 +438,12 @@ const headerSlots = computed(() => {
         <slot v-if="accessStore.isLockScreen" name="lock-screen"></slot>
       </Transition>
 
-      <template v-if="preferencesButtonPosition.fixed">
-        <Preferences
-          class="z-100 fixed right-0 top-1/2 -translate-y-1/2 transform"
-          @clear-preferences-and-logout="clearPreferencesAndLogout"
-        />
-      </template>
+      <!--      <template v-if="preferencesButtonPosition.fixed">-->
+      <!--        <Preferences-->
+      <!--          class="z-100 fixed right-0 top-1/2 -translate-y-1/2 transform"-->
+      <!--          @clear-preferences-and-logout="clearPreferencesAndLogout"-->
+      <!--        />-->
+      <!--      </template>-->
       <VbenBackTop />
     </template>
   </VbenAdminLayout>

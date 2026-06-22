@@ -47,6 +47,21 @@ const props = defineProps<{
 
 const route = useRoute();
 const userStore = useUserStore();
+
+const OVERSEAS_PROCESS_KEY = 'oa_travel_apply_bill_copy';
+
+/** 是否为出境差旅申请 */
+const isOverseasTravel = computed(() => {
+  if (formData.value.travelType === 2) return true;
+  if (route.query.processDefinitionKey === OVERSEAS_PROCESS_KEY) return true;
+  if (props.processDefinition?.key === OVERSEAS_PROCESS_KEY) return true;
+  return false;
+});
+
+const billName = computed(() =>
+  isOverseasTravel.value ? '出境差旅申请单' : '差旅申请单',
+);
+
 /** 当前用户是否为单据创建人 */
 const isCreator = computed(() => {
   const creator = formData.value?.creator;
@@ -100,6 +115,7 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
     const data = {
       ...formData.value,
       ...formValues,
+      travelType: isOverseasTravel.value ? 2 : (formData.value.travelType ?? 1),
     };
 
     id = await (isSubmit
@@ -166,6 +182,7 @@ async function loadData() {
       processStatus: BpmProcessInstanceStatus.NOT_START,
       createTime: new Date(),
       reimbursementStatus: 0,
+      travelType: isOverseasTravel.value ? 2 : 1,
       billCode: '',
       itineraries: [],
       attachments: [],
@@ -245,7 +262,7 @@ onBeforeRouteLeave(() => {
       ref="basicFormRef"
       :header-data="{
         ...formData,
-        billName: '差旅申请单',
+        billName,
       }"
       :form-data="formData"
       :form-schema="formSchema"

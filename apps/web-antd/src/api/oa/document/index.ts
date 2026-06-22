@@ -16,6 +16,7 @@ export namespace DocumentDispatchBillApi {
     docNumberPrefix?: string;
     docNumberYear?: number;
     docNumberSerial?: number;
+    isImportant?: number;
     urgencyLevel?: number;
     disclosureCategory?: number;
     issueDate?: string;

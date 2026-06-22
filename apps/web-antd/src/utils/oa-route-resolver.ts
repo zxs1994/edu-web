@@ -58,3 +58,31 @@ export function getOaDetailRoute(
     query: { id: row.id },
   };
 }
+
+/** 报销单列表：按 billType 解析详情路由（1=日常报销，其他=差旅报销） */
+export function resolveExpenseDetailRoute(row: any) {
+  const oaInfoPath =
+    row.billType === 1
+      ? '/oa/expense-travel/daily-expense-info'
+      : '/oa/expense-travel/expense-reimburse-info';
+  return resolveOaDetailRoute(oaInfoPath)(row);
+}
+
+export function getExpenseDetailRoute(row: any) {
+  const oaInfoPath =
+    row.billType === 1
+      ? '/oa/expense-travel/daily-expense-info'
+      : '/oa/expense-travel/expense-reimburse-info';
+  return getOaDetailRoute(row, oaInfoPath);
+}
+
+const TRAVEL_APPLY_INFO_PATH = '/oa/expense-travel/travel-apply-info';
+
+/** 差旅申请列表详情路由 */
+export function resolveTravelDetailRoute(row: any) {
+  return resolveOaDetailRoute(TRAVEL_APPLY_INFO_PATH)(row);
+}
+
+export function getTravelDetailRoute(row: any) {
+  return getOaDetailRoute(row, TRAVEL_APPLY_INFO_PATH);
+}

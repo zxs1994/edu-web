@@ -24,7 +24,7 @@ const STORAGE_KEYS = {
 } as const;
 
 // 偏好设置迁移版本号，每次需要强制覆盖旧缓存中的默认值时递增
-const MIGRATION_VERSION = 5;
+const MIGRATION_VERSION = 6;
 
 class PreferenceManager {
   private cache: StorageManager;

@@ -32,6 +32,7 @@ export function useFormSchema(): VbenFormSchema[] {
       fieldName: 'totalAmount',
       label: '报销总金额',
       rules: 'required',
+      defaultValue: 0,
       component: 'InputAmount',
       componentProps: {
         placeholder: '自动汇总',

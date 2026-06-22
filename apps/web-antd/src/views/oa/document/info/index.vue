@@ -265,6 +265,7 @@ async function loadData() {
       processStatus: BpmProcessInstanceStatus.NOT_START,
       createTime: new Date(),
       urgencyLevel: 0,
+      isImportant: 0,
       attachments: [],
     };
     return;

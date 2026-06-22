@@ -23,7 +23,7 @@ import {
   getTravelApplyBillPage,
 } from '#/api/oa/travel';
 import { $t } from '#/locales';
-import { getOaDetailRoute } from '#/utils/oa-route-resolver';
+import { getTravelDetailRoute } from '#/utils/oa-route-resolver';
 
 import { useGridColumns, useGridFormSchema } from './data';
 
@@ -42,8 +42,7 @@ function onRefresh() {
 } */
 
 function handleDetail(row: TravelApplyBillApi.TravelApplyBill) {
-  const route = getOaDetailRoute(row, '/oa/expense-travel/travel-apply-info');
-  router.push(route);
+  router.push(getTravelDetailRoute(row));
 }
 
 async function handleDelete(row: TravelApplyBillApi.TravelApplyBill) {

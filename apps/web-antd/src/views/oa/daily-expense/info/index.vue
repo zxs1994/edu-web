@@ -29,6 +29,7 @@ import { ExpenseDetailList } from '#/components/expense-detail-list';
 import {
   filterEmptyExpenseDetails,
   normalizeExpenseDetail,
+  normalizeTotalAmount,
 } from '#/components/expense-detail-list/data';
 import { $t } from '#/locales';
 
@@ -104,11 +105,13 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
 
     const validDetails = filterEmptyExpenseDetails(formData.value.details);
     formData.value.details = validDetails;
+    const totalAmount = normalizeTotalAmount(formValues.totalAmount, validDetails);
 
     const data = {
       ...formData.value,
       ...formValues,
       billType: 1,
+      totalAmount,
       details: validDetails,
     };
 
@@ -177,6 +180,7 @@ async function loadData() {
       createTime: new Date(),
       paymentStatus: 0,
       billType: 1,
+      totalAmount: 0,
       billCode: '',
       details: [],
       attachments: [],
@@ -197,15 +201,18 @@ async function loadData() {
     const details = (data.details || []).map((item, index) =>
       normalizeExpenseDetail(item, index),
     );
+    const totalAmount = normalizeTotalAmount(data.totalAmount, details);
 
     formData.value = {
       ...data,
       details,
+      totalAmount,
     };
 
     if (basicFormRef.value) {
       await basicFormRef.value.setFormValues({
         ...data,
+        totalAmount,
       });
     }
   } catch (error) {

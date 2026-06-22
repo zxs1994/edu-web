@@ -90,10 +90,10 @@ export function useGridColumns(): VxeTableGridOptions<CarApplyBillApi.CarApplyBi
     createRouterLinkColumn({
       field: 'billCode',
       title: '单据编号',
-      path: '/car/car-apply-info',
+      path: '/oa/car/car-apply-info',
       idField: 'id',
       queryParam: 'id',
-      resolveRoute: resolveOaDetailRoute('/car/car-apply-info'),
+      resolveRoute: resolveOaDetailRoute('/oa/car/car-apply-info'),
     }),
     {
       field: 'processStatus',

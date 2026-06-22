@@ -15,6 +15,8 @@ export const overridesPreferences = defineOverridesPreferences({
     layout: 'mixed-nav',
     /** 默认首页路径 */
     defaultHomePath: '/workspace',
+    /** 隐藏偏好设置按钮 */
+    enablePreferences: false,
   },
   // 自定义应用 Logo（将图片放在 apps/web-antd/public/static/imgs/ 目录下）
   /* eslint-disable */

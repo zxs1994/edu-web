@@ -7,7 +7,7 @@ import { getDictOptions } from '@vben/hooks';
 
 import { createRouterLinkColumn } from '#/adapter/vxe-table';
 import { getRangePickerDefaultProps } from '#/utils';
-import { resolveOaDetailRoute } from '#/utils/oa-route-resolver';
+import { resolveTravelDetailRoute } from '#/utils/oa-route-resolver';
 
 export function useGridFormSchema(): VbenFormSchema[] {
   return [
@@ -51,8 +51,15 @@ export function useGridColumns(): VxeTableGridOptions<TravelApplyBillApi.TravelA
       path: '/oa/expense-travel/travel-apply-info',
       idField: 'id',
       queryParam: 'id',
-      resolveRoute: resolveOaDetailRoute('/oa/expense-travel/travel-apply-info'),
+      resolveRoute: resolveTravelDetailRoute,
     }),
+    {
+      field: 'travelType',
+      title: '申请类型',
+      width: 100,
+      formatter: ({ cellValue }: { cellValue: number }) =>
+        cellValue === 2 ? '出境差旅' : '国内差旅',
+    },
     {
       field: 'processStatus',
       title: '单据状态',
