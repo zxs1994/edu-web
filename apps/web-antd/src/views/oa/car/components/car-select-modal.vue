@@ -15,15 +15,15 @@ import { useCarSelectColumns, useCarSelectFormSchema } from './car-select-data';
 
 /** 定义组件事件 */
 const emit = defineEmits<{
-  (e: 'select', car: CarApi.Car): void;
+  (e: 'select', cars: CarApi.Car[]): void;
 }>();
 
 const formData = reactive({
-  selectedCar: null as CarApi.Car | null,
+  selectedCars: [] as CarApi.Car[],
 });
 
 /** 表格实例 */
-const [Grid] = useVbenVxeGrid({
+const [Grid, gridApi] = useVbenVxeGrid({
   separator: false,
   formOptions: {
     schema: useCarSelectFormSchema(),
@@ -53,7 +53,7 @@ const [Grid] = useVbenVxeGrid({
     toolbarConfig: {
       enabled: false,
     },
-    radioConfig: {
+    checkboxConfig: {
       highlight: true,
     },
     pagerConfig: {
@@ -61,12 +61,46 @@ const [Grid] = useVbenVxeGrid({
     },
   } as VxeTableGridOptions<CarApi.Car>,
   gridEvents: {
-    radioChange: ({ row }: { row: CarApi.Car }) => {
-      formData.selectedCar = row;
+    checkboxChange: ({
+      checked,
+      row,
+    }: {
+      checked: boolean;
+      row: CarApi.Car;
+    }) => {
+      if (checked) {
+        formData.selectedCars.push(row);
+      } else {
+        formData.selectedCars = formData.selectedCars.filter(
+          (item) => item.id !== row.id,
+        );
+      }
+    },
+    checkboxAll: ({
+      checked,
+      records,
+    }: {
+      checked: boolean;
+      records: CarApi.Car[];
+    }) => {
+      if (checked) {
+        // 添加所有未选中的记录
+        for (const row of records) {
+          if (!formData.selectedCars.some((item) => item.id === row.id)) {
+            formData.selectedCars.push(row);
+          }
+        }
+      } else {
+        // 移除当前页的所有记录
+        const pageIds = new Set(records.map((r) => r.id));
+        formData.selectedCars = formData.selectedCars.filter(
+          (item) => !pageIds.has(item.id),
+        );
+      }
     },
     cellDblclick: ({ row }: { row: CarApi.Car }) => {
-      // 双击直接选择
-      formData.selectedCar = row;
+      // 双击直接选择单车
+      formData.selectedCars = [row];
       handleConfirm();
     },
   },
@@ -76,6 +110,13 @@ const [Grid] = useVbenVxeGrid({
 const [Modal, modalApi] = useVbenModal({
   title: '选择车辆',
   class: 'w-3/5 max-w-4xl',
+  async onOpenChange(isOpen: boolean) {
+    if (isOpen) {
+      // 打开弹窗时重置选中状态
+      formData.selectedCars = [];
+      await gridApi.grid.clearCheckboxRow();
+    }
+  },
   async onConfirm() {
     return handleConfirm();
   },
@@ -83,13 +124,14 @@ const [Modal, modalApi] = useVbenModal({
 
 /** 确认选择 */
 async function handleConfirm() {
-  if (!formData.selectedCar) {
+  if (formData.selectedCars.length === 0) {
     message.error('请选择车辆');
     return false;
   }
 
-  emit('select', formData.selectedCar);
-  formData.selectedCar = null;
+  emit('select', [...formData.selectedCars]);
+  formData.selectedCars = [];
+  await gridApi.grid.clearCheckboxRow();
   await modalApi.close();
   return true;
 }
@@ -97,6 +139,7 @@ async function handleConfirm() {
 /** 暴露modal API供外部调用 */
 defineExpose({
   modalApi,
+  gridApi,
 });
 </script>
 

@@ -121,10 +121,12 @@ async function handleExport() {
   downloadFileFromBlobPart({ fileName: '用车申请单.xls', source: data });
 }
 
-// 处理车辆选择
-function handleCarSelect(car: any) {
-  gridApi.formApi.setFieldValue('carNo', car.carNo);
-  gridApi.formApi.setFieldValue('carId', car.id);
+// 处理车辆选择（多选弹窗，取第一辆车作为搜索条件）
+function handleCarSelect(cars: any[]) {
+  if (Array.isArray(cars) && cars.length > 0) {
+    gridApi.formApi.setFieldValue('carNo', cars[0]!.carNo);
+    gridApi.formApi.setFieldValue('carId', cars[0]!.id);
+  }
 }
 
 const [Grid, gridApi] = useVbenVxeGrid({

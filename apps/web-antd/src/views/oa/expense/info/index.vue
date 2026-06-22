@@ -390,6 +390,14 @@ onBeforeRouteLeave(() => {
         <div class="copy-reason-text">抄送意见：{{ props.copyReason }}</div>
       </template>
       <template #form-extension>
+        <Alert
+          v-if="route.query.from === 'startProcess'"
+          type="info"
+          show-icon
+          :closable="false"
+          message="提示：大额开支理事会事前审议。"
+          style="margin-bottom: 16px;"
+        />
         <!-- 关联差旅申请单信息列表 -->
         <CardContainer title="关联出差信息">
           <Table

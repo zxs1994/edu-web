@@ -14,7 +14,7 @@ import { useTabs } from '@vben/hooks';
 import { preferences, updatePreferences } from '@vben/preferences';
 import { useUserStore } from '@vben/stores';
 
-import { Button, message } from 'ant-design-vue';
+import { Alert, Button, message } from 'ant-design-vue';
 
 import { withdrawProcessToStart } from '#/api/bpm/task';
 import {
@@ -365,6 +365,14 @@ onBeforeRouteLeave(() => {
       </template>
       <!-- 扩展插槽，用于明细表格等 -->
       <template #form-extension>
+        <Alert
+          v-if="route.query.from === 'startProcess'"
+          type="info"
+          show-icon
+          :closable="false"
+          message="提示：对外签约、重大公示文件：同步关联合同/发文审批流程，凭有效审批单用印。"
+          style="margin-bottom: 16px;"
+        />
         <!-- 附件列表 -->
         <CardContainer :title="$t('common.attachmentInfo')">
           <template #extra>

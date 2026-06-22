@@ -53,7 +53,7 @@ export function useCarSelectFormSchema(): VbenFormSchema[] {
 export function useCarSelectColumns(): VxeTableGridOptions<CarApi.Car>['columns'] {
   return [
     {
-      type: 'radio',
+      type: 'checkbox',
       width: 60,
       align: 'center',
     },

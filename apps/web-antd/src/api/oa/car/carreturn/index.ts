@@ -12,7 +12,7 @@ export namespace CarReturnBillApi {
     processInstanceId: string; // 流程实例编号
     processStatus: number; // 单据状态
     applyBill: string; // 用车申请单
-    carId: number; // 车辆
+    carId: string; // 车辆ID(逗号分隔)
     carNo: string; // 车牌号
     goTime: string | Dayjs; // 出车时间
     returnTime: string | Dayjs; // 回车时间

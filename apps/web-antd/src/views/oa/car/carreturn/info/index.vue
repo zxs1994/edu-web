@@ -201,14 +201,16 @@ async function loadData() {
   }
 }
 
-// 处理车辆选择（只清除当前字段的验证错误，不触发其他字段的验证）
-async function handleCarSelect(val: any) {
-  if (basicFormRef.value && val && val.carNo && val.id) {
+// 处理车辆选择（支持多选，接收车辆数组）
+async function handleCarSelect(cars: any[]) {
+  if (basicFormRef.value && Array.isArray(cars) && cars.length > 0) {
+    const carIds = cars.map((c) => c.id).join(',');
+    const carNos = cars.map((c) => c.carNo).join(',');
     // 设置表单值，不触发验证（shouldValidate = false）
     await basicFormRef.value.setFormValues(
       {
-        carNo: val.carNo,
-        carId: val.id,
+        carNo: carNos,
+        carId: carIds,
       },
       false,
     );

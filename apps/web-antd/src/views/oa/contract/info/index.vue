@@ -14,7 +14,7 @@ import { useTabs } from '@vben/hooks';
 import { preferences, updatePreferences } from '@vben/preferences';
 import { useUserStore } from '@vben/stores';
 
-import { Button, message } from 'ant-design-vue';
+import { Alert, Button, message } from 'ant-design-vue';
 
 import { withdrawProcessToStart } from '#/api/bpm/task';
 import {
@@ -266,6 +266,14 @@ onBeforeRouteLeave(() => {
         <div class="copy-reason-text">抄送意见：{{ props.copyReason }}</div>
       </template>
       <template #form-extension>
+        <Alert
+          v-if="route.query.from === 'startProcess'"
+          type="info"
+          show-icon
+          :closable="false"
+          message="提示：重大合作经会长办公会/常务理事会审议，附纪要再审批。"
+          style="margin-bottom: 16px;"
+        />
         <CardContainer title="合同文件">
           <template #extra>
             <Button

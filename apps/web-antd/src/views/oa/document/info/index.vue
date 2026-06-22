@@ -469,6 +469,14 @@ onBeforeRouteLeave(() => {
           <a-tabs v-model:active-key="activeKey" class="custom-tabs">
             <!-- Tab 1: 单据信息（左表单 + 右预览） -->
             <a-tab-pane key="1" :tab="$t('common.billInfo')">
+              <Alert
+                v-if="route.query.from === 'startProcess'"
+                type="info"
+                show-icon
+                :closable="false"
+                message="提示：重要公文会前会商研讨。"
+                style="margin-bottom: 16px;"
+              />
               <div class="split-layout">
                 <!-- 左侧：表单 -->
                 <div class="split-left">
