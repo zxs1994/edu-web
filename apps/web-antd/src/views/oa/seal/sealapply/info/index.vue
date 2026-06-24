@@ -3,7 +3,7 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { SealApplyBillApi } from '#/api/oa/seal/sealapply';
 
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
-import { onBeforeRouteLeave, useRoute } from 'vue-router';
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
 
 import { Loading } from '@vben/common-ui';
 import {
@@ -46,6 +46,7 @@ const props = defineProps<{
 }>();
 
 const route = useRoute();
+const router = useRouter();
 const userStore = useUserStore();
 /** 当前用户是否为单据创建人 */
 const isCreator = computed(() => {
@@ -85,13 +86,16 @@ function initFormSchema() {
   );
 }
 
-// 优先使用 props 传递的 id，如果没有则使用路由参数
-let id: number | undefined = (() => {
+// 获取当前单据ID（每次调用都重新计算，避免缓存问题）
+function getCurrentId(): number | undefined {
   if (props.id) {
     return typeof props.id === 'string' ? Number(props.id) : props.id;
   }
   return route.query.id ? Number(route.query.id) : undefined;
-})();
+}
+
+// 优先使用 props 传递的 id，如果没有则使用路由参数
+let id: number | undefined = getCurrentId();
 
 // 关闭按钮处理
 function handleClose() {
@@ -129,11 +133,19 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
     };
 
     id = await (isSubmit ? submitSealApplyBill(data) : saveSealApplyBill(data));
+    formData.value.id = id;
 
     message.success({
       content: $t('ui.actionMessage.operationSuccess'),
       key: 'action_key_msg',
     });
+
+    if (!route.query.id && id) {
+      await router.replace({
+        path: route.path,
+        query: { ...route.query, id: String(id) },
+      });
+    }
 
     // 保存后重新加载数据
     await loadData();
@@ -183,6 +195,9 @@ async function handleRevoke(reason: string) {
 
 // 加载数据
 async function loadData() {
+  // 每次加载前重新计算id，确保从路由或props获取最新值
+  id = getCurrentId() ?? id;
+
   // 新建默认数据
   if (id === undefined || id === null) {
     // 新建时设置默认值

@@ -1,6 +1,10 @@
 import type { VbenFormSchema } from '#/adapter/form';
+import type { Ref } from 'vue';
 
-export function useFormSchema(travelApplyModalRef?: any): VbenFormSchema[] {
+export function useFormSchema(
+  travelApplyModalRef?: any,
+  readonly?: Ref<boolean>,
+): VbenFormSchema[] {
   return [
     {
       fieldName: 'id',
@@ -26,6 +30,7 @@ export function useFormSchema(travelApplyModalRef?: any): VbenFormSchema[] {
       componentProps: {
         placeholder: '请选择关联出差申请',
         bind: {
+          readonly,
           onClick: () => {
             travelApplyModalRef?.value?.modalApi?.open();
           },

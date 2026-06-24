@@ -2,12 +2,11 @@
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { ProjectInitiationBillApi } from '#/api/oa/project';
 
-import { onActivated, ref } from 'vue';
+import { onActivated } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
-import { BpmProcessInstanceStatus } from '@vben/constants';
-import { downloadFileFromBlobPart, isEmpty } from '@vben/utils';
+import { downloadFileFromBlobPart } from '@vben/utils';
 
 import { message } from 'ant-design-vue';
 
@@ -18,7 +17,6 @@ import {
 } from '#/adapter/vxe-table';
 import {
   deleteProjectInitiationBill,
-  deleteProjectInitiationBillList,
   exportProjectInitiationBill,
   getProjectInitiationBillPage,
 } from '#/api/oa/project';
@@ -72,47 +70,6 @@ async function handleDelete(
   }
 }
 
-const checkedIds = ref<number[]>([]);
-
-function handleRowCheckboxChange({
-  records,
-}: {
-  records: ProjectInitiationBillApi.ProjectInitiationBill[];
-}) {
-  checkedIds.value = records
-    .map((item) => item.id!)
-    .filter((id): id is number => id !== undefined);
-}
-
-async function handleDeleteBatch() {
-  const checkedRecords = gridApi.grid.getCheckboxRecords();
-  const notAllowed = checkedRecords.filter(
-    (r: ProjectInitiationBillApi.ProjectInitiationBill) =>
-      r.processStatus !== BpmProcessInstanceStatus.NOT_START,
-  );
-  if (notAllowed.length > 0) {
-    message.warning(
-      `以下单据不允许删除：${notAllowed.map((r: any) => r.billCode || r.id).join(', ')}`,
-    );
-    return;
-  }
-  const hideLoading = message.loading({
-    content: $t('ui.actionMessage.deleting'),
-    key: 'action_key_msg',
-  });
-  try {
-    await deleteProjectInitiationBillList(checkedIds.value);
-    message.success({
-      content: $t('ui.actionMessage.deleteSuccess'),
-      key: 'action_key_msg',
-    });
-    onRefresh();
-    checkedIds.value = [];
-  } finally {
-    hideLoading();
-  }
-}
-
 async function handleExport() {
   const data = await exportProjectInitiationBill(
     await gridApi.formApi.getValues(),
@@ -144,10 +101,6 @@ const [Grid, gridApi] = useVbenVxeGrid({
     rowConfig: { keyField: 'id', isHover: true },
     toolbarConfig: { refresh: { code: 'query' }, search: true },
   } as VxeTableGridOptions<ProjectInitiationBillApi.ProjectInitiationBill>,
-  gridEvents: {
-    checkboxAll: handleRowCheckboxChange,
-    checkboxChange: handleRowCheckboxChange,
-  },
 });
 
 onActivated(() => {
@@ -175,15 +128,6 @@ onActivated(() => {
               auth: ['oa:project-initiation-bill:export'],
               onClick: handleExport,
             },
-            {
-              label: $t('ui.actionTitle.deleteBatch'),
-              type: 'primary',
-              danger: true,
-              icon: ACTION_ICON.DELETE,
-              disabled: isEmpty(checkedIds),
-              auth: ['oa:project-initiation-bill:delete'],
-              onClick: handleDeleteBatch,
-            },
           ]"
         />
       </template>
@@ -206,18 +150,6 @@ onActivated(() => {
               auth: ['oa:project-initiation-bill:update'],
               onClick: handleEdit.bind(null, row),
             }, */
-            {
-              label: $t('common.delete'),
-              type: 'link',
-              danger: true,
-              ifShow: () =>
-                row.processStatus === BpmProcessInstanceStatus.NOT_START,
-              auth: ['oa:project-initiation-bill:delete'],
-              popConfirm: {
-                title: $t('ui.actionMessage.deleteConfirm', [row.billCode]),
-                confirm: handleDelete.bind(null, row),
-              },
-            },
           ]"
         />
       </template>

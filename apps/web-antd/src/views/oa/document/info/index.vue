@@ -300,6 +300,11 @@ async function loadData() {
     if (data.templateId) {
       await loadTemplateData(data.templateId);
     }
+
+    if (formData.value.processInstanceId) {
+      await getProcessModelView();
+      await getApprovalDetailData();
+    }
   } catch (error) {
     console.error('获取公文发文单详情失败:', error);
   } finally {
@@ -431,11 +436,6 @@ onMounted(() => {
   initFormSchema();
   initForm();
   loadData();
-
-  if (formData.value.processInstanceId) {
-    getProcessModelView();
-    getApprovalDetailData();
-  }
 });
 
 onBeforeUnmount(() => {

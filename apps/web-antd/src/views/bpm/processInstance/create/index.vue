@@ -272,7 +272,7 @@ onMounted(() => {
                       <span class="ml-3 flex-1 truncate text-base">
                         <Tooltip
                           placement="topLeft"
-                          :title="`${definition.description}`"
+                          :title="definition.description || definition.name"
                         >
                           {{ definition.name }}
                         </Tooltip>

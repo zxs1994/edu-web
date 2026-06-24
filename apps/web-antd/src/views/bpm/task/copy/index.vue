@@ -8,6 +8,7 @@ import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import { getProcessInstanceCopyPage } from '#/api/bpm/processInstance';
 import { $t } from '#/locales';
 import { router } from '#/router';
+import { isBillDeleted } from '#/utils/bpm-bill-status';
 
 import { useGridColumns, useGridFormSchema } from './data';
 
@@ -15,6 +16,9 @@ defineOptions({ name: 'BpmCopyTask' });
 
 /** 任务详情 */
 function handleDetail(row: BpmProcessInstanceApi.ProcessInstanceCopyRespVO) {
+  if (isBillDeleted(row)) {
+    return;
+  }
   const query: Record<string, string> = {
     id: row.processInstanceId,
     isCopy: 'true',
@@ -62,8 +66,21 @@ const [Grid] = useVbenVxeGrid({
   <Page auto-content-height>
 
     <Grid>
+      <template #slot-bill-code="{ row }">
+        <a
+          v-if="!isBillDeleted(row) && row.billCode"
+          class="text-primary"
+          @click="handleDetail(row)"
+        >
+          {{ row.billCode }}
+        </a>
+        <span v-else-if="row.billCode">{{ row.billCode }}</span>
+        <span v-else>-</span>
+      </template>
       <template #actions="{ row }">
+        <span v-if="isBillDeleted(row)" class="text-gray-400">-</span>
         <TableAction
+          v-else
           :actions="[
             {
               label: $t('common.detail'),

@@ -56,7 +56,6 @@ export function useGridFormSchema(): VbenFormSchema[] {
 /** 列表的字段 */
 export function useGridColumns(): VxeTableGridOptions<LeaveCancelBillApi.LeaveCancelBill>['columns'] {
   return [
-    { type: 'checkbox', width: 40 },
     createRouterLinkColumn({
       field: 'billCode',
       title: '单据编号',

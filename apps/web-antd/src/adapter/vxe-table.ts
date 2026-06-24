@@ -331,9 +331,14 @@ setupVbenVxeTable({
     // 表格配置项可以用 cellRender: { name: 'CellTag' },
     vxeUI.renderer.add('CellTag', {
       renderTableDefault(renderOpts, params) {
-        const { props } = renderOpts;
         const { column, row } = params;
-        return h(Tag, { color: props?.color }, () => row[column.field]);
+        let { props } = renderOpts;
+        if (isFunction(props)) {
+          props = props(row);
+        }
+        const text =
+          props?.children ?? props?.text ?? row[column.field];
+        return h(Tag, { color: props?.color }, () => text);
       },
     });
 

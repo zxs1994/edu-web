@@ -17,6 +17,7 @@ import { DictTag } from '#/components/dict-tag';
 import { router } from '#/router';
 
 import { useGridColumns, useGridFormSchema } from './data';
+import { isBillDeleted } from '#/utils/bpm-bill-status';
 
 // 使用原始 ProcessInstance 类型
 type ExtendedProcessInstance = BpmProcessInstanceApi.ProcessInstance;
@@ -25,6 +26,9 @@ defineOptions({ name: 'BpmProcessInstanceMy' });
 
 /** 查看流程实例 */
 function handleDetail(row: ExtendedProcessInstance) {
+  if (isBillDeleted(row)) {
+    return;
+  }
   router.push({
     name: 'BpmProcessInstanceDetail',
     query: { id: row.id.toString(), isTodo: 'false' },
@@ -102,28 +106,46 @@ const [Grid, gridApi] = useVbenVxeGrid({
 
       <template #slot-status="{ row }">
         <div class="flex items-center flex-wrap gap-1">
-          <DictTag
-            :type="DICT_TYPE.BPM_PROCESS_INSTANCE_STATUS"
-            :value="row.status"
-          />
-          <template
-            v-if="
-              row.status === BpmProcessInstanceStatus.RUNNING &&
-              row.tasks &&
-              row.tasks.length > 0
-            "
-          >
-            <Tag color="processing">
-              {{ row.tasks[0]?.assigneeUser?.nickname || '未知用户' }}{{ row.tasks[0]?.assigneeUser?.postName ? '-' + row.tasks[0].assigneeUser.postName : '' }}
-            </Tag>
-            <Tag v-if="row.tasks.length > 1">
-              等{{ row.tasks.length }}人审批
-            </Tag>
+          <Tag v-if="isBillDeleted(row)" color="default">已删除</Tag>
+          <template v-else>
+            <DictTag
+              :type="DICT_TYPE.BPM_PROCESS_INSTANCE_STATUS"
+              :value="row.status"
+            />
+            <template
+              v-if="
+                row.status === BpmProcessInstanceStatus.RUNNING &&
+                row.tasks &&
+                row.tasks.length > 0
+              "
+            >
+              <Tag color="processing">
+                {{ row.tasks[0]?.assigneeUser?.nickname || '未知用户' }}{{ row.tasks[0]?.assigneeUser?.postName ? '-' + row.tasks[0].assigneeUser.postName : '' }}
+              </Tag>
+              <Tag v-if="row.tasks.length > 1">
+                等{{ row.tasks.length }}人审批
+              </Tag>
+            </template>
           </template>
         </div>
       </template>
+      <template #slot-bill-code="{ row }">
+        <a
+          v-if="!isBillDeleted(row) && (row.billCode || row.formVariables?.billCode)"
+          class="text-primary"
+          @click="handleDetail(row)"
+        >
+          {{ row.billCode || row.formVariables?.billCode }}
+        </a>
+        <span v-else-if="row.billCode || row.formVariables?.billCode">
+          {{ row.billCode || row.formVariables?.billCode }}
+        </span>
+        <span v-else>-</span>
+      </template>
       <template #actions="{ row }">
+        <span v-if="isBillDeleted(row)" class="text-gray-400">-</span>
         <TableAction
+          v-else
           :actions="[
             {
               label: $t('common.detail'),

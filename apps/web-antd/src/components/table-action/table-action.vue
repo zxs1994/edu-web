@@ -161,7 +161,7 @@ watch(
           <template v-if="action.popConfirm.icon" #icon>
             <IconifyIcon :icon="action.popConfirm.icon" />
           </template>
-          <Tooltip v-bind="getTooltipProps(action.tooltip)">
+          <Tooltip v-if="action.tooltip" v-bind="getTooltipProps(action.tooltip)">
             <Button v-bind="getButtonProps(action)">
               <template v-if="action.icon" #icon>
                 <IconifyIcon :icon="action.icon" />
@@ -169,8 +169,14 @@ watch(
               {{ action.label }}
             </Button>
           </Tooltip>
+          <Button v-else v-bind="getButtonProps(action)">
+            <template v-if="action.icon" #icon>
+              <IconifyIcon :icon="action.icon" />
+            </template>
+            {{ action.label }}
+          </Button>
         </Popconfirm>
-        <Tooltip v-else v-bind="getTooltipProps(action.tooltip)">
+        <Tooltip v-else-if="action.tooltip" v-bind="getTooltipProps(action.tooltip)">
           <Button
             v-bind="getButtonProps(action)"
             @click="handleButtonClick(action)"
@@ -181,6 +187,16 @@ watch(
             {{ action.label }}
           </Button>
         </Tooltip>
+        <Button
+          v-else
+          v-bind="getButtonProps(action)"
+          @click="handleButtonClick(action)"
+        >
+          <template v-if="action.icon" #icon>
+            <IconifyIcon :icon="action.icon" />
+          </template>
+          {{ action.label }}
+        </Button>
       </template>
     </Space>
 

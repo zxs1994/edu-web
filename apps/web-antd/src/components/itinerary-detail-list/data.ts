@@ -12,6 +12,24 @@ export const TRANSPORT_TYPE_OPTIONS = getDictOptions(
 );
 
 /**
+ * 统一展示行程日期，兼容后端完整时间字符串和历史时间戳值
+ */
+export function formatItineraryDate(value: unknown): string {
+  if (value === null || value === undefined || value === '') {
+    return '';
+  }
+  if (typeof value === 'string') {
+    return /^\d{4}-\d{2}-\d{2}/.test(value) ? value.substring(0, 10) : value;
+  }
+  if (typeof value === 'number') {
+    if (value === 0) return '';
+    const date = new Date(value);
+    return isNaN(date.getTime()) ? '' : date.toISOString().substring(0, 10);
+  }
+  return '';
+}
+
+/**
  * 创建新的行程明细行
  */
 export function createItineraryDetail(

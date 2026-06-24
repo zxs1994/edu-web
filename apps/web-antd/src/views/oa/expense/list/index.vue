@@ -2,15 +2,14 @@
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { ExpenseReimburseBillApi } from '#/api/oa/expense';
 
-import { onActivated, ref } from 'vue';
+import { onActivated } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
 import {
   BpmProcessInstanceStatus,
-  BpmProcessInstanceStatusEditValue,
 } from '@vben/constants';
-import { downloadFileFromBlobPart, isEmpty } from '@vben/utils';
+import { downloadFileFromBlobPart } from '@vben/utils';
 
 import { message } from 'ant-design-vue';
 
@@ -21,7 +20,6 @@ import {
 } from '#/adapter/vxe-table';
 import {
   deleteExpenseReimburseBill,
-  deleteExpenseReimburseBillList,
   exportExpenseReimburseBill,
   getExpenseReimburseBillPage,
   updateExpenseReimburseBill,
@@ -62,47 +60,6 @@ async function handleDelete(
       key: 'action_key_msg',
     });
     onRefresh();
-  } finally {
-    hideLoading();
-  }
-}
-
-const checkedIds = ref<number[]>([]);
-
-function handleRowCheckboxChange({
-  records,
-}: {
-  records: ExpenseReimburseBillApi.ExpenseReimburseBill[];
-}) {
-  checkedIds.value = records
-    .map((item) => item.id!)
-    .filter((id): id is number => id !== undefined);
-}
-
-async function handleDeleteBatch() {
-  const checkedRecords = gridApi.grid.getCheckboxRecords();
-  const notAllowed = checkedRecords.filter(
-    (r: ExpenseReimburseBillApi.ExpenseReimburseBill) =>
-      !BpmProcessInstanceStatusEditValue.includes(r.processStatus as number),
-  );
-  if (notAllowed.length > 0) {
-    message.warning(
-      `以下单据不允许删除：${notAllowed.map((r: any) => r.billCode || r.id).join(', ')}`,
-    );
-    return;
-  }
-  const hideLoading = message.loading({
-    content: $t('ui.actionMessage.deleting'),
-    key: 'action_key_msg',
-  });
-  try {
-    await deleteExpenseReimburseBillList(checkedIds.value);
-    message.success({
-      content: $t('ui.actionMessage.deleteSuccess'),
-      key: 'action_key_msg',
-    });
-    onRefresh();
-    checkedIds.value = [];
   } finally {
     hideLoading();
   }
@@ -169,10 +126,6 @@ const [Grid, gridApi] = useVbenVxeGrid({
     rowConfig: { keyField: 'id', isHover: true },
     toolbarConfig: { refresh: { code: 'query' }, search: true },
   } as VxeTableGridOptions<ExpenseReimburseBillApi.ExpenseReimburseBill>,
-  gridEvents: {
-    checkboxAll: handleRowCheckboxChange,
-    checkboxChange: handleRowCheckboxChange,
-  },
 });
 
 onActivated(() => {
@@ -207,15 +160,6 @@ onActivated(() => {
               auth: ['oa:expense-reimburse-bill:export'],
               onClick: handleExport,
             },
-            {
-              label: $t('ui.actionTitle.deleteBatch'),
-              type: 'primary',
-              danger: true,
-              icon: ACTION_ICON.DELETE,
-              disabled: isEmpty(checkedIds),
-              auth: ['oa:expense-reimburse-bill:delete'],
-              onClick: handleDeleteBatch,
-            },
           ]"
         />
       </template>
@@ -238,31 +182,6 @@ onActivated(() => {
                 title: `确认将 ${row.billCode} 标记为已支付？`,
                 confirm: handleMarkPaid.bind(null, row),
               },
-            },
-            {
-              label: $t('common.delete'),
-              type: 'link',
-              danger: true,
-              ifShow: () =>
-                BpmProcessInstanceStatusEditValue.includes(
-                  row.processStatus as number,
-                ),
-              auth: ['oa:expense-reimburse-bill:delete'],
-              popConfirm: {
-                title: $t('ui.actionMessage.deleteConfirm', [row.billCode]),
-                confirm: handleDelete.bind(null, row),
-              },
-            },
-            {
-              label: $t('common.delete'),
-              type: 'link',
-              danger: true,
-              ifShow: () =>
-                !BpmProcessInstanceStatusEditValue.includes(
-                  row.processStatus as number,
-                ),
-              disabled: true,
-              auth: ['oa:expense-reimburse-bill:delete'],
             },
           ]"
         />

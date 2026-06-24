@@ -119,11 +119,13 @@ export function useUpload(directory?: string) {
           // 1.4. 记录文件信息到后端（异步）
           createFile0(presignedInfo, file);
           // 通知成功，数据格式保持与后端上传的返回结果一致
-          return { url: presignedInfo.url };
+          return { url: presignedInfo.url, path: presignedInfo.path };
         });
     } else {
       // 模式二：后端上传
-      return uploadFile({ file, directory }, onUploadProgress);
+      return uploadFile({ file, directory }, onUploadProgress).then((url) => ({
+        url,
+      }));
     }
   }
 

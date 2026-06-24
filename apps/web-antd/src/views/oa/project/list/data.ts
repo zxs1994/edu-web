@@ -54,7 +54,6 @@ export function useGridFormSchema(): VbenFormSchema[] {
 
 export function useGridColumns(): VxeTableGridOptions<ProjectInitiationBillApi.ProjectInitiationBill>['columns'] {
   return [
-    { type: 'checkbox', width: 40 },
     createRouterLinkColumn({
       field: 'billCode',
       title: '项目编号',

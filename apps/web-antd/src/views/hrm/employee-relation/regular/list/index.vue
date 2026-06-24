@@ -2,20 +2,19 @@
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { EmployeeRegularBillApi } from '#/api/hrm/employee-regular';
 
-import { onActivated, ref } from 'vue';
+import { onActivated } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
-import { BpmProcessInstanceStatusEditValue } from '@vben/constants';
+import { BpmProcessInstanceStatus } from '@vben/constants';
 import { useUserStore } from '@vben/stores';
-import { downloadFileFromBlobPart, isEmpty } from '@vben/utils';
+import { downloadFileFromBlobPart } from '@vben/utils';
 
 import { message } from 'ant-design-vue';
 
 import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   deleteEmployeeRegularBill,
-  deleteEmployeeRegularBillList,
   exportEmployeeRegularBill,
   getEmployeeRegularBillPage,
 } from '#/api/hrm/employee-regular';
@@ -60,56 +59,6 @@ async function handleDelete(row: EmployeeRegularBillApi.EmployeeRegularBill) {
   }
 }
 
-/** 批量删除员工转正申请单 */
-async function handleDeleteBatch() {
-  // 检查选中的记录是否都可以删除
-  const checkedRecords = gridApi.grid.getCheckboxRecords();
-  const notAllowedRecords = checkedRecords.filter(
-    (record: EmployeeRegularBillApi.EmployeeRegularBill) =>
-      !BpmProcessInstanceStatusEditValue.includes(
-        record.processStatus as number,
-      ),
-  );
-
-  if (notAllowedRecords.length > 0) {
-    const billCodes = notAllowedRecords
-      .map(
-        (record: EmployeeRegularBillApi.EmployeeRegularBill) =>
-          record.billCode || record.id,
-      )
-      .join(', ');
-    message.warning(`以下单据不允许删除：${billCodes}`);
-    return;
-  }
-
-  const hideLoading = message.loading({
-    content: $t('ui.actionMessage.deleting'),
-    key: 'action_key_msg',
-  });
-  try {
-    await deleteEmployeeRegularBillList(checkedIds.value);
-    message.success({
-      content: $t('ui.actionMessage.deleteSuccess'),
-      key: 'action_key_msg',
-    });
-    onRefresh();
-    checkedIds.value = [];
-  } finally {
-    hideLoading();
-  }
-}
-
-const checkedIds = ref<number[]>([]);
-function handleRowCheckboxChange({
-  records,
-}: {
-  records: EmployeeRegularBillApi.EmployeeRegularBill[];
-}) {
-  checkedIds.value = records
-    .map((item) => item.id!)
-    .filter((id): id is number => id !== undefined);
-}
-
 /** 导出表格 */
 async function handleExport() {
   const data = await exportEmployeeRegularBill(
@@ -152,10 +101,6 @@ const [Grid, gridApi] = useVbenVxeGrid({
       search: true,
     },
   } as VxeTableGridOptions<EmployeeRegularBillApi.EmployeeRegularBill>,
-  gridEvents: {
-    checkboxAll: handleRowCheckboxChange,
-    checkboxChange: handleRowCheckboxChange,
-  },
 });
 
 // 页签切换时自动刷新表格数据
@@ -184,15 +129,6 @@ onActivated(() => {
               auth: ['hrm:employee-regular-bill:export'],
               onClick: handleExport,
             },
-            {
-              label: $t('ui.actionTitle.deleteBatch'),
-              type: 'primary',
-              danger: true,
-              icon: ACTION_ICON.DELETE,
-              disabled: isEmpty(checkedIds),
-              auth: ['hrm:employee-regular-bill:delete'],
-              onClick: handleDeleteBatch,
-            },
           ]"
         />
       </template>
@@ -204,25 +140,12 @@ onActivated(() => {
               type: 'link',
               danger: true,
               ifShow: () =>
-                BpmProcessInstanceStatusEditValue.includes(
-                  row.processStatus as number,
-                ),
+                row.processStatus === BpmProcessInstanceStatus.NOT_START,
               auth: ['hrm:employee-regular-bill:delete'],
               popConfirm: {
                 title: $t('ui.actionMessage.deleteConfirm', [row.billCode]),
                 confirm: handleDelete.bind(null, row),
               },
-            },
-            {
-              label: $t('common.delete'),
-              type: 'link',
-              danger: true,
-              ifShow: () =>
-                !BpmProcessInstanceStatusEditValue.includes(
-                  row.processStatus as number,
-                ),
-              disabled: true,
-              auth: ['hrm:employee-regular-bill:delete'],
             },
           ]"
         />

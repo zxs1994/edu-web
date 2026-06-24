@@ -118,7 +118,6 @@ export function useGridColumns(): VxeTableGridOptions<MeetingRoomBookingApi.Meet
   );
 
   return [
-    { type: 'checkbox', width: 40 },
     createRouterLinkColumn({
       field: 'billCode',
       title: '单据编号',

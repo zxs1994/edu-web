@@ -68,7 +68,6 @@ export function useGridFormSchema(): VbenFormSchema[] {
 
 export function useGridColumns(): VxeTableGridOptions<CorrectionBillApi.CorrectionBill>['columns'] {
   return [
-    { type: 'checkbox', width: 40 },
     createRouterLinkColumn({
       field: 'billCode',
       title: '单据编号',

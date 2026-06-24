@@ -34,6 +34,10 @@ import BpmProcessInstanceTimeline from '#/views/bpm/processInstance/detail/modul
 import CardContainer from './card-container.vue';
 import FooterForm from './footer-form.vue';
 import HeaderForm from './header-form.vue';
+import {
+  isOnlyParentManagedFormDataChange,
+  mergeFormDataProp,
+} from './form-data-merge';
 
 interface Props {
   headerData?: headerDataProps;
@@ -248,13 +252,21 @@ function refreshAllData() {
   }
 }
 
-// 监听表单数据变化
+// 监听 formData 变化：插槽内附件/子表更新时不触碰表单字段；其余情况安全合并
 watch(
   () => props.formData,
-  async (newData) => {
-    if (formApi && newData && Object.keys(newData).length > 0) {
-      await formApi.setValues(newData);
+  async (newData, oldData) => {
+    if (!formApi || !newData || Object.keys(newData).length === 0) {
+      return;
     }
+    if (newData === oldData) {
+      return;
+    }
+    if (isOnlyParentManagedFormDataChange(newData, oldData)) {
+      return;
+    }
+    const currentValues = (await formApi.getValues()) || {};
+    await formApi.setValues(mergeFormDataProp(newData, currentValues));
   },
   { immediate: true, deep: true },
 );
@@ -299,6 +311,16 @@ onMounted(async () => {
     getApprovalDetailData();
   }
 });
+
+watch(
+  () => props.headerData.processInstanceId,
+  (processInstanceId) => {
+    if (processInstanceId) {
+      getProcessModelView();
+      getApprovalDetailData();
+    }
+  },
+);
 
 // 暴露方法给父组件使用
 defineExpose({

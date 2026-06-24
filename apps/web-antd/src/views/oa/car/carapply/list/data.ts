@@ -86,7 +86,6 @@ export function useGridFormSchema(modalRef?: any): VbenFormSchema[] {
 /** 列表的字段 */
 export function useGridColumns(): VxeTableGridOptions<CarApplyBillApi.CarApplyBill>['columns'] {
   return [
-    { type: 'checkbox', width: 40 },
     createRouterLinkColumn({
       field: 'billCode',
       title: '单据编号',

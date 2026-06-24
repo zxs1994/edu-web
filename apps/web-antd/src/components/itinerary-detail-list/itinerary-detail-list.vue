@@ -10,6 +10,7 @@ import { TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 
 import {
   createItineraryDetail,
+  formatItineraryDate,
   TRANSPORT_TYPE_OPTIONS,
   useItineraryDetailColumns,
 } from './data';
@@ -174,10 +175,10 @@ watch(
             class="cell-date-picker"
             placeholder="请选择日期"
             format="YYYY-MM-DD"
-            value-format="YYYY-MM-DD"
-            @change="(val: string) => updateField(row, 'startDate', val)"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            @change="(val: any) => updateField(row, 'startDate', String(val || ''))"
           />
-          <span v-else>{{ row.startDate }}</span>
+          <span v-else>{{ formatItineraryDate(row.startDate) }}</span>
         </template>
 
         <!-- 结束日期 -->
@@ -188,10 +189,10 @@ watch(
             class="cell-date-picker"
             placeholder="请选择日期"
             format="YYYY-MM-DD"
-            value-format="YYYY-MM-DD"
-            @change="(val: string) => updateField(row, 'endDate', val)"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            @change="(val: any) => updateField(row, 'endDate', String(val || ''))"
           />
-          <span v-else>{{ row.endDate }}</span>
+          <span v-else>{{ formatItineraryDate(row.endDate) }}</span>
         </template>
 
         <!-- 交通方式 -->
@@ -201,8 +202,8 @@ watch(
             :value="row.transportType !== undefined && row.transportType !== null ? row.transportType : undefined"
             class="cell-select"
             placeholder="请选择"
-            :options="TRANSPORT_TYPE_OPTIONS"
-            @change="(val: number) => updateField(row, 'transportType', val)"
+            :options="TRANSPORT_TYPE_OPTIONS as any"
+            @change="(val: any) => updateField(row, 'transportType', Number(val) || undefined)"
           />
           <span v-else>{{ getTransportLabel(row.transportType) }}</span>
         </template>

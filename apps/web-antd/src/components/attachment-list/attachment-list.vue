@@ -7,6 +7,14 @@ import { computed, nextTick, ref, watch } from 'vue';
 import { message } from 'ant-design-vue';
 
 import { TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
+import { useUpload } from '#/components/upload/use-upload';
+import {
+  downloadAttachmentFile,
+  extractUploadPath,
+  extractUploadUrl,
+  isBlobAttachmentUrl,
+  resolveAttachmentAccessUrl,
+} from '#/utils/attachment-url';
 
 import {
   createAttachment,
@@ -44,13 +52,38 @@ const emit = defineEmits<{
 
 /** 表格内部数据 */
 const tableData = ref<AttachmentApi.AttachmentSaveReq[]>([]);
+const { httpRequest } = useUpload('oa/attachment');
+
+function getAttachmentAccessUrl(row: AttachmentApi.AttachmentSaveReq) {
+  return resolveAttachmentAccessUrl(row);
+}
+
+function warnInvalidAttachmentUrl(row: AttachmentApi.AttachmentSaveReq) {
+  if (isBlobAttachmentUrl(row.fileUrl) || isBlobAttachmentUrl(row.filePath)) {
+    message.warning('附件为历史临时地址，请重新上传后保存');
+    return;
+  }
+  message.warning('附件地址无效');
+}
 
 /** 添加附件 */
-function handleAdd(file: File) {
-  const attachment = createAttachment(file, tableData.value.length + 1);
-  tableData.value.push(attachment);
-  handleUpdateValue();
-  message.success('文件上传成功');
+async function handleAdd(file: File) {
+  try {
+    const uploadResult = await httpRequest(file);
+    const url = extractUploadUrl(uploadResult);
+    if (!url) {
+      throw new Error('上传未返回文件地址');
+    }
+    const attachment = createAttachment(file, tableData.value.length + 1);
+    attachment.fileUrl = url;
+    attachment.filePath = extractUploadPath(uploadResult) || url;
+    tableData.value.push(attachment);
+    handleUpdateValue();
+    message.success('文件上传成功');
+  } catch (error) {
+    console.error('文件上传失败:', error);
+    message.error('文件上传失败');
+  }
 }
 
 /** 删除附件 */
@@ -73,15 +106,26 @@ function handleDelete(row: AttachmentApi.AttachmentSaveReq) {
 
 /** 预览附件 */
 function handlePreview(row: AttachmentApi.AttachmentSaveReq) {
-  window.open(row.fileUrl, '_blank');
+  const url = getAttachmentAccessUrl(row);
+  if (!url) {
+    warnInvalidAttachmentUrl(row);
+    return;
+  }
+  window.open(url, '_blank');
 }
 
 /** 下载附件 */
-function handleDownload(row: AttachmentApi.AttachmentSaveReq) {
-  const link = document.createElement('a');
-  link.href = row.fileUrl;
-  link.download = row.fileName;
-  link.click();
+async function handleDownload(row: AttachmentApi.AttachmentSaveReq) {
+  if (!getAttachmentAccessUrl(row)) {
+    warnInvalidAttachmentUrl(row);
+    return;
+  }
+  try {
+    await downloadAttachmentFile(row);
+  } catch (error) {
+    console.error('附件下载失败:', error);
+    message.error('附件下载失败');
+  }
 }
 
 /** 将最新数据写回并通知父组件 */
@@ -111,7 +155,7 @@ function handleFileUpload(file: File) {
 
   // 添加文件到列表
   handleAdd(file);
-  return true;
+  return false;
 }
 
 /** 触发文件选择（供外部调用） */

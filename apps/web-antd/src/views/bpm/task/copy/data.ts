@@ -41,18 +41,7 @@ export function useGridColumns(): VxeTableGridOptions['columns'] {
       title: '单据编号',
       minWidth: 160,
       align: 'center',
-      cellRender: {
-        name: 'CellRouterLink',
-        props: {
-          name: 'BpmProcessInstanceDetail',
-          queryFields: [
-            { key: 'id', field: 'processInstanceId' },
-            { key: 'activityId', field: 'activityId' },
-            { key: 'copyReason', field: 'reason' },
-          ],
-          fixedQuery: { isCopy: 'true' },
-        },
-      },
+      slots: { default: 'slot-bill-code' },
     },
     {
       field: 'summary',
@@ -116,6 +105,13 @@ export function useGridColumns(): VxeTableGridOptions['columns'] {
       title: '抄送时间',
       minWidth: 180,
       formatter: 'formatDateTime',
+    },
+    {
+      field: 'billDeleted',
+      title: '审批状态',
+      minWidth: 100,
+      formatter: ({ cellValue }: { cellValue: boolean }) =>
+        cellValue ? '已删除' : '已抄送',
     },
     {
       title: '操作',

@@ -47,6 +47,10 @@ export namespace TravelApplyBillApi {
     billCode?: string;
     processStatus?: number;
     deptName?: string;
+    creator?: number | string;
+    reimbursementStatus?: number;
+    excludeLinkedToExpense?: boolean;
+    excludeExpenseBillId?: number;
     createTime?: Date[];
   }
 }

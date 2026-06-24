@@ -153,16 +153,7 @@ export function useGridColumns(): VxeTableGridOptions['columns'] {
       title: '单据编号',
       minWidth: 160,
       align: 'center',
-      cellRender: {
-        name: 'CellRouterLink',
-        props: {
-          name: 'BpmProcessInstanceDetail',
-          queryFields: [{ key: 'id', field: 'id' }],
-          query: {
-            isTodo: 'false',
-          },
-        },
-      },
+      slots: { default: 'slot-bill-code' },
       fixed: 'left',
     },
     {

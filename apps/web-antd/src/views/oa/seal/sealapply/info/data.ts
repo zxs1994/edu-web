@@ -119,10 +119,16 @@ export function useFormSchema(
       label: '用章方式',
       rules: 'required',
       component: 'Select',
-      componentProps: {
+      componentProps: (_values: any, formApi: any) => ({
         options: getDictOptions(DICT_TYPE.OA_SEAL_USE_MODE, 'number'),
         placeholder: '请选择用章方式',
-      },
+        onChange: (val: number) => {
+          // 现场用印时，清空预计归还时间
+          if (val === 1) {
+            formApi?.setFieldValue('expectedReturnTime', undefined);
+          }
+        },
+      }),
     },
     {
       fieldName: 'documentTitle',

@@ -118,26 +118,11 @@ export function useGridColumns(): VxeTableGridOptions['columns'] {
       fixed: 'left',
     },
     {
-      // 单据编号点击打开办理，样式与用车申请一致
       field: 'processInstance.billCode',
       title: '单据编号',
       minWidth: 160,
       align: 'center',
-      cellRender: {
-        name: 'CellRouterLink',
-        props: {
-          name: 'BpmProcessInstanceTodoDetail',
-          // 传参保持与办理按钮一致
-          queryFields: [
-            { key: 'id', field: 'processInstance.id' },
-            { key: 'taskId', field: 'id' },
-            { key: 'nodeKey', field: 'taskDefinitionKey' },
-          ],
-          query: {
-            isTodo: 'true',
-          },
-        },
-      },
+      slots: { default: 'slot-bill-code' },
     },
     {
       field: 'processInstance.summary',
@@ -188,6 +173,13 @@ export function useGridColumns(): VxeTableGridOptions['columns'] {
       title: '接收时间',
       minWidth: 180,
       formatter: 'formatDateTime',
+    },
+    {
+      field: 'processInstance.billDeleted',
+      title: '审批状态',
+      minWidth: 100,
+      formatter: ({ row }: { row: any }) =>
+        row.processInstance?.billDeleted ? '已删除' : '待处理',
     },
     {
       title: '操作',

@@ -9,6 +9,9 @@ import { message } from 'ant-design-vue';
 import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import { getTaskDonePage, withdrawTask } from '#/api/bpm/task';
 import { router } from '#/router';
+import { DictTag } from '#/components/dict-tag';
+import { DICT_TYPE } from '@vben/constants';
+import { isBillDeleted } from '#/utils/bpm-bill-status';
 
 import { useGridColumns, useGridFormSchema } from './data';
 
@@ -16,6 +19,9 @@ defineOptions({ name: 'BpmDoneTask' });
 
 /** 查看历史 */
 function handleHistory(row: BpmTaskApi.Task) {
+  if (isBillDeleted(row)) {
+    return;
+  }
   router.push({
     name: 'BpmProcessInstanceDetail',
     query: {
@@ -76,8 +82,31 @@ const [Grid, gridApi] = useVbenVxeGrid({
 <template>
   <Page auto-content-height>
     <Grid>
+      <template #slot-bill-code="{ row }">
+        <a
+          v-if="!isBillDeleted(row) && row.processInstance?.billCode"
+          class="text-primary"
+          @click="handleHistory(row)"
+        >
+          {{ row.processInstance.billCode }}
+        </a>
+        <span v-else-if="row.processInstance?.billCode">
+          {{ row.processInstance.billCode }}
+        </span>
+        <span v-else>-</span>
+      </template>
+      <template #slot-status="{ row }">
+        <span v-if="isBillDeleted(row)" class="text-gray-400">已删除</span>
+        <DictTag
+          v-else
+          :type="DICT_TYPE.BPM_TASK_STATUS"
+          :value="row.status"
+        />
+      </template>
       <template #actions="{ row }">
+        <span v-if="isBillDeleted(row)" class="text-gray-400">-</span>
         <TableAction
+          v-else
           :actions="[
             {
               label: '撤回',

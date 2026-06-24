@@ -2,22 +2,18 @@
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { MeetingRoomBookingApi } from '#/api/oa/meetingroom/booking';
 
-import { onActivated, ref } from 'vue';
+import { onActivated } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
-import {
-  BpmProcessInstanceStatus,
-  BpmProcessInstanceStatusEditValue,
-} from '@vben/constants';
-import { downloadFileFromBlobPart, isEmpty } from '@vben/utils';
+import { BpmProcessInstanceStatus } from '@vben/constants';
+import { downloadFileFromBlobPart } from '@vben/utils';
 
 import { message } from 'ant-design-vue';
 
 import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   deleteMeetingRoomBooking,
-  deleteMeetingRoomBookingList,
   exportMeetingRoomBookingExcel,
   getMeetingRoomBookingPage,
   updateMeetingRoomBookingUseStatus,
@@ -60,56 +56,6 @@ async function handleDelete(row: MeetingRoomBookingApi.MeetingRoomBooking) {
   } finally {
     hideLoading();
   }
-}
-
-/** 批量删除会议室预定申请单 */
-async function handleDeleteBatch() {
-  // 检查选中的记录是否都可以删除
-  const checkedRecords = gridApi.grid.getCheckboxRecords();
-  const notAllowedRecords = checkedRecords.filter(
-    (record: MeetingRoomBookingApi.MeetingRoomBooking) =>
-      !BpmProcessInstanceStatusEditValue.includes(
-        record.processStatus as number,
-      ),
-  );
-
-  if (notAllowedRecords.length > 0) {
-    const billCodes = notAllowedRecords
-      .map(
-        (record: MeetingRoomBookingApi.MeetingRoomBooking) =>
-          record.billCode || record.id,
-      )
-      .join(', ');
-    message.warning(`以下单据不允许删除：${billCodes}`);
-    return;
-  }
-
-  const hideLoading = message.loading({
-    content: $t('ui.actionMessage.deleting'),
-    key: 'action_key_msg',
-  });
-  try {
-    await deleteMeetingRoomBookingList(checkedIds.value);
-    message.success({
-      content: $t('ui.actionMessage.deleteSuccess'),
-      key: 'action_key_msg',
-    });
-    onRefresh();
-    checkedIds.value = [];
-  } finally {
-    hideLoading();
-  }
-}
-
-const checkedIds = ref<number[]>([]);
-function handleRowCheckboxChange({
-  records,
-}: {
-  records: MeetingRoomBookingApi.MeetingRoomBooking[];
-}) {
-  checkedIds.value = records
-    .map((item) => item.id!)
-    .filter((id): id is number => id !== undefined);
 }
 
 /** 导出表格 */
@@ -202,8 +148,6 @@ const [Grid, gridApi] = useVbenVxeGrid({
     },
   } as VxeTableGridOptions<MeetingRoomBookingApi.MeetingRoomBooking>,
   gridEvents: {
-    checkboxAll: handleRowCheckboxChange,
-    checkboxChange: handleRowCheckboxChange,
     editClosed: handleEditClosed,
   },
 });
@@ -234,15 +178,6 @@ onActivated(() => {
               auth: ['oa:meeting-room-booking:export'],
               onClick: handleExport,
             },
-            {
-              label: $t('ui.actionTitle.deleteBatch'),
-              type: 'primary',
-              danger: true,
-              icon: ACTION_ICON.DELETE,
-              disabled: isEmpty(checkedIds),
-              auth: ['oa:meeting-room-booking:delete'],
-              onClick: handleDeleteBatch,
-            },
           ]"
         />
       </template>
@@ -254,25 +189,12 @@ onActivated(() => {
               type: 'link',
               danger: true,
               ifShow: () =>
-                BpmProcessInstanceStatusEditValue.includes(
-                  row.processStatus as number,
-                ),
+                row.processStatus === BpmProcessInstanceStatus.NOT_START,
               auth: ['oa:meeting-room-booking:delete'],
               popConfirm: {
                 title: $t('ui.actionMessage.deleteConfirm', [row.billCode]),
                 confirm: handleDelete.bind(null, row),
               },
-            },
-            {
-              label: $t('common.delete'),
-              type: 'link',
-              danger: true,
-              ifShow: () =>
-                !BpmProcessInstanceStatusEditValue.includes(
-                  row.processStatus as number,
-                ),
-              disabled: true,
-              auth: ['oa:meeting-room-booking:delete'],
             },
           ]"
         />

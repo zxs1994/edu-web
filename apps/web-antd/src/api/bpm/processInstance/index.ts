@@ -35,6 +35,7 @@ export namespace BpmProcessInstanceApi {
     }[];
     tasks?: BpmProcessInstanceApi.Task[];
     billCode?: string;
+    billDeleted?: boolean;
     companyName?: string;
     deptName?: string;
   }
@@ -107,6 +108,7 @@ export namespace BpmProcessInstanceApi {
       value: string;
     }[];
     taskId: string;
+    billDeleted?: boolean;
   }
 
   /** 流程实例的打印数据响应 */

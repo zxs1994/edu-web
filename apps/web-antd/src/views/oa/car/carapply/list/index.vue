@@ -6,15 +6,13 @@ import { onActivated, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
-import { BpmProcessInstanceStatusEditValue } from '@vben/constants';
-import { downloadFileFromBlobPart, isEmpty } from '@vben/utils';
+import { downloadFileFromBlobPart } from '@vben/utils';
 
 import { message } from 'ant-design-vue';
 
 import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   deleteCarApplyBill,
-  deleteCarApplyBillListByIds,
   exportCarApplyBill,
   getCarApplyBillPage,
 } from '#/api/oa/car/carapply';
@@ -68,53 +66,6 @@ async function handleDelete(row: CarApplyBillApi.CarApplyBill) {
   }
 }
 
-/** 批量删除用车申请单 */
-async function handleDeleteBatch() {
-  // 检查选中的记录是否都可以删除
-  const checkedRecords = gridApi.grid.getCheckboxRecords();
-  const notAllowedRecords = checkedRecords.filter(
-    (record: CarApplyBillApi.CarApplyBill) =>
-      !BpmProcessInstanceStatusEditValue.includes(
-        record.processStatus as number,
-      ),
-  );
-
-  if (notAllowedRecords.length > 0) {
-    const billCodes = notAllowedRecords
-      .map(
-        (record: CarApplyBillApi.CarApplyBill) => record.billCode || record.id,
-      )
-      .join(', ');
-    message.warning(`以下单据不允许删除：${billCodes}`);
-    return;
-  }
-
-  const hideLoading = message.loading({
-    content: $t('ui.actionMessage.deleting'),
-    key: 'action_key_msg',
-  });
-  try {
-    await deleteCarApplyBillListByIds(checkedIds.value);
-    message.success({
-      content: $t('ui.actionMessage.deleteSuccess'),
-      key: 'action_key_msg',
-    });
-    onRefresh();
-    checkedIds.value = [];
-  } finally {
-    hideLoading();
-  }
-}
-
-const checkedIds = ref<number[]>([]);
-function handleRowCheckboxChange({
-  records,
-}: {
-  records: CarApplyBillApi.CarApplyBill[];
-}) {
-  checkedIds.value = records.map((item) => item.id);
-}
-
 /** 导出表格 */
 async function handleExport() {
   const data = await exportCarApplyBill(await gridApi.formApi.getValues());
@@ -161,10 +112,6 @@ const [Grid, gridApi] = useVbenVxeGrid({
       search: true,
     },
   } as VxeTableGridOptions<CarApplyBillApi.CarApplyBill>,
-  gridEvents: {
-    checkboxAll: handleRowCheckboxChange,
-    checkboxChange: handleRowCheckboxChange,
-  },
 });
 
 // 页签切换时自动刷新表格数据
@@ -193,15 +140,6 @@ onActivated(() => {
               auth: ['oa:car-apply-bill:export'],
               onClick: handleExport,
             },
-            {
-              label: $t('ui.actionTitle.deleteBatch'),
-              type: 'primary',
-              danger: true,
-              icon: ACTION_ICON.DELETE,
-              disabled: isEmpty(checkedIds),
-              auth: ['oa:car-apply-bill:delete'],
-              onClick: handleDeleteBatch,
-            },
           ]"
         />
       </template>
@@ -213,31 +151,6 @@ onActivated(() => {
               type: 'link',
               icon: ACTION_ICON.VIEW,
               onClick: handleDetail.bind(null, row),
-            },
-            {
-              label: $t('common.delete'),
-              type: 'link',
-              danger: true,
-              ifShow: () =>
-                BpmProcessInstanceStatusEditValue.includes(
-                  row.processStatus as number,
-                ),
-              auth: ['oa:car-apply-bill:delete'],
-              popConfirm: {
-                title: $t('ui.actionMessage.deleteConfirm', [row.billCode]),
-                confirm: handleDelete.bind(null, row),
-              },
-            },
-            {
-              label: $t('common.delete'),
-              type: 'link',
-              danger: true,
-              ifShow: () =>
-                !BpmProcessInstanceStatusEditValue.includes(
-                  row.processStatus as number,
-                ),
-              disabled: true,
-              auth: ['oa:car-apply-bill:delete'],
             },
           ]"
         />

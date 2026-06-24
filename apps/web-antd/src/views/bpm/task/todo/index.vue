@@ -7,6 +7,7 @@ import { Page } from '@vben/common-ui';
 import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import { getTaskTodoPage } from '#/api/bpm/task';
 import { router } from '#/router';
+import { isBillDeleted } from '#/utils/bpm-bill-status';
 
 import { useGridColumns, useGridFormSchema } from './data';
 
@@ -14,6 +15,9 @@ defineOptions({ name: 'BpmTodoTask' });
 
 /** 办理任务 */
 function handleAudit(row: BpmTaskApi.Task) {
+  if (isBillDeleted(row)) {
+    return;
+  }
   router.push({
     name: 'BpmProcessInstanceTodoDetail',
     query: {
@@ -61,8 +65,23 @@ const [Grid] = useVbenVxeGrid({
 <template>
   <Page auto-content-height>
     <Grid>
+      <template #slot-bill-code="{ row }">
+        <a
+          v-if="!isBillDeleted(row) && row.processInstance?.billCode"
+          class="text-primary"
+          @click="handleAudit(row)"
+        >
+          {{ row.processInstance.billCode }}
+        </a>
+        <span v-else-if="row.processInstance?.billCode">
+          {{ row.processInstance.billCode }}
+        </span>
+        <span v-else>-</span>
+      </template>
       <template #actions="{ row }">
+        <span v-if="isBillDeleted(row)" class="text-gray-400">-</span>
         <TableAction
+          v-else
           :actions="[
             {
               label: $t('ui.actionTitle.handle'),

@@ -16,6 +16,7 @@ import {
   markWorkbenchTabAsRead,
 } from '#/api/bpm/task';
 import { router } from '#/router';
+import { formatTaskBillStatus, isBillDeleted } from '#/utils/bpm-bill-status';
 
 interface Props {
   maxRecordNum?: number;
@@ -119,37 +120,7 @@ const columns = computed(() => {
       dataIndex: 'status',
       key: 'status',
       width: tab === 'myBill' ? 200 : 100,
-      customRender: ({ record }: any) => {
-        let status = null;
-        switch (tab) {
-          case 'copy': {
-            return '已抄送';
-          }
-          case 'done': {
-            status = record.status;
-
-            break;
-          }
-          case 'myBill': {
-            status = record.status;
-
-            break;
-          }
-          case 'todo': {
-            return '待处理';
-          }
-          // No default
-        }
-
-        const statusMap: Record<number, string> = {
-          [-1]: '未提交',
-          1: '审批中',
-          2: '已通过',
-          3: '未通过',
-          4: '已取消',
-        };
-        return statusMap[status] ?? '-';
-      },
+      customRender: ({ record }: any) => formatTaskBillStatus(record, tab),
     },
     {
       title: '摘要',
@@ -374,6 +345,9 @@ function handleTabChange(key: number | string) {
 
 // 单据编号点击
 function handleBillCodeClick(record: any) {
+  if (isBillDeleted(record)) {
+    return;
+  }
   const tab = activeTab.value;
 
   switch (tab) {
@@ -432,6 +406,9 @@ function handleBillCodeClick(record: any) {
 
 // 办理任务（待办任务）
 function handleProcess(record: any) {
+  if (isBillDeleted(record)) {
+    return;
+  }
   // 待办任务：跳转到待办办理页
   router.push({
     name: 'BpmProcessInstanceTodoDetail',
@@ -446,6 +423,9 @@ function handleProcess(record: any) {
 
 // 查看详情（我的单据、已办、抄送）
 function handleDetail(record: any) {
+  if (isBillDeleted(record)) {
+    return;
+  }
   const tab = activeTab.value;
 
   switch (tab) {
@@ -659,9 +639,10 @@ onActivated(() => {
           <template v-if="column.key === 'billCode'">
             <a
               v-if="
-                record.processInstance?.billCode ||
-                record.billCode ||
-                record.formVariables?.billCode
+                !isBillDeleted(record) &&
+                (record.processInstance?.billCode ||
+                  record.billCode ||
+                  record.formVariables?.billCode)
               "
               class="bill-code-link"
               @click="handleBillCodeClick(record)"
@@ -674,14 +655,33 @@ onActivated(() => {
                     : record.processInstance?.billCode
               }}
             </a>
+            <span
+              v-else-if="
+                isBillDeleted(record) &&
+                (record.processInstance?.billCode ||
+                  record.billCode ||
+                  record.formVariables?.billCode)
+              "
+            >
+              {{
+                activeTab === 'myBill'
+                  ? record.billCode || record.formVariables?.billCode
+                  : activeTab === 'copy'
+                    ? record.billCode
+                    : record.processInstance?.billCode
+              }}
+            </span>
             <span v-else>-</span>
           </template>
           <template
             v-else-if="column.key === 'status' && activeTab === 'myBill'"
           >
+            <template v-if="isBillDeleted(record)">
+              <span class="text-gray-400">已删除</span>
+            </template>
             <!-- 审批中且有待办任务：显示审批人信息 -->
             <template
-              v-if="
+              v-else-if="
                 record.status === 1 && record.tasks && record.tasks.length > 0
               "
             >
@@ -709,8 +709,11 @@ onActivated(() => {
             </template>
           </template>
           <template v-else-if="column.key === 'action'">
+            <template v-if="isBillDeleted(record)">
+              <span class="text-gray-400">-</span>
+            </template>
             <!-- 待办任务：显示办理按钮 -->
-            <template v-if="activeTab === 'todo'">
+            <template v-else-if="activeTab === 'todo'">
               <TableAction
                 :actions="[
                   {

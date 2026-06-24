@@ -138,8 +138,8 @@ export function createAttachment(
     businessType: '',
     businessId: 0,
     fileName: file.name,
-    filePath: `/uploads/${file.name}`, // 实际应该是上传后返回的路径
-    fileUrl: URL.createObjectURL(file), // 实际应该是上传后返回的URL
+    filePath: '',
+    fileUrl: '',
     fileSize: file.size,
     fileType: file.type,
     fileExtension: file.name.split('.').pop() || '',

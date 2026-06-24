@@ -4,7 +4,7 @@ import type { ExpenseReimburseBillApi } from '#/api/oa/expense';
 import type { TravelApplyBillApi } from '#/api/oa/travel';
 
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
-import { onBeforeRouteLeave, useRoute } from 'vue-router';
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
 
 import { Loading } from '@vben/common-ui';
 import {
@@ -49,6 +49,7 @@ const props = defineProps<{
 }>();
 
 const route = useRoute();
+const router = useRouter();
 const userStore = useUserStore();
 /** 当前用户是否为单据创建人 */
 const isCreator = computed(() => {
@@ -75,7 +76,7 @@ const travelBillColumns = [
   { title: '出差事由', dataIndex: 'cause', ellipsis: true },
   { title: '开始日期', dataIndex: 'travelStartDate', width: 170 },
   { title: '结束日期', dataIndex: 'travelEndDate', width: 170 },
-  { title: '出差天数', dataIndex: 'travelDays', width: 100, align: 'center' },
+  { title: '出差天数', dataIndex: 'travelDays', width: 100, align: 'center' as const },
 ];
 
 /** 合计出差天数 */
@@ -94,15 +95,18 @@ function buildTravelCause(
 }
 
 function initFormSchema() {
-  formSchema.value = useFormSchema(travelApplyModalRef);
+  formSchema.value = useFormSchema(travelApplyModalRef, readonly);
 }
 
-let id: number | undefined = (() => {
+// 获取当前单据ID（每次调用都重新计算，避免缓存问题）
+function getCurrentId(): number | undefined {
   if (props.id) {
     return typeof props.id === 'string' ? Number(props.id) : props.id;
   }
   return route.query.id ? Number(route.query.id) : undefined;
-})();
+}
+
+let id: number | undefined = getCurrentId();
 
 function handleClose() {
   closeCurrentTab();
@@ -142,11 +146,19 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
     id = await (isSubmit
       ? submitExpenseReimburseBill(data)
       : saveExpenseReimburseBill(data));
+    formData.value.id = id;
 
     message.success({
       content: $t('ui.actionMessage.operationSuccess'),
       key: 'action_key_msg',
     });
+
+    if (!route.query.id && id) {
+      await router.replace({
+        path: route.path,
+        query: { ...route.query, id: String(id) },
+      });
+    }
 
     await loadData();
   } catch (error) {
@@ -192,6 +204,9 @@ async function handleRevoke(reason: string) {
 }
 
 async function loadData() {
+  // 每次加载前重新计算id，确保从路由或props获取最新值
+  id = getCurrentId() ?? id;
+
   if (id === undefined || id === null) {
     formData.value = {
       creator: userStore.userInfo?.id,
@@ -235,7 +250,8 @@ async function loadData() {
     const details = (data.details || []).map((item, index) =>
       normalizeExpenseDetail(item, index),
     );
-    const totalAmount = normalizeTotalAmount(data.totalAmount, details);
+    // 先计算总费用，确保从明细重新计算
+    const totalAmount = normalizeTotalAmount(undefined, details);
 
     formData.value = {
       ...data,
@@ -335,6 +351,7 @@ function handleUploadAttachment() {
  */
 async function handleTotalAmountChange(total: number) {
   if (!basicFormRef.value) return;
+  formData.value.totalAmount = total;
   await basicFormRef.value.setFormValues({ totalAmount: total }, false);
 }
 
@@ -485,6 +502,7 @@ onBeforeRouteLeave(() => {
     <!-- 差旅申请单选择弹窗 -->
     <TravelApplySelectModal
       ref="travelApplyModalRef"
+      :exclude-expense-bill-id="formData.id"
       @select="handleTravelApplySelect"
     />
   </Loading>

@@ -23,6 +23,11 @@ const emit = defineEmits<{
   (e: 'select', bills: TravelApplyBillApi.TravelApplyBill[]): void;
 }>();
 
+const props = defineProps<{
+  /** 编辑差旅报销单时传入，排除其他报销单已关联的出差申请 */
+  excludeExpenseBillId?: number;
+}>();
+
 const formData = reactive({
   selectedBills: [] as TravelApplyBillApi.TravelApplyBill[],
 });
@@ -45,8 +50,11 @@ const [Grid, gridApi] = useVbenVxeGrid({
           const queryParams = {
             pageNo: page.currentPage,
             pageSize: page.pageSize,
-            // 仅查询审批通过的差旅申请单
+            // 仅查询审批通过、未报销且未被其他差旅报销单关联的出差申请
             processStatus: BpmProcessInstanceStatus.APPROVE,
+            reimbursementStatus: 0,
+            excludeLinkedToExpense: true,
+            excludeExpenseBillId: props.excludeExpenseBillId,
             creator: useUserStore().userInfo?.id,
             ...formValues,
           };

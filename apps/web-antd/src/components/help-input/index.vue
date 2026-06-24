@@ -8,17 +8,14 @@
 <script setup lang="ts">
 import type { Ref } from 'vue';
 
-import { toRefs } from 'vue';
-
 interface Props {
   bind?: {
     onClick?: (e?: any, rowData?: any, rowIndex?: number) => void;
-    readonly: Ref<boolean>;
+    readonly?: boolean | Ref<boolean>;
   };
 }
 const props = withDefaults(defineProps<Props>(), {}) as Props;
 
-const { bind } = toRefs(props);
 // 限制键盘直接输入的内容
 function onKeyDown(e: any) {
   e.preventDefault();
@@ -28,10 +25,12 @@ function onPaste(e: any) {
   e.preventDefault();
 }
 function helpClick() {
-  if (bind.value?.readonly) {
+  const currentBind = props.bind;
+  const readonly = currentBind?.readonly;
+  if (typeof readonly === 'object' ? readonly.value : readonly) {
     return;
   }
-  bind?.value?.onClick?.();
+  currentBind?.onClick?.();
 }
 </script>
 <template>

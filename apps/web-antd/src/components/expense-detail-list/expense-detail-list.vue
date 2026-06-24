@@ -9,6 +9,7 @@ import { DatePicker, Select } from 'ant-design-vue';
 import { TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 
 import {
+  calcExpenseDetailsTotal,
   createExpenseDetail,
   EXPENSE_TYPE_OPTIONS,
   formatExpenseDate,
@@ -40,13 +41,18 @@ function emitUpdate() {
   isInternalUpdate = true;
   const data = [...tableData.value];
   emit('update:modelValue', data);
-  const total = data.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
-  emit('update:total', Number(total.toFixed(2)));
+  emit('update:total', calcExpenseDetailsTotal(data));
 }
 
 function reloadGridData() {
   nextTick(() => {
     gridApi.grid.reloadData(tableData.value);
+  });
+}
+
+function refreshFooter() {
+  nextTick(() => {
+    (gridApi.grid as any).updateFooter?.();
   });
 }
 
@@ -59,6 +65,19 @@ function updateField(
   if (index !== -1) {
     (tableData.value[index] as any)[field] = value;
     emitUpdate();
+    refreshFooter();
+  }
+}
+
+function updateFieldByIndex(
+  index: number,
+  field: keyof ExpenseReimburseBillApi.ExpenseReimburseDetail,
+  value: any,
+) {
+  if (index >= 0 && index < tableData.value.length) {
+    (tableData.value[index] as any)[field] = value;
+    emitUpdate();
+    refreshFooter();
   }
 }
 
@@ -76,17 +95,16 @@ function findRowIndex(row: ExpenseReimburseBillApi.ExpenseReimburseDetail): numb
 
 function handleAdd() {
   const detail = createExpenseDetail(tableData.value.length + 1);
-  tableData.value.push(detail);
+  tableData.value = [...tableData.value, detail];
   emitUpdate();
   reloadGridData();
 }
 
 function handleDeleteByIndex(index: number) {
   if (index < 0 || index >= tableData.value.length) return;
-  tableData.value.splice(index, 1);
-  tableData.value.forEach((item, idx) => {
-    item.sortOrder = idx + 1;
-  });
+  tableData.value = tableData.value
+    .filter((_, idx) => idx !== index)
+    .map((item, idx) => ({ ...item, sortOrder: idx + 1 }));
   emitUpdate();
   reloadGridData();
 }
@@ -94,12 +112,6 @@ function handleDeleteByIndex(index: number) {
 function formatAmount(value: number | undefined | null): string {
   if (value === undefined || value === null) return '0.00';
   return Number(value).toFixed(2);
-}
-
-/** 计算合计金额 */
-function calcTotalAmount(): string {
-  const total = tableData.value.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
-  return total.toFixed(2);
 }
 
 const topActions = computed(() => {
@@ -124,12 +136,12 @@ const [Grid, gridApi] = useVbenVxeGrid({
     autoResize: true,
     keepSource: true,
     showFooter: true,
-    footerMethod({ columns, data }) {
+    footerMethod({ columns }) {
       return [
         columns.map((column, columnIndex) => {
           if (columnIndex === 0) return '合计';
           if (column.field === 'amount') {
-            return `¥${calcTotalAmount()}`;
+            return `¥${calcExpenseDetailsTotal(tableData.value).toFixed(2)}`;
           }
           return '';
         }),
@@ -209,7 +221,7 @@ watch(
             class="cell-select"
             placeholder="请选择"
             :options="EXPENSE_TYPE_OPTIONS"
-            @change="(val: string) => updateField(row, 'expenseType', val)"
+            @change="(val: any) => updateField(row, 'expenseType', String(val || ''))"
           />
           <span v-else>{{ row.expenseType }}</span>
         </template>
@@ -223,37 +235,39 @@ watch(
             placeholder="请选择日期"
             format="YYYY-MM-DD"
             value-format="YYYY-MM-DD"
-            @change="(val: string) => updateField(row, 'expenseDate', val || '')"
+            @change="(val: any) => updateField(row, 'expenseDate', String(val || ''))"
           />
           <span v-else>{{ formatExpenseDate(row.expenseDate) }}</span>
         </template>
 
         <!-- 出发地 -->
-        <template #departure="{ row }">
+        <template #departure="{ row, $rowIndex }">
           <input
             v-if="!props.readonly"
             :value="row.departure"
             class="cell-input"
             placeholder="请输入"
-            @input="updateField(row, 'departure', ($event.target as HTMLInputElement).value)"
+            @input="updateFieldByIndex($rowIndex, 'departure', ($event.target as HTMLInputElement).value)"
+            @blur="updateFieldByIndex($rowIndex, 'departure', ($event.target as HTMLInputElement).value)"
           />
           <span v-else>{{ row.departure }}</span>
         </template>
 
         <!-- 到达地 -->
-        <template #destination="{ row }">
+        <template #destination="{ row, $rowIndex }">
           <input
             v-if="!props.readonly"
             :value="row.destination"
             class="cell-input"
             placeholder="请输入"
-            @input="updateField(row, 'destination', ($event.target as HTMLInputElement).value)"
+            @input="updateFieldByIndex($rowIndex, 'destination', ($event.target as HTMLInputElement).value)"
+            @blur="updateFieldByIndex($rowIndex, 'destination', ($event.target as HTMLInputElement).value)"
           />
           <span v-else>{{ row.destination }}</span>
         </template>
 
         <!-- 金额 -->
-        <template #amount="{ row }">
+        <template #amount="{ row, $rowIndex }">
           <input
             v-if="!props.readonly"
             type="number"
@@ -261,19 +275,21 @@ watch(
             :value="row.amount"
             class="cell-input text-right"
             placeholder="0.00"
-            @input="updateField(row, 'amount', Number(($event.target as HTMLInputElement).value) || 0)"
+            @input="updateFieldByIndex($rowIndex, 'amount', Number(($event.target as HTMLInputElement).value) || 0)"
+            @blur="updateFieldByIndex($rowIndex, 'amount', Number(($event.target as HTMLInputElement).value) || 0)"
           />
           <span v-else>{{ formatAmount(row.amount) }}</span>
         </template>
 
         <!-- 费用说明 -->
-        <template #description="{ row }">
+        <template #description="{ row, $rowIndex }">
           <input
             v-if="!props.readonly"
             :value="row.description"
             class="cell-input"
             placeholder="请输入"
-            @input="updateField(row, 'description', ($event.target as HTMLInputElement).value)"
+            @input="updateFieldByIndex($rowIndex, 'description', ($event.target as HTMLInputElement).value)"
+            @blur="updateFieldByIndex($rowIndex, 'description', ($event.target as HTMLInputElement).value)"
           />
           <span v-else>{{ row.description }}</span>
         </template>

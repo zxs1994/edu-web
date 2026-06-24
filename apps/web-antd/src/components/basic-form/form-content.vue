@@ -5,6 +5,11 @@ import { ref, watch } from 'vue';
 
 import { useVbenForm } from '#/adapter/form';
 
+import {
+  isOnlyParentManagedFormDataChange,
+  mergeFormDataProp,
+} from './form-data-merge';
+
 interface Props {
   formData?: Record<string, any>; // 表单数据
   formSchema: VbenFormSchema[]; // 表单schema
@@ -31,13 +36,18 @@ const [Form, formApi] = useVbenForm({
   wrapperClass: 'grid-cols-4', // 设置为4列布局
 });
 
-// 监听表单数据变化
+// 监听 formData 变化（与 BasicForm 保持一致）
 watch(
   () => props.formData,
-  async (newData) => {
-    if (newData && Object.keys(newData).length > 0) {
-      await formApi.setValues(newData);
+  async (newData, oldData) => {
+    if (!newData || Object.keys(newData).length === 0) {
+      return;
     }
+    if (isOnlyParentManagedFormDataChange(newData, oldData)) {
+      return;
+    }
+    const currentValues = (await formApi.getValues()) || {};
+    await formApi.setValues(mergeFormDataProp(newData, currentValues));
   },
   { immediate: true, deep: true },
 );

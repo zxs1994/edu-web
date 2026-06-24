@@ -44,7 +44,6 @@ export function useGridFormSchema(): VbenFormSchema[] {
 /** 列表字段 */
 export function useGridColumns(): VxeTableGridOptions<RedTemplateApi.RedTemplate>['columns'] {
   return [
-    { type: 'checkbox', width: 40 },
     { field: 'templateName', title: '模板名称', minWidth: 150 },
     { field: 'orgName', title: '机关/公司名称', minWidth: 160 },
     { field: 'nameFontSize', title: '名称字号', minWidth: 90 },

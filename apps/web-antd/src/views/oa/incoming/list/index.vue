@@ -2,12 +2,11 @@
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { IncomingDocumentBillApi } from '#/api/oa/incoming';
 
-import { onActivated, ref } from 'vue';
+import { onActivated } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
-import { BpmProcessInstanceStatusEditValue } from '@vben/constants';
-import { downloadFileFromBlobPart, isEmpty } from '@vben/utils';
+import { downloadFileFromBlobPart } from '@vben/utils';
 
 import { message } from 'ant-design-vue';
 
@@ -18,7 +17,6 @@ import {
 } from '#/adapter/vxe-table';
 import {
   deleteIncomingDocumentBill,
-  deleteIncomingDocumentBillList,
   exportIncomingDocumentBill,
   getIncomingDocumentBillPage,
 } from '#/api/oa/incoming';
@@ -65,47 +63,6 @@ async function handleDelete(
   }
 }
 
-const checkedIds = ref<number[]>([]);
-
-function handleRowCheckboxChange({
-  records,
-}: {
-  records: IncomingDocumentBillApi.IncomingDocumentBill[];
-}) {
-  checkedIds.value = records
-    .map((item) => item.id!)
-    .filter((id): id is number => id !== undefined);
-}
-
-async function handleDeleteBatch() {
-  const checkedRecords = gridApi.grid.getCheckboxRecords();
-  const notAllowed = checkedRecords.filter(
-    (r: IncomingDocumentBillApi.IncomingDocumentBill) =>
-      !BpmProcessInstanceStatusEditValue.includes(r.processStatus as number),
-  );
-  if (notAllowed.length > 0) {
-    message.warning(
-      `以下单据不允许删除：${notAllowed.map((r: any) => r.billCode || r.id).join(', ')}`,
-    );
-    return;
-  }
-  const hideLoading = message.loading({
-    content: $t('ui.actionMessage.deleting'),
-    key: 'action_key_msg',
-  });
-  try {
-    await deleteIncomingDocumentBillList(checkedIds.value);
-    message.success({
-      content: $t('ui.actionMessage.deleteSuccess'),
-      key: 'action_key_msg',
-    });
-    onRefresh();
-    checkedIds.value = [];
-  } finally {
-    hideLoading();
-  }
-}
-
 async function handleExport() {
   const data = await exportIncomingDocumentBill(
     await gridApi.formApi.getValues(),
@@ -137,10 +94,6 @@ const [Grid, gridApi] = useVbenVxeGrid({
     rowConfig: { keyField: 'id', isHover: true },
     toolbarConfig: { refresh: { code: 'query' }, search: true },
   } as VxeTableGridOptions<IncomingDocumentBillApi.IncomingDocumentBill>,
-  gridEvents: {
-    checkboxAll: handleRowCheckboxChange,
-    checkboxChange: handleRowCheckboxChange,
-  },
 });
 
 onActivated(() => {
@@ -168,15 +121,6 @@ onActivated(() => {
               auth: ['oa:incoming-document-bill:export'],
               onClick: handleExport,
             },
-            {
-              label: $t('ui.actionTitle.deleteBatch'),
-              type: 'primary',
-              danger: true,
-              icon: ACTION_ICON.DELETE,
-              disabled: isEmpty(checkedIds),
-              auth: ['oa:incoming-document-bill:delete'],
-              onClick: handleDeleteBatch,
-            },
           ]"
         />
       </template>
@@ -188,31 +132,6 @@ onActivated(() => {
               type: 'link',
               icon: ACTION_ICON.VIEW,
               onClick: () => handleDetail(row),
-            },
-            {
-              label: $t('common.delete'),
-              type: 'link',
-              danger: true,
-              ifShow: () =>
-                BpmProcessInstanceStatusEditValue.includes(
-                  row.processStatus as number,
-                ),
-              auth: ['oa:incoming-document-bill:delete'],
-              popConfirm: {
-                title: $t('ui.actionMessage.deleteConfirm', [row.billCode]),
-                confirm: handleDelete.bind(null, row),
-              },
-            },
-            {
-              label: $t('common.delete'),
-              type: 'link',
-              danger: true,
-              ifShow: () =>
-                !BpmProcessInstanceStatusEditValue.includes(
-                  row.processStatus as number,
-                ),
-              disabled: true,
-              auth: ['oa:incoming-document-bill:delete'],
             },
           ]"
         />
