@@ -18,6 +18,7 @@ import { Alert, Button, message } from 'ant-design-vue';
 
 import { withdrawProcessToStart } from '#/api/bpm/task';
 import {
+  checkTimeConflict,
   deleteSealApplyBill,
   getSealApplyBill,
   saveSealApplyBill,
@@ -102,6 +103,29 @@ function handleClose() {
   closeCurrentTab();
 }
 
+/** 保存/提交前校验印章时间冲突 */
+async function validateTimeConflictBeforeSave(
+  data: SealApplyBillApi.SealApplyBill,
+): Promise<boolean> {
+  if (!data.sealId || !data.expectedUseTime || !data.useMode) {
+    return true;
+  }
+  const hasConflict = await checkTimeConflict({
+    id: data.id,
+    sealId: data.sealId,
+    useMode: data.useMode,
+    expectedUseTime: String(data.expectedUseTime),
+    expectedReturnTime: data.expectedReturnTime
+      ? String(data.expectedReturnTime)
+      : undefined,
+  });
+  if (hasConflict) {
+    message.error('该印章在所选时间段内存在冲突，请调整时间');
+    return false;
+  }
+  return true;
+}
+
 // 保存及提交
 async function handleSaveAndSubmit(isSubmit: boolean) {
   loading.value = true;
@@ -132,6 +156,11 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
       ...formValues,
     };
 
+    const timeConflictValid = await validateTimeConflictBeforeSave(data);
+    if (!timeConflictValid) {
+      return;
+    }
+
     id = await (isSubmit ? submitSealApplyBill(data) : saveSealApplyBill(data));
     formData.value.id = id;
 
@@ -140,15 +169,7 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
       key: 'action_key_msg',
     });
 
-    if (!route.query.id && id) {
-      await router.replace({
-        path: route.path,
-        query: { ...route.query, id: String(id) },
-      });
-    }
-
-    // 保存后重新加载数据
-    await loadData();
+    closeCurrentTab();
   } catch (error) {
     console.error('保存失败:', error);
   } finally {
@@ -313,6 +334,10 @@ async function beforeApproval(): Promise<boolean> {
         ...formData.value,
         ...formValues,
       };
+      const timeConflictValid = await validateTimeConflictBeforeSave(data);
+      if (!timeConflictValid) {
+        return false;
+      }
       // 保存表单数据
       await saveSealApplyBill(data);
     }

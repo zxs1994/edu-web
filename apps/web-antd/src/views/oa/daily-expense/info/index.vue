@@ -129,14 +129,7 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
       key: 'action_key_msg',
     });
 
-    if (!route.query.id && id) {
-      await router.replace({
-        path: route.path,
-        query: { ...route.query, id: String(id) },
-      });
-    }
-
-    await loadData();
+    closeCurrentTab();
   } catch (error) {
     console.error('保存失败:', error);
   } finally {

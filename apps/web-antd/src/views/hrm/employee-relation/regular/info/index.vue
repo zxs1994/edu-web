@@ -128,8 +128,7 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
       key: 'action_key_msg',
     });
 
-    // 保存后重新加载数据
-    await loadData();
+    closeCurrentTab();
   } catch (error) {
     console.error('保存失败:', error);
   } finally {

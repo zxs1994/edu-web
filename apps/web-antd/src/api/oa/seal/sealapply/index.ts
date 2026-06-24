@@ -109,6 +109,17 @@ export function deleteSealApplyBillList(ids: number[]) {
   );
 }
 
+/** 校验印章时间冲突（实时校验） */
+export function checkTimeConflict(data: {
+  id?: number;
+  sealId: number;
+  useMode: number;
+  expectedUseTime?: string;
+  expectedReturnTime?: string;
+}) {
+  return requestClient.post<boolean>('/oa/seal-apply-bill/check-time-conflict', data);
+}
+
 /** 导出用印申请单 */
 export function exportSealApplyBill(params: any) {
   return requestClient.download('/oa/seal-apply-bill/export-excel', { params });

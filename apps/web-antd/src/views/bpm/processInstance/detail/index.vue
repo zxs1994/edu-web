@@ -74,9 +74,13 @@ const copyReason = computed(() => (route.query.copyReason as string) || '');
 const isApproval = computed(() => {
   if (isCopy.value) return false;
   const queryApproval = route.query.isTodo;
-  // 情况1：明确指定为false
+  // 情况1：从我的流程等非待办入口进入
   if (queryApproval === 'false') {
-    return false;
+    // 当前用户有待办任务且流程审批中时，仍显示审批按钮（如审批人与发起人相同）
+    return (
+      !!todoTask.value &&
+      processInstance.value?.status === BpmProcessInstanceStatus.RUNNING
+    );
   }
 
   // 情况2：queryApproval为'true'且当前任务状态为-1未提交且当前登录人等于制单人

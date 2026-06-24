@@ -7,6 +7,8 @@ import { getDictOptions } from '@vben/hooks';
 
 import { message } from 'ant-design-vue';
 
+import { checkTimeConflict } from '#/api/oa/seal/sealapply';
+
 /** 新增/修改的表单 */
 export function useFormSchema(
   modalRef?: any,
@@ -123,9 +125,10 @@ export function useFormSchema(
         options: getDictOptions(DICT_TYPE.OA_SEAL_USE_MODE, 'number'),
         placeholder: '请选择用章方式',
         onChange: (val: number) => {
-          // 现场用印时，清空预计归还时间
+          // 现场用印时，清空预计归还时间和实际归还时间
           if (val === 1) {
             formApi?.setFieldValue('expectedReturnTime', undefined);
+            formApi?.setFieldValue('actualReturnTime', undefined);
           }
         },
       }),
@@ -193,16 +196,38 @@ export function useFormSchema(
         placeholder: '请选择预计用章时间',
       },
       dependencies: {
-        triggerFields: ['expectedReturnTime'],
-        trigger: (values, formApi) => {
+        triggerFields: ['expectedReturnTime', 'useMode'],
+        trigger: async (values, formApi) => {
+          // 校验预计用章时间不能晚于或等于预计归还时间（仅外借用章）
           if (
+            values.useMode === 2 &&
             values.expectedReturnTime &&
             values.expectedUseTime &&
             values.expectedReturnTime <= values.expectedUseTime
           ) {
             message.error('预计用章时间不能晚于或等于预计归还时间');
-            // 立即清空预计归还时间字段
             formApi?.setFieldValue('expectedReturnTime', undefined);
+            return;
+          }
+
+          // 实时校验印章时间冲突（需要已选择印章和用章时间）
+          if (values.sealId && values.expectedUseTime && values.useMode) {
+            try {
+              const hasConflict = await checkTimeConflict({
+                id: values.id,
+                sealId: values.sealId,
+                useMode: values.useMode,
+                expectedUseTime: String(values.expectedUseTime),
+                expectedReturnTime: values.expectedReturnTime
+                  ? String(values.expectedReturnTime)
+                  : undefined,
+              });
+              if (hasConflict) {
+                message.error('该印章在所选时间段内存在冲突，请调整时间');
+              }
+            } catch {
+              // 校验接口异常时不阻塞用户操作
+            }
           }
         },
       },

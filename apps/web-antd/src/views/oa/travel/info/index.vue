@@ -127,7 +127,7 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
       key: 'action_key_msg',
     });
 
-    await loadData();
+    closeCurrentTab();
   } catch (error) {
     console.error('保存失败:', error);
   } finally {

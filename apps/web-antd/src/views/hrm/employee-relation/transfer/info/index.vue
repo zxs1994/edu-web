@@ -23,7 +23,7 @@ import {
   submitEmployeeTransferBill,
 } from '#/api/hrm/employee-transfer';
 import { AttachmentList } from '#/components/attachment-list';
-import { BasicForm, CardContainer } from '#/components/basic-form';
+import { BasicForm, CardContainer, mergeSchemaDisabled } from '#/components/basic-form';
 import { $t } from '#/locales';
 import EmployeeSelectModal from '#/views/hrm/employee/components/employee-select-modal.vue';
 import { DeptSelectModal } from '#/views/system/dept/components';
@@ -100,27 +100,9 @@ function initFormSchema() {
 function updateTransferFormSchema() {
   if (transferFormApi) {
     const transferSchema = useTransferFormSchema(deptSelectModalRef, readonly);
-    // 更新每个字段的disabled状态
-    const updatedSchema = transferSchema.map((schema) => {
-      const componentProps = schema.componentProps || {};
-      // 如果字段有自定义的disabled函数，则优先使用
-      const hasCustomDisabled =
-        componentProps &&
-        typeof componentProps === 'object' &&
-        'disabled' in componentProps &&
-        typeof componentProps.disabled === 'function';
-
-      return {
-        ...schema,
-        componentProps: {
-          ...componentProps,
-          disabled: hasCustomDisabled
-            ? componentProps.disabled()
-            : readonly.value,
-        },
-      };
-    });
-    transferFormApi.updateSchema(updatedSchema);
+    transferFormApi.updateSchema(
+      mergeSchemaDisabled(transferSchema, readonly.value),
+    );
   }
 }
 
@@ -182,8 +164,7 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
       key: 'action_key_msg',
     });
 
-    // 保存后重新加载数据
-    await loadData();
+    closeCurrentTab();
   } catch (error) {
     console.error('保存失败:', error);
   } finally {

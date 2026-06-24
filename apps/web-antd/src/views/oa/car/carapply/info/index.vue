@@ -121,15 +121,7 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
       key: 'action_key_msg',
     });
 
-    if (!route.query.id && id) {
-      await router.replace({
-        path: route.path,
-        query: { ...route.query, id: String(id) },
-      });
-    }
-
-    // 保存后重新加载数据
-    await loadData();
+    closeCurrentTab();
   } catch (error) {
     console.error('保存失败:', error);
   } finally {

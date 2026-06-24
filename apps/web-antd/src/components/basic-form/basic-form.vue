@@ -38,6 +38,7 @@ import {
   isOnlyParentManagedFormDataChange,
   mergeFormDataProp,
 } from './form-data-merge';
+import { mergeSchemaDisabled } from './merge-schema-disabled';
 
 interface Props {
   headerData?: headerDataProps;
@@ -276,25 +277,7 @@ watch(
   formDisabled,
   (disabled) => {
     if (formApi && props.formSchema) {
-      // 更新所有表单项的disabled状态
-      const updatedSchema = props.formSchema.map((schema) => {
-        // 如果字段有自定义的disabled函数，则优先使用
-        const componentProps = schema.componentProps;
-        const hasCustomDisabled =
-          componentProps &&
-          typeof componentProps === 'object' &&
-          'disabled' in componentProps &&
-          typeof componentProps.disabled === 'function';
-
-        return {
-          ...schema,
-          componentProps: {
-            ...componentProps,
-            disabled: hasCustomDisabled ? componentProps.disabled() : disabled,
-          },
-        };
-      });
-      formApi.updateSchema(updatedSchema);
+      formApi.updateSchema(mergeSchemaDisabled(props.formSchema, disabled));
     }
   },
   { immediate: true },

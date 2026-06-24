@@ -31,7 +31,7 @@ import {
 } from '#/api/oa/document';
 import { getRedTemplate } from '#/api/oa/red-template';
 import { AttachmentList } from '#/components/attachment-list';
-import { CardContainer, FooterForm, HeaderForm } from '#/components/basic-form';
+import { CardContainer, FooterForm, HeaderForm, mergeSchemaDisabled } from '#/components/basic-form';
 import { $t } from '#/locales';
 import { useFooterLeft } from '#/utils/useFooterLeft';
 import ProcessInstanceSimpleViewer from '#/views/bpm/processInstance/detail/modules/simple-bpm-viewer.vue';
@@ -210,7 +210,8 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
       content: $t('ui.actionMessage.operationSuccess'),
       key: 'action_key_msg',
     });
-    await loadData();
+
+    closeCurrentTab();
   } catch (error) {
     console.error('保存失败:', error);
   } finally {
@@ -383,24 +384,7 @@ watch(
 // 监听 disabled 状态变化
 watch(isDisabled, (disabled) => {
   if (formApi && formSchema.value) {
-    const updatedSchema = formSchema.value.map((schema) => {
-      const componentProps = schema.componentProps;
-      const hasCustomDisabled =
-        componentProps &&
-        typeof componentProps === 'object' &&
-        'disabled' in componentProps &&
-        typeof (componentProps as any).disabled === 'function';
-      return {
-        ...schema,
-        componentProps: {
-          ...(typeof componentProps === 'object' ? componentProps : {}),
-          disabled: hasCustomDisabled
-            ? (componentProps as any).disabled()
-            : disabled,
-        },
-      };
-    });
-    formApi.updateSchema(updatedSchema);
+    formApi.updateSchema(mergeSchemaDisabled(formSchema.value, disabled));
   }
 });
 
