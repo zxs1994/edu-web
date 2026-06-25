@@ -57,7 +57,7 @@ const unreadCounts = ref<Record<string, number>>({
 // Tab配置
 const tabs = computed(() => [
   { key: 'todo', label: '待办任务', count: unreadCounts.value.todo },
-  { key: 'myBill', label: '我的单据', count: unreadCounts.value.myBill },
+  // { key: 'myBill', label: '我的单据', count: unreadCounts.value.myBill },
   { key: 'done', label: '已办任务', count: unreadCounts.value.done },
   { key: 'copy', label: '抄送我的', count: unreadCounts.value.copy },
 ]);

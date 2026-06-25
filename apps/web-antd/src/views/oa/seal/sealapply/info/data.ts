@@ -137,6 +137,7 @@ export function useFormSchema(
       fieldName: 'documentTitle',
       label: '文件标题',
       component: 'Input',
+      rules: 'required',
       componentProps: {
         placeholder: '请输入文件标题',
       },
@@ -145,6 +146,7 @@ export function useFormSchema(
       fieldName: 'documentType',
       label: '文件类型',
       component: 'Input',
+      rules: 'required',
       componentProps: {
         placeholder: '请输入文件类型',
       },
@@ -153,6 +155,7 @@ export function useFormSchema(
       fieldName: 'documentCount',
       label: '文件份数',
       component: 'InputNumber',
+      rules: 'required',
       componentProps: {
         placeholder: '请输入文件份数',
         min: 1,
