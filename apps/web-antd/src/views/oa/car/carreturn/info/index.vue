@@ -85,10 +85,13 @@ function handleClose() {
 }
 
 // 保存及提交
-async function handleSaveAndSubmit(isSubmit: boolean) {
+async function handleSaveAndSubmit(isSubmit: boolean): Promise<boolean> {
   loading.value = true;
 
-  if (!basicFormRef.value) return;
+  if (!basicFormRef.value) {
+    loading.value = false;
+    return false;
+  }
 
   // 提交前校验
   if (isSubmit) {
@@ -96,7 +99,7 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
     // 如果校验不通过，则不允许提交
     if (!valid) {
       loading.value = false;
-      return;
+      return false;
     }
   }
 
@@ -117,8 +120,7 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
       key: 'action_key_msg',
     });
 
-    // 保存后重新加载数据
-    await loadData();
+    return true;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : '保存失败';
     message.error({
@@ -126,6 +128,7 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
       key: 'action_key_msg',
     });
     console.error('保存还车申请单失败:', error);
+    return false;
   } finally {
     loading.value = false;
   }
@@ -283,8 +286,7 @@ onBeforeRouteLeave(() => {
       :form-schema="formSchema"
       :disabled="readonly"
       @close="handleClose"
-      @save="handleSaveAndSubmit(false)"
-      @submit="handleSaveAndSubmit(true)"
+      :on-save-submit="handleSaveAndSubmit"
       @revoke="handleRevoke"
       :hide-footer="props.isApproval"
     >

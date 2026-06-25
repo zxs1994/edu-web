@@ -18,6 +18,7 @@ import { Alert, Button, message } from 'ant-design-vue';
 
 import { withdrawProcessToStart } from '#/api/bpm/task';
 import {
+  checkTimeConflict,
   deleteSealApplyBill,
   getSealApplyBill,
   saveSealApplyBill,
@@ -102,11 +103,37 @@ function handleClose() {
   closeCurrentTab();
 }
 
+/** 保存/提交前校验印章时间冲突 */
+async function validateTimeConflictBeforeSave(
+  data: SealApplyBillApi.SealApplyBill,
+): Promise<boolean> {
+  if (!data.sealId || !data.expectedUseTime || !data.useMode) {
+    return true;
+  }
+  const hasConflict = await checkTimeConflict({
+    id: data.id,
+    sealId: data.sealId,
+    useMode: data.useMode,
+    expectedUseTime: String(data.expectedUseTime),
+    expectedReturnTime: data.expectedReturnTime
+      ? String(data.expectedReturnTime)
+      : undefined,
+  });
+  if (hasConflict) {
+    message.error('该印章在所选时间段内存在冲突，请调整时间');
+    return false;
+  }
+  return true;
+}
+
 // 保存及提交
-async function handleSaveAndSubmit(isSubmit: boolean) {
+async function handleSaveAndSubmit(isSubmit: boolean): Promise<boolean> {
   loading.value = true;
 
-  if (!basicFormRef.value) return;
+  if (!basicFormRef.value) {
+    loading.value = false;
+    return false;
+  }
 
   // 提交前校验 - 只有提交时才进行校验，保存时不校验
   if (isSubmit) {
@@ -114,7 +141,7 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
     // 如果校验不通过，则不允许提交
     if (!valid) {
       loading.value = false;
-      return;
+      return false;
     }
   }
 
@@ -132,6 +159,11 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
       ...formValues,
     };
 
+    const timeConflictValid = await validateTimeConflictBeforeSave(data);
+    if (!timeConflictValid) {
+      return false;
+    }
+
     id = await (isSubmit ? submitSealApplyBill(data) : saveSealApplyBill(data));
     formData.value.id = id;
 
@@ -140,17 +172,10 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
       key: 'action_key_msg',
     });
 
-    if (!route.query.id && id) {
-      await router.replace({
-        path: route.path,
-        query: { ...route.query, id: String(id) },
-      });
-    }
-
-    // 保存后重新加载数据
-    await loadData();
+    return true;
   } catch (error) {
     console.error('保存失败:', error);
+    return false;
   } finally {
     loading.value = false;
   }
@@ -313,7 +338,10 @@ async function beforeApproval(): Promise<boolean> {
         ...formData.value,
         ...formValues,
       };
-      // 保存表单数据
+      const timeConflictValid = await validateTimeConflictBeforeSave(data);
+      if (!timeConflictValid) {
+        return false;
+      }
       await saveSealApplyBill(data);
     }
     return true;
@@ -364,8 +392,7 @@ onBeforeRouteLeave(() => {
       :form-schema="formSchema"
       :disabled="props.isCopy || readonly"
       @close="handleClose"
-      @save="handleSaveAndSubmit(false)"
-      @submit="handleSaveAndSubmit(true)"
+      :on-save-submit="handleSaveAndSubmit"
       @revoke="handleRevoke"
       @delete="handleDelete"
       :hide-footer="props.isApproval && !props.isCopy"

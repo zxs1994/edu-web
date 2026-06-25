@@ -17,6 +17,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 
 import { Page } from '@vben/common-ui';
 import { BpmProcessInstanceStatus } from '@vben/constants';
+import { useTabs } from '@vben/hooks';
 import { useUserStore } from '@vben/stores';
 
 import { Spin } from 'ant-design-vue';
@@ -38,6 +39,7 @@ import {
   isOnlyParentManagedFormDataChange,
   mergeFormDataProp,
 } from './form-data-merge';
+import { mergeSchemaDisabled } from './merge-schema-disabled';
 
 interface Props {
   headerData?: headerDataProps;
@@ -52,6 +54,10 @@ interface Props {
   formData?: Record<string, any>; // 表单数据
   formSchema?: VbenFormSchema[]; // 表单schema
   disabled?: boolean; // 是否禁用表单
+  /** 保存/提交回调，返回 false 时不关闭标签页 */
+  onSaveSubmit?: (isSubmit: boolean) => Promise<boolean | void>;
+  /** 保存/提交成功后是否关闭标签页 */
+  closeTabOnSaveSubmit?: boolean;
 }
 const props = withDefaults(defineProps<Props>(), {
   headerData: () => ({
@@ -73,6 +79,7 @@ const props = withDefaults(defineProps<Props>(), {
   formData: () => ({}),
   formSchema: () => [],
   disabled: false,
+  closeTabOnSaveSubmit: true,
 });
 
 const emit = defineEmits([
@@ -93,6 +100,7 @@ const activityNodes = ref<any[]>(props.activityNodes || []);
 
 // 使用公共的 footerLeft composable
 const { footerLeft } = useFooterLeft();
+const { closeCurrentTab } = useTabs();
 
 // 当前用户是否为单据创建人（新建未保存的单据 creator 为空，默认允许操作）
 const userStore = useUserStore();
@@ -219,14 +227,22 @@ async function getApprovalDetailData() {
 const closeForm = () => {
   emit('close');
 };
+
+async function runSaveSubmit(isSubmit: boolean) {
+  if (props.onSaveSubmit) {
+    const ok = await props.onSaveSubmit(isSubmit);
+    if (ok === true && props.closeTabOnSaveSubmit) {
+      await closeCurrentTab();
+    }
+    return;
+  }
+  emit(isSubmit ? 'submit' : 'save');
+}
+
 // 保存
-const saveForm = () => {
-  emit('save');
-};
+const saveForm = () => runSaveSubmit(false);
 // 提交
-const submitForm = () => {
-  emit('submit');
-};
+const submitForm = () => runSaveSubmit(true);
 // 撤回
 const revokeForm = (reason?: string) => {
   emit('revoke', reason);
@@ -276,25 +292,7 @@ watch(
   formDisabled,
   (disabled) => {
     if (formApi && props.formSchema) {
-      // 更新所有表单项的disabled状态
-      const updatedSchema = props.formSchema.map((schema) => {
-        // 如果字段有自定义的disabled函数，则优先使用
-        const componentProps = schema.componentProps;
-        const hasCustomDisabled =
-          componentProps &&
-          typeof componentProps === 'object' &&
-          'disabled' in componentProps &&
-          typeof componentProps.disabled === 'function';
-
-        return {
-          ...schema,
-          componentProps: {
-            ...componentProps,
-            disabled: hasCustomDisabled ? componentProps.disabled() : disabled,
-          },
-        };
-      });
-      formApi.updateSchema(updatedSchema);
+      formApi.updateSchema(mergeSchemaDisabled(props.formSchema, disabled));
     }
   },
   { immediate: true },

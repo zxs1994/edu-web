@@ -23,7 +23,7 @@ import {
   submitEmployeeTransferBill,
 } from '#/api/hrm/employee-transfer';
 import { AttachmentList } from '#/components/attachment-list';
-import { BasicForm, CardContainer } from '#/components/basic-form';
+import { BasicForm, CardContainer, mergeSchemaDisabled } from '#/components/basic-form';
 import { $t } from '#/locales';
 import EmployeeSelectModal from '#/views/hrm/employee/components/employee-select-modal.vue';
 import { DeptSelectModal } from '#/views/system/dept/components';
@@ -100,27 +100,9 @@ function initFormSchema() {
 function updateTransferFormSchema() {
   if (transferFormApi) {
     const transferSchema = useTransferFormSchema(deptSelectModalRef, readonly);
-    // 更新每个字段的disabled状态
-    const updatedSchema = transferSchema.map((schema) => {
-      const componentProps = schema.componentProps || {};
-      // 如果字段有自定义的disabled函数，则优先使用
-      const hasCustomDisabled =
-        componentProps &&
-        typeof componentProps === 'object' &&
-        'disabled' in componentProps &&
-        typeof componentProps.disabled === 'function';
-
-      return {
-        ...schema,
-        componentProps: {
-          ...componentProps,
-          disabled: hasCustomDisabled
-            ? componentProps.disabled()
-            : readonly.value,
-        },
-      };
-    });
-    transferFormApi.updateSchema(updatedSchema);
+    transferFormApi.updateSchema(
+      mergeSchemaDisabled(transferSchema, readonly.value),
+    );
   }
 }
 
@@ -138,10 +120,13 @@ function handleClose() {
 }
 
 // 保存及提交
-async function handleSaveAndSubmit(isSubmit: boolean) {
+async function handleSaveAndSubmit(isSubmit: boolean): Promise<boolean> {
   loading.value = true;
 
-  if (!basicFormRef.value) return;
+  if (!basicFormRef.value) {
+    loading.value = false;
+    return false;
+  }
 
   // 提交前校验 - 只有提交时才进行校验，保存时不校验
   if (isSubmit) {
@@ -151,7 +136,7 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
     // 如果校验不通过，则不允许提交
     if (!basicValid || !transferValid.valid) {
       loading.value = false;
-      return;
+      return false;
     }
   }
 
@@ -182,10 +167,10 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
       key: 'action_key_msg',
     });
 
-    // 保存后重新加载数据
-    await loadData();
+    return true;
   } catch (error) {
     console.error('保存失败:', error);
+    return false;
   } finally {
     loading.value = false;
   }
@@ -384,8 +369,7 @@ onMounted(() => {
       :form-schema="formSchema"
       :disabled="readonly"
       @close="handleClose"
-      @save="handleSaveAndSubmit(false)"
-      @submit="handleSaveAndSubmit(true)"
+      :on-save-submit="handleSaveAndSubmit"
       @revoke="handleRevoke"
       :hide-footer="props.isApproval"
       :activity-nodes="props.activityNodes"

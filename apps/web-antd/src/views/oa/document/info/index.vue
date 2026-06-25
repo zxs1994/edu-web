@@ -31,7 +31,7 @@ import {
 } from '#/api/oa/document';
 import { getRedTemplate } from '#/api/oa/red-template';
 import { AttachmentList } from '#/components/attachment-list';
-import { CardContainer, FooterForm, HeaderForm } from '#/components/basic-form';
+import { CardContainer, FooterForm, HeaderForm, mergeSchemaDisabled } from '#/components/basic-form';
 import { $t } from '#/locales';
 import { useFooterLeft } from '#/utils/useFooterLeft';
 import ProcessInstanceSimpleViewer from '#/views/bpm/processInstance/detail/modules/simple-bpm-viewer.vue';
@@ -168,15 +168,18 @@ function handleClose() {
   closeCurrentTab();
 }
 
-async function handleSaveAndSubmit(isSubmit: boolean) {
+async function handleSaveAndSubmit(isSubmit: boolean): Promise<boolean> {
   loading.value = true;
-  if (!formApi) return;
+  if (!formApi) {
+    loading.value = false;
+    return false;
+  }
 
   if (isSubmit) {
     const { valid } = await formApi.validate();
     if (!valid) {
       loading.value = false;
-      return;
+      return false;
     }
   }
 
@@ -210,9 +213,12 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
       content: $t('ui.actionMessage.operationSuccess'),
       key: 'action_key_msg',
     });
-    await loadData();
+
+    closeCurrentTab();
+    return true;
   } catch (error) {
     console.error('保存失败:', error);
+    return false;
   } finally {
     loading.value = false;
   }
@@ -383,24 +389,7 @@ watch(
 // 监听 disabled 状态变化
 watch(isDisabled, (disabled) => {
   if (formApi && formSchema.value) {
-    const updatedSchema = formSchema.value.map((schema) => {
-      const componentProps = schema.componentProps;
-      const hasCustomDisabled =
-        componentProps &&
-        typeof componentProps === 'object' &&
-        'disabled' in componentProps &&
-        typeof (componentProps as any).disabled === 'function';
-      return {
-        ...schema,
-        componentProps: {
-          ...(typeof componentProps === 'object' ? componentProps : {}),
-          disabled: hasCustomDisabled
-            ? (componentProps as any).disabled()
-            : disabled,
-        },
-      };
-    });
-    formApi.updateSchema(updatedSchema);
+    formApi.updateSchema(mergeSchemaDisabled(formSchema.value, disabled));
   }
 });
 

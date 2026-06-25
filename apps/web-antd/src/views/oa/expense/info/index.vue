@@ -112,16 +112,19 @@ function handleClose() {
   closeCurrentTab();
 }
 
-async function handleSaveAndSubmit(isSubmit: boolean) {
+async function handleSaveAndSubmit(isSubmit: boolean): Promise<boolean> {
   loading.value = true;
 
-  if (!basicFormRef.value) return;
+  if (!basicFormRef.value) {
+    loading.value = false;
+    return false;
+  }
 
   if (isSubmit) {
     const { valid } = await basicFormRef.value.validateForm();
     if (!valid) {
       loading.value = false;
-      return;
+      return false;
     }
   }
 
@@ -153,16 +156,10 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
       key: 'action_key_msg',
     });
 
-    if (!route.query.id && id) {
-      await router.replace({
-        path: route.path,
-        query: { ...route.query, id: String(id) },
-      });
-    }
-
-    await loadData();
+    return true;
   } catch (error) {
     console.error('保存失败:', error);
+    return false;
   } finally {
     loading.value = false;
   }
@@ -350,7 +347,10 @@ function handleUploadAttachment() {
  * 费用明细合计金额变化 → 更新表单中的报销总金额
  */
 async function handleTotalAmountChange(total: number) {
-  if (!basicFormRef.value) return;
+  if (!basicFormRef.value) {
+    loading.value = false;
+    return false;
+  }
   formData.value.totalAmount = total;
   await basicFormRef.value.setFormValues({ totalAmount: total }, false);
 }
@@ -399,8 +399,7 @@ onBeforeRouteLeave(() => {
       :form-schema="formSchema"
       :disabled="props.isCopy || readonly"
       @close="handleClose"
-      @save="handleSaveAndSubmit(false)"
-      @submit="handleSaveAndSubmit(true)"
+      :on-save-submit="handleSaveAndSubmit"
       @revoke="handleRevoke"
       @delete="handleDelete"
       :hide-footer="props.isApproval && !props.isCopy"
