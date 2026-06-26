@@ -8,7 +8,7 @@ import { useTabbarStore } from '@vben/stores';
 
 import {
   TabsToolMore,
-  TabsToolRefresh,
+  // TabsToolRefresh,
   TabsToolScreen,
   TabsView,
 } from '@vben-core/tabs-ui';
@@ -70,10 +70,10 @@ if (!preferences.tabbar.persist) {
   />
   <div class="flex-center h-full">
     <TabsToolMore v-if="preferences.tabbar.showMore" :menus="menus" />
-    <TabsToolRefresh
+    <!-- <TabsToolRefresh
       v-if="preferences.tabbar.showRefresh"
       @refresh="refreshTab"
-    />
+    /> -->
     <TabsToolScreen
       v-if="preferences.tabbar.showMaximize"
       :screen="contentIsMaximize"
