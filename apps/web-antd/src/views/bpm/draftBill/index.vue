@@ -100,7 +100,7 @@ onActivated(() => {
               label: $t('common.detail'),
               type: 'link',
               icon: ACTION_ICON.VIEW,
-              auth: ['bpm:draft-bill:query'],
+              auth: ['bpm:process-instance:query'],
               onClick: () => handleDetail(row),
             },
             {
@@ -108,7 +108,7 @@ onActivated(() => {
               type: 'link',
               danger: true,
               icon: ACTION_ICON.DELETE,
-              auth: ['bpm:draft-bill:query'],
+              auth: ['bpm:process-instance:query'],
               onClick: () => handleDelete(row),
             },
           ]"
