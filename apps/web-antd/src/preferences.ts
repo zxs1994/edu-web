@@ -49,6 +49,7 @@ export const overridesPreferences = defineOverridesPreferences({
   // 标签页配置 - 隐藏图标
   tabbar: {
     showIcon: false,
+    showRefresh: false,
   },
   // 面包屑配置 - 隐藏图标
   breadcrumb: {

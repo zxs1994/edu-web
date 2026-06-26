@@ -16,6 +16,7 @@ import {
   initUserApp,
   updateUserAppSort,
 } from '#/api/system/home/app-center';
+import { getAppCenterMenuList } from '#/api/system/menu';
 import { router } from '#/router';
 
 import AppSelectModal from './app-select-modal.vue';
@@ -42,81 +43,88 @@ const isInitializing = ref(false); // 防止重复初始化
 // 添加应用模态框
 const selectModalVisible = ref(false);
 
-// 从权限菜单获取可用的菜单选项
-const menuOptions = computed(() => {
-  const menus = accessStore.accessMenus || [];
-  // 将菜单转换为选项格式（只取有实际页面的“叶子菜单”）
-  const options: SystemHomeAppCenterApi.MenuOption[] = [];
+// 应用中心可选菜单（来自后端，仅 app_visible=true 的目录/菜单）
+const appCenterMenus = ref<SystemHomeAppCenterApi.MenuOption[]>([]);
 
-  const processMenus = (menuList: any[], parents: any[] = []) => {
+// 从用户有权限的菜单中收集 id 集合（用于权限过滤）
+const accessibleMenuIds = computed(() => {
+  const ids = new Set<number>();
+  const collect = (menuList: any[]) => {
     for (const menu of menuList) {
-      const children = Array.isArray(menu.children) ? menu.children : [];
-      const currentParents = [...parents, menu];
-      const isLeaf = children.length === 0;
-
-      // 只选择有 path 的叶子菜单，不再依赖后端的 type 字段，避免类型差异导致全为空
-      if (isLeaf && menu.path) {
-        // 获取菜单 ID（MenuRecordRaw 现在有 id 字段，但为了兼容性也检查其他位置）
-        const id =
-          (menu as any).id ??
-          (menu as any).menuId ??
-          (menu as any).meta?.id ??
-          (menu as any).meta?.menuId ??
-          null;
-
-        // 如果确实没有 ID，跳过该菜单（因为后端需要 menuId）
-        if (!id) {
-          console.warn('菜单缺少 ID，已跳过:', {
-            path: menu.path,
-            name: menu.name || (menu as any).meta?.title,
-            menuKeys: Object.keys(menu),
-          });
-          return;
-        }
-
-        const icon =
-          menu.icon ??
-          menu.menuIcon ??
-          menu.meta?.icon ??
-          menu.meta?.menuIcon ??
-          'carbon:application';
-        const name =
-          menu.meta?.title ??
-          menu.name ??
-          menu.meta?.menuName ??
-          menu.path ??
-          '未命名菜单';
-
-        // 一级菜单中文名称（用于弹窗左侧分组显示）
-        const rootMenu = currentParents[0] ?? menu;
-        const rootName =
-          rootMenu.meta?.title ??
-          rootMenu.name ??
-          rootMenu.meta?.menuName ??
-          rootMenu.path ??
-          '其他';
-
-        options.push({
-          id: Number(id), // 确保是数字类型
-          name,
-          path: menu.path,
-          icon,
-          parentId: menu.parentId ?? menu.menuParentId ?? null,
-          // 附加字段：一级菜单名称
-          rootName,
-        } as SystemHomeAppCenterApi.MenuOption & {
-          rootName?: string;
-        });
+      const id =
+        (menu as any).id ??
+        (menu as any).menuId ??
+        (menu as any).meta?.id ??
+        (menu as any).meta?.menuId ??
+        null;
+      if (id != null) {
+        ids.add(Number(id));
       }
-
-      // 递归处理子菜单
+      const children = Array.isArray(menu.children) ? menu.children : [];
       if (children.length > 0) {
-        processMenus(children, currentParents);
+        collect(children);
       }
     }
   };
+  collect(accessStore.accessMenus || []);
+  return ids;
+});
 
-  processMenus(menus);
+// 可选菜单：后端返回的 app_visible 菜单 ∩ 当前用户有权限的菜单
+const menuOptions = computed(() => {
+  const options: SystemHomeAppCenterApi.MenuOption[] = [];
+  // 构建后端菜单的父子映射，用于推导一级菜单名称
+  const menuMap = new Map<number, any>();
+  appCenterMenus.value.forEach((m) => menuMap.set(Number(m.id), m));
+
+  for (const menu of appCenterMenus.value) {
+    const id = Number(menu.id);
+    // 权限过滤：虚拟菜单(managed=false)免授权直接放行，真实菜单需用户有权限
+    const isVirtual = (menu as any).managed === false;
+    if (!isVirtual && !accessibleMenuIds.value.has(id)) {
+      continue;
+    }
+    // 只选择有 path 的项（目录若有 path 也可加入）
+    if (!menu.path) {
+      continue;
+    }
+
+    const icon = menu.icon || 'carbon:application';
+    const name = menu.name || menu.path || '未命名菜单';
+
+    // 推导一级菜单名称：沿 parentId 向上找到根
+    let rootName = '其他';
+    let current = menuMap.get(id);
+    const guardSet = new Set<number>();
+    while (current && current.parentId && !guardSet.has(current.id)) {
+      guardSet.add(current.id);
+      const parent = menuMap.get(Number(current.parentId));
+      if (!parent) {
+        // 父级不在应用中心列表里，用当前层作为一级名称
+        rootName = current.name || rootName;
+        break;
+      }
+      rootName = parent.name || rootName;
+      current = parent;
+      // 到达根节点（parentId 为 0 或 null）
+      if (!current.parentId || Number(current.parentId) === 0) {
+        rootName = current.name || rootName;
+        break;
+      }
+    }
+
+    options.push({
+      id,
+      name,
+      path: menu.path,
+      icon,
+      parentId: menu.parentId ?? null,
+      // 附加字段：一级菜单名称（用于弹窗左侧分组显示）
+      rootName,
+    } as SystemHomeAppCenterApi.MenuOption & {
+      rootName?: string;
+    });
+  }
   return options;
 });
 
@@ -306,8 +314,27 @@ function getAppColor(app: SystemHomeAppCenterApi.AppUserVO) {
   return getColorByKey(key);
 }
 
+// 加载应用中心可选菜单（后端按 app_visible 过滤）
+async function loadAppCenterMenus() {
+  try {
+    const list = await getAppCenterMenuList();
+    appCenterMenus.value = (list || []).map((m) => ({
+      id: Number(m.id),
+      name: m.name,
+      path: m.path || '',
+      icon: m.icon || '',
+      parentId: m.parentId,
+      managed: m.managed,
+    }));
+  } catch (error) {
+    console.error('加载应用中心菜单失败:', error);
+    appCenterMenus.value = [];
+  }
+}
+
 // 组件挂载时加载数据
 onMounted(() => {
+  loadAppCenterMenus();
   loadAppList();
 });
 </script>

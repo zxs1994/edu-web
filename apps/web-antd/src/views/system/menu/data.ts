@@ -287,8 +287,8 @@ export function useFormSchema(): VbenFormSchema[] {
       },
     },
     {
-      fieldName: 'visible',
-      label: '是否显示',
+      fieldName: 'appVisible',
+      label: '应用中心',
       component: 'RadioGroup',
       componentProps: {
         options: [
@@ -300,11 +300,13 @@ export function useFormSchema(): VbenFormSchema[] {
       },
       rules: 'required',
       defaultValue: true,
-      help: '当选择是时，则该菜单会显示在菜单栏中，否则不显示，但是路由注册时，会注册该路由',
+      help: '选择显示时，该菜单/目录允许被加入工作台「应用中心」；选择隐藏时，应用中心添加列表中不展示该项',
       dependencies: {
         triggerFields: ['type'],
         show: (values) => {
-          return [SystemMenuTypeEnum.MENU].includes(values.type);
+          return [SystemMenuTypeEnum.DIR, SystemMenuTypeEnum.MENU].includes(
+            values.type,
+          );
         },
       },
     },
