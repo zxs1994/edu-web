@@ -17,6 +17,8 @@ export namespace SystemMenuApi {
     visible: boolean;
     keepAlive: boolean;
     alwaysShow?: boolean;
+    appVisible?: boolean;
+    managed?: boolean;
     createTime: Date;
   }
 }
@@ -31,6 +33,11 @@ export async function getMenuList(params?: Record<string, any>) {
   return requestClient.get<SystemMenuApi.Menu[]>('/system/menu/list', {
     params,
   });
+}
+
+/** 获取应用中心可选菜单列表（菜单管理中标记为应用中心显示且启用的菜单/目录） */
+export async function getAppCenterMenuList() {
+  return requestClient.get<SystemMenuApi.Menu[]>('/system/menu/app-center-list');
 }
 
 /** 获取菜单详情 */
