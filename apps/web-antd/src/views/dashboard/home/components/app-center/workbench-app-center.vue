@@ -93,7 +93,7 @@ const menuOptions = computed(() => {
     const name = menu.name || menu.path || '未命名菜单';
 
     // 推导一级菜单名称：沿 parentId 向上找到根
-    let rootName = '其他';
+    let rootName = '发起流程';
     let current = menuMap.get(id);
     const guardSet = new Set<number>();
     while (current && current.parentId && !guardSet.has(current.id)) {
