@@ -8,7 +8,6 @@ import { useTabbarStore } from '@vben/stores';
 
 import {
   TabsToolMore,
-  TabsToolRefresh,
   TabsToolScreen,
   TabsView,
 } from '@vben-core/tabs-ui';
@@ -24,7 +23,7 @@ defineProps<{ showIcon?: boolean; theme?: string }>();
 const route = useRoute();
 const tabbarStore = useTabbarStore();
 const { contentIsMaximize, toggleMaximize } = useContentMaximize();
-const { refreshTab, unpinTab } = useTabs();
+const { unpinTab } = useTabs();
 
 const {
   createContextMenus,
@@ -70,10 +69,6 @@ if (!preferences.tabbar.persist) {
   />
   <div class="flex-center h-full">
     <TabsToolMore v-if="preferences.tabbar.showMore" :menus="menus" />
-    <TabsToolRefresh
-      v-if="preferences.tabbar.showRefresh"
-      @refresh="refreshTab"
-    />
     <TabsToolScreen
       v-if="preferences.tabbar.showMaximize"
       :screen="contentIsMaximize"
