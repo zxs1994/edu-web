@@ -1,8 +1,6 @@
 <script lang="ts" setup>
 import { computed, useSlots } from 'vue';
 
-import { useRefresh } from '@vben/hooks';
-import { RotateCw } from '@vben/icons';
 import { preferences, usePreferences } from '@vben/preferences';
 import { useAccessStore } from '@vben/stores';
 
@@ -38,7 +36,6 @@ const REFERENCE_VALUE = 50;
 const accessStore = useAccessStore();
 const { globalSearchShortcutKey, preferencesButtonPosition } = usePreferences();
 const slots = useSlots();
-const { refresh } = useRefresh();
 
 const rightSlots = computed(() => {
   const list = [{ index: REFERENCE_VALUE + 100, name: 'user-dropdown' }];
@@ -98,13 +95,6 @@ const rightSlots = computed(() => {
 const leftSlots = computed(() => {
   const list: Array<{ index: number; name: string }> = [];
 
-  if (preferences.widget.refresh) {
-    list.push({
-      index: 0,
-      name: 'refresh',
-    });
-  }
-
   Object.keys(slots).forEach((key) => {
     const name = key.split('-');
     if (key.startsWith('header-left')) {
@@ -124,13 +114,7 @@ function clearPreferencesAndLogout() {
     v-for="slot in leftSlots.filter((item) => item.index < REFERENCE_VALUE)"
     :key="slot.name"
   >
-    <slot :name="slot.name">
-      <template v-if="slot.name === 'refresh'">
-        <VbenIconButton class="my-0 mr-1 rounded-md" @click="refresh">
-          <RotateCw class="size-4" />
-        </VbenIconButton>
-      </template>
-    </slot>
+    <slot :name="slot.name"></slot>
   </template>
   <div class="flex-center hidden lg:block">
     <slot name="breadcrumb"></slot>
