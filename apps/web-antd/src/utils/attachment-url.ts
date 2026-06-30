@@ -77,9 +77,8 @@ export function isBlobAttachmentUrl(url?: string): boolean {
   return !!url && url.startsWith('blob:');
 }
 
-/** 支持在线预览的纯文本扩展名 */
+/** 支持在线预览的纯文本扩展名（txt 编码不稳定，不在线预览） */
 const TEXT_PREVIEW_EXTENSIONS = new Set([
-  'txt',
   'log',
   'md',
   'csv',
@@ -89,17 +88,32 @@ const TEXT_PREVIEW_EXTENSIONS = new Set([
   'ini',
 ]);
 
+/** 提取附件扩展名（小写，不含点） */
+export function getAttachmentExtension(attachment: {
+  fileExtension?: string;
+  fileName?: string;
+}): string {
+  return (
+    attachment.fileExtension ||
+    attachment.fileName?.split('.').pop() ||
+    ''
+  ).toLowerCase();
+}
+
+/** txt 附件不支持在线预览 */
+export function isTxtAttachment(attachment: {
+  fileExtension?: string;
+  fileName?: string;
+}): boolean {
+  return getAttachmentExtension(attachment) === 'txt';
+}
+
 /** 是否为可在线预览的纯文本附件 */
 export function isTextPreviewFile(attachment: {
   fileExtension?: string;
   fileName?: string;
 }): boolean {
-  const ext = (
-    attachment.fileExtension ||
-    attachment.fileName?.split('.').pop() ||
-    ''
-  ).toLowerCase();
-  return TEXT_PREVIEW_EXTENSIONS.has(ext);
+  return TEXT_PREVIEW_EXTENSIONS.has(getAttachmentExtension(attachment));
 }
 
 /** 解码文本内容：优先 UTF-8，必要时回退 GBK */

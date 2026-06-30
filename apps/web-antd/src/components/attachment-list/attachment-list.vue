@@ -14,6 +14,7 @@ import {
   extractUploadUrl,
   isBlobAttachmentUrl,
   isTextPreviewFile,
+  isTxtAttachment,
   previewTextAttachment,
   resolveAttachmentAccessUrl,
 } from '#/utils/attachment-url';
@@ -108,6 +109,10 @@ function handleDelete(row: AttachmentApi.AttachmentSaveReq) {
 
 /** 预览附件 */
 async function handlePreview(row: AttachmentApi.AttachmentSaveReq) {
+  if (isTxtAttachment(row)) {
+    message.info('txt 文件不支持在线预览，请下载后查看');
+    return;
+  }
   const url = getAttachmentAccessUrl(row);
   if (!url) {
     warnInvalidAttachmentUrl(row);
@@ -297,6 +302,7 @@ watch(
             :actions="
               useAttachmentActions(
                 props.readonly,
+                row,
                 () => handlePreview(row),
                 () => handleDownload(row),
                 () => handleDelete(row),

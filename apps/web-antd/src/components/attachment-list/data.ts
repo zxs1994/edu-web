@@ -2,6 +2,7 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { AttachmentApi } from '#/api/common/attachment';
 
 import { ACTION_ICON } from '#/adapter/vxe-table';
+import { isTxtAttachment } from '#/utils/attachment-url';
 
 /**
  * 格式化文件大小
@@ -95,6 +96,7 @@ export function useAttachmentColumns(readonly: boolean = false): VxeTableGridOpt
  */
 export function useAttachmentActions(
   readonly: boolean,
+  attachment: AttachmentApi.AttachmentSaveReq,
   onPreview: () => void,
   onDownload: () => void,
   onDelete: () => void,
@@ -104,6 +106,7 @@ export function useAttachmentActions(
       label: '预览',
       type: 'link' as const,
       icon: ACTION_ICON.VIEW,
+      ifShow: () => !isTxtAttachment(attachment),
       onClick: onPreview,
     },
     {
