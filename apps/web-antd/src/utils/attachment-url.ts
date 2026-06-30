@@ -77,6 +77,81 @@ export function isBlobAttachmentUrl(url?: string): boolean {
   return !!url && url.startsWith('blob:');
 }
 
+/** 支持在线预览的纯文本扩展名 */
+const TEXT_PREVIEW_EXTENSIONS = new Set([
+  'txt',
+  'log',
+  'md',
+  'csv',
+  'json',
+  'xml',
+  'properties',
+  'ini',
+]);
+
+/** 是否为可在线预览的纯文本附件 */
+export function isTextPreviewFile(attachment: {
+  fileExtension?: string;
+  fileName?: string;
+}): boolean {
+  const ext = (
+    attachment.fileExtension ||
+    attachment.fileName?.split('.').pop() ||
+    ''
+  ).toLowerCase();
+  return TEXT_PREVIEW_EXTENSIONS.has(ext);
+}
+
+/** 解码文本内容：优先 UTF-8，必要时回退 GBK */
+function decodeTextContent(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  if (
+    bytes.length >= 3 &&
+    bytes[0] === 0xef &&
+    bytes[1] === 0xbb &&
+    bytes[2] === 0xbf
+  ) {
+    return new TextDecoder('utf-8').decode(bytes.subarray(3));
+  }
+  const utf8Text = new TextDecoder('utf-8').decode(buffer);
+  try {
+    const gbkText = new TextDecoder('gbk').decode(buffer);
+    if (scoreTextReadability(gbkText) > scoreTextReadability(utf8Text)) {
+      return gbkText;
+    }
+  } catch {
+    // 浏览器不支持 gbk 解码时沿用 UTF-8
+  }
+  return utf8Text;
+}
+
+/** 文本可读性评分：中文越多、乱码替换符越少越好 */
+function scoreTextReadability(text: string): number {
+  const cjkCount = (text.match(/[\u4E00-\u9FFF]/g) || []).length;
+  const replacementCount = (text.match(/\uFFFD/g) || []).length;
+  return cjkCount * 2 - replacementCount * 10;
+}
+
+/** 纯文本附件预览：fetch 后按正确编码生成 blob 再打开 */
+export async function previewTextAttachment(
+  attachment: AttachmentUrlSource & { fileName: string },
+): Promise<void> {
+  const url = resolveAttachmentAccessUrl(attachment);
+  if (!url) {
+    throw new Error('INVALID_URL');
+  }
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+  const buffer = await response.arrayBuffer();
+  const text = decodeTextContent(buffer);
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const objectUrl = URL.createObjectURL(blob);
+  window.open(objectUrl, '_blank');
+  setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+}
+
 /** 下载附件：fetch 为 blob 后触发浏览器保存 */
 export async function downloadAttachmentFile(
   attachment: AttachmentUrlSource & { fileName: string },

@@ -13,6 +13,8 @@ import {
   extractUploadPath,
   extractUploadUrl,
   isBlobAttachmentUrl,
+  isTextPreviewFile,
+  previewTextAttachment,
   resolveAttachmentAccessUrl,
 } from '#/utils/attachment-url';
 
@@ -105,10 +107,19 @@ function handleDelete(row: AttachmentApi.AttachmentSaveReq) {
 }
 
 /** 预览附件 */
-function handlePreview(row: AttachmentApi.AttachmentSaveReq) {
+async function handlePreview(row: AttachmentApi.AttachmentSaveReq) {
   const url = getAttachmentAccessUrl(row);
   if (!url) {
     warnInvalidAttachmentUrl(row);
+    return;
+  }
+  if (isTextPreviewFile(row)) {
+    try {
+      await previewTextAttachment(row);
+    } catch (error) {
+      console.error('文本预览失败:', error);
+      message.error('文本预览失败');
+    }
     return;
   }
   window.open(url, '_blank');
