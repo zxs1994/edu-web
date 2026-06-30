@@ -29,6 +29,10 @@ export namespace BpmProcessInstanceApi {
     startTime?: Date;
     startUser?: User;
     status: number;
+    /** 展示层叠加：会长异议/纠错 */
+    presidentCorrectionDisplay?: boolean;
+    /** 列表状态列：仅展示会长异议/纠错（未重新发起） */
+    presidentCorrectionAwaitingResubmit?: boolean;
     summary?: {
       key: string;
       value: string;

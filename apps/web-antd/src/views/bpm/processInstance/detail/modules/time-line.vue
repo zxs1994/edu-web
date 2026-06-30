@@ -268,8 +268,9 @@ function convertActivityNodesToSteps() {
         break;
       }
       case 3:
+      case 4:
       case 5: {
-        status = 'error'; // 审批不通过或退回
+        status = 'error'; // 审批不通过、已取消或退回
 
         break;
       }

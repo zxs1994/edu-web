@@ -39,6 +39,8 @@ export namespace ContractBillApi {
     billCode: string;
     processInstanceId?: string;
     processStatus?: number;
+    presidentCorrectionDisplay?: boolean;
+    presidentCorrectionAwaitingResubmit?: boolean;
     contractTitle: string;
     contractCode?: string;
     contractType: number;

@@ -12,6 +12,8 @@ export namespace CarApplyBillApi {
     billCode?: string; // 单据编号
     processInstanceId: string; // 流程实例编号
     processStatus: number; // 单据状态
+    presidentCorrectionDisplay?: boolean;
+    presidentCorrectionAwaitingResubmit?: boolean;
     carId: string; // 车辆ID(逗号分隔)
     carNo: string; // 车牌号码
     goTime: Dayjs | string; // 出车时间

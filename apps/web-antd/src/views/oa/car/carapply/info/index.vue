@@ -23,7 +23,7 @@ import {
   submitCarApplyBill,
 } from '#/api/oa/car/carapply';
 import { AttachmentList } from '#/components/attachment-list';
-import { BasicForm, CardContainer } from '#/components/basic-form';
+import { BasicForm, CardContainer, finishBillFormAfterSaveSubmit } from '#/components/basic-form';
 import { $t } from '#/locales';
 
 import { CarSelectModal } from '../../components';
@@ -121,7 +121,13 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
       key: 'action_key_msg',
     });
 
-    closeCurrentTab();
+    await finishBillFormAfterSaveSubmit({
+      isSubmit,
+      presidentCorrectionDisplay: formData.value.presidentCorrectionDisplay,
+      reload: loadData,
+      closeTab: closeCurrentTab,
+      onReloaded: () => basicFormRef.value?.refreshAllData(),
+    });
   } catch (error) {
     console.error('保存失败:', error);
   } finally {
@@ -260,6 +266,7 @@ onBeforeRouteLeave(() => {
   <Loading :spinning="loading">
     <BasicForm
       ref="basicFormRef"
+      source-bill-type="oa_car_apply_bill"
       :header-data="{
         ...formData,
         billName: '用车申请单',

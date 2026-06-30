@@ -4,7 +4,6 @@ import type { Recordable } from '@vben/types';
 import { h } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { IconifyIcon } from '@vben/icons';
 import { $te } from '@vben/locales';
 import {
   AsyncVxeColumn,
@@ -34,6 +33,7 @@ import {
 
 import { DictTag } from '#/components/dict-tag';
 import { $t } from '#/locales';
+import { PRESIDENT_CORRECTION_DISPLAY_LABEL, shouldShowPresidentCorrectionStatusOnly } from '#/utils/correction-display';
 
 import { useVbenForm } from './form';
 
@@ -371,6 +371,24 @@ setupVbenVxeTable({
           return '';
         }
         // 使用 DictTag 组件替代原来的实现
+        return h(DictTag, {
+          type: props.type,
+          value: row[column.field]?.toString(),
+        });
+      },
+    });
+
+    // 单据/流程状态：纠错进行中优先展示「会长异议/纠错」
+    vxeUI.renderer.add('CellBillProcessStatus', {
+      renderTableDefault(renderOpts, params) {
+        const { props } = renderOpts;
+        const { column, row } = params;
+        if (shouldShowPresidentCorrectionStatusOnly(row)) {
+          return h(Tag, { color: 'error' }, () => PRESIDENT_CORRECTION_DISPLAY_LABEL);
+        }
+        if (!props?.type) {
+          return '';
+        }
         return h(DictTag, {
           type: props.type,
           value: row[column.field]?.toString(),

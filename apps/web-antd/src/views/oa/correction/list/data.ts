@@ -77,10 +77,13 @@ export function useGridColumns(): VxeTableGridOptions<CorrectionBillApi.Correcti
       resolveRoute: resolveOaDetailRoute('/oa/correction/correction-info'),
     }),
     {
-      field: 'processStatus',
+      field: 'sourceBillProcessStatus',
       title: '单据状态',
       minWidth: 120,
-      cellRender: { name: 'CellDict', props: { type: DICT_TYPE.BPM_PROCESS_INSTANCE_STATUS } },
+      cellRender: {
+        name: 'CellBillProcessStatus',
+        props: { type: DICT_TYPE.BPM_PROCESS_INSTANCE_STATUS },
+      },
     },
     { field: 'sourceBillTitle', title: '来源单据标题', minWidth: 150 },
     {

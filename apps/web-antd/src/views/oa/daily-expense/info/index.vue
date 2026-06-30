@@ -24,7 +24,7 @@ import {
   submitExpenseReimburseBill,
 } from '#/api/oa/expense';
 import { AttachmentList } from '#/components/attachment-list';
-import { BasicForm, CardContainer } from '#/components/basic-form';
+import { BasicForm, CardContainer, finishBillFormAfterSaveSubmit } from '#/components/basic-form';
 import { ExpenseDetailList } from '#/components/expense-detail-list';
 import {
   filterEmptyExpenseDetails,
@@ -129,7 +129,13 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
       key: 'action_key_msg',
     });
 
-    closeCurrentTab();
+    await finishBillFormAfterSaveSubmit({
+      isSubmit,
+      presidentCorrectionDisplay: formData.value.presidentCorrectionDisplay,
+      reload: loadData,
+      closeTab: closeCurrentTab,
+      onReloaded: () => basicFormRef.value?.refreshAllData(),
+    });
   } catch (error) {
     console.error('保存失败:', error);
   } finally {
@@ -284,6 +290,7 @@ onBeforeRouteLeave(() => {
   <Loading :spinning="loading">
     <BasicForm
       ref="basicFormRef"
+      source-bill-type="oa_daily_expense_bill"
       :header-data="{
         ...formData,
         billName: '日常报销单',

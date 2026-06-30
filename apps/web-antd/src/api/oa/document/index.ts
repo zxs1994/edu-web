@@ -9,6 +9,8 @@ export namespace DocumentDispatchBillApi {
     billCode?: string;
     processInstanceId?: string;
     processStatus?: number;
+    presidentCorrectionDisplay?: boolean;
+    presidentCorrectionAwaitingResubmit?: boolean;
     docTitle: string;
     docNumber?: string;
     secrecyLevel?: number;

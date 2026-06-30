@@ -215,6 +215,7 @@ const OA_DICT = {
   OA_CORRECTION_BILL_TYPE: 'oa_correction_bill_type',
   OA_FREEZE_STATUS: 'oa_freeze_status',
   OA_CORRECTION_STATUS: 'oa_correction_status',
+  OA_PRESIDENT_CORRECTION_TYPE: 'oa_president_correction_type',
 } as const;
 
 /** ========== HRM - 人力资源模块 ========== */

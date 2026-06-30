@@ -11,6 +11,8 @@ export namespace MeetingRoomBookingApi {
     billCode?: string;
     processInstanceId?: string;
     processStatus?: number;
+    presidentCorrectionDisplay?: boolean;
+    presidentCorrectionAwaitingResubmit?: boolean;
     roomId?: number;
     roomName?: string;
     roomLocation?: string;

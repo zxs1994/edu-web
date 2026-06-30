@@ -97,7 +97,7 @@ export function useGridColumns(): VxeTableGridOptions<DocumentDispatchBillApi.Do
       field: 'processStatus',
       title: '流程状态',
       minWidth: 120,
-      cellRender: { name: 'CellDict', props: { type: DICT_TYPE.BPM_PROCESS_INSTANCE_STATUS } },
+      cellRender: { name: 'CellBillProcessStatus', props: { type: DICT_TYPE.BPM_PROCESS_INSTANCE_STATUS } },
     },
     { field: 'createTime', title: '创建时间', minWidth: 160, formatter: 'formatDateTime' },
     { title: '操作', width: 150, fixed: 'right', slots: { default: 'actions' } },

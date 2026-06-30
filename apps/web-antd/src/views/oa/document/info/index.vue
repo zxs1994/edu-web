@@ -15,7 +15,7 @@ import { useTabs } from '@vben/hooks';
 import { useUserStore } from '@vben/stores';
 import { preferences, updatePreferences } from '@vben/preferences';
 
-import { Button, message, Spin } from 'ant-design-vue';
+import { Button, message, Spin, Alert } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
 import {
@@ -31,7 +31,9 @@ import {
 } from '#/api/oa/document';
 import { getRedTemplate } from '#/api/oa/red-template';
 import { AttachmentList } from '#/components/attachment-list';
-import { CardContainer, FooterForm, HeaderForm, mergeSchemaDisabled } from '#/components/basic-form';
+import { CardContainer, FooterForm, HeaderForm, finishBillFormAfterSaveSubmit, mergeSchemaDisabled } from '#/components/basic-form';
+import BillCorrectionApprovalHistory from '#/components/basic-form/bill-correction-approval-history.vue';
+import { useBillCorrectionDisplay } from '#/components/basic-form/use-bill-correction-display';
 import { $t } from '#/locales';
 import { useFooterLeft } from '#/utils/useFooterLeft';
 import ProcessInstanceSimpleViewer from '#/views/bpm/processInstance/detail/modules/simple-bpm-viewer.vue';
@@ -71,6 +73,36 @@ const processInstanceLoading = ref(false);
 const processModelView = ref<any>({});
 const approvalDetailLoading = ref(false);
 const activityNodes = ref<any[]>(props.activityNodes || []);
+
+const documentBillId = computed(() => formData.value.id);
+const documentProcessInstanceId = computed(() => formData.value.processInstanceId);
+const documentPresidentCorrectionDisplay = computed(
+  () => formData.value.presidentCorrectionDisplay,
+);
+const documentSourceBillType = computed(() => 'oa_document_dispatch_bill' as const);
+
+const {
+  isReApprovalFlow,
+  isPresidentCorrectionOverlay,
+  loadCorrectionMeta,
+  mergePresidentCorrectionHeader,
+  onCorrectionHistoryLoaded,
+  shouldShowApprovalTabs,
+} = useBillCorrectionDisplay({
+  billId: documentBillId,
+  processInstanceId: documentProcessInstanceId,
+  presidentCorrectionDisplay: documentPresidentCorrectionDisplay,
+  sourceBillType: documentSourceBillType,
+});
+
+const displayHeaderData = computed(() =>
+  mergePresidentCorrectionHeader({
+    ...formData.value,
+    billName: '公文发文单',
+  }),
+);
+
+const showApprovalTabs = computed(() => shouldShowApprovalTabs(formData.value));
 const activeKey = ref('1');
 const taskListRef = ref<any>(null);
 
@@ -211,7 +243,12 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
       key: 'action_key_msg',
     });
 
-    closeCurrentTab();
+    await finishBillFormAfterSaveSubmit({
+      isSubmit,
+      presidentCorrectionDisplay: formData.value.presidentCorrectionDisplay,
+      reload: loadData,
+      closeTab: closeCurrentTab,
+    });
   } catch (error) {
     console.error('保存失败:', error);
   } finally {
@@ -302,7 +339,8 @@ async function loadData() {
       await loadTemplateData(data.templateId);
     }
 
-    if (formData.value.processInstanceId) {
+    await loadCorrectionMeta();
+    if (showApprovalTabs.value && formData.value.processInstanceId) {
       await getProcessModelView();
       await getApprovalDetailData();
     }
@@ -401,6 +439,16 @@ watch(
   { deep: true },
 );
 
+watch(showApprovalTabs, (show) => {
+  if (!show && activeKey.value !== '1') {
+    activeKey.value = '1';
+  }
+  if (show && formData.value.processInstanceId) {
+    getProcessModelView();
+    getApprovalDetailData();
+  }
+});
+
 async function beforeApproval(): Promise<boolean> {
   return true;
 }
@@ -441,12 +489,19 @@ onBeforeRouteLeave(() => {
       <a-layout class="min-h-full bg-white">
         <!-- 表头 -->
         <a-layout-header class="page-header">
-          <HeaderForm
-            :header-data="{
-              ...formData,
-              billName: '公文发文单',
-            }"
-          />
+          <HeaderForm :header-data="displayHeaderData">
+            <template #after-title>
+              <BillCorrectionApprovalHistory
+                v-if="formData.id"
+                class="correction-history-banner"
+                source-bill-type="oa_document_dispatch_bill"
+                :source-bill-id="formData.id"
+                :current-process-instance-id="formData.processInstanceId"
+                :overlay-active="isPresidentCorrectionOverlay"
+                @loaded="onCorrectionHistoryLoaded"
+              />
+            </template>
+          </HeaderForm>
         </a-layout-header>
 
         <!-- 主体内容 -->
@@ -507,9 +562,7 @@ onBeforeRouteLeave(() => {
 
             <!-- Tab 2: 审批信息 -->
             <a-tab-pane
-              v-if="
-                formData.processInstanceId && formData.processStatus
-              "
+              v-if="showApprovalTabs"
               key="2"
               :tab="$t('common.approvalInfo')"
             >
@@ -520,7 +573,13 @@ onBeforeRouteLeave(() => {
                 <Spin size="large" />
               </div>
               <div v-else>
-                <CardContainer :title="$t('common.approvalProgress')">
+                <CardContainer
+                  :title="
+                    isReApprovalFlow
+                      ? '重审审批进度'
+                      : $t('common.approvalProgress')
+                  "
+                >
                   <BpmProcessInstanceTimeline
                     :activity-nodes="
                       activityNodes && activityNodes.length > 0
@@ -533,7 +592,13 @@ onBeforeRouteLeave(() => {
                   />
                 </CardContainer>
               </div>
-              <CardContainer :title="$t('common.approvalRecord')">
+              <CardContainer
+                :title="
+                  isReApprovalFlow
+                    ? '重审审批记录'
+                    : $t('common.approvalRecord')
+                "
+              >
                 <BpmProcessInstanceTaskList
                   v-if="formData.processInstanceId"
                   ref="taskListRef"
@@ -545,9 +610,7 @@ onBeforeRouteLeave(() => {
 
             <!-- Tab 3: 流程图 -->
             <a-tab-pane
-              v-if="
-                formData.processInstanceId && formData.processStatus
-              "
+              v-if="showApprovalTabs"
               key="3"
               :tab="$t('common.processFlow')"
               :force-render="true"
@@ -604,6 +667,11 @@ onBeforeRouteLeave(() => {
   line-height: 20px;
   background-color: #fff;
   padding: 20px 20px 0;
+}
+
+.correction-history-banner {
+  padding: 0 0 12px;
+  text-align: left;
 }
 
 /* 主体内容样式 */

@@ -58,4 +58,7 @@ export type headerDataProps = {
    * 审批状态
    */
   processStatus?: number;
+
+  /** 展示层叠加：会长异议/纠错 */
+  presidentCorrectionDisplay?: boolean;
 };

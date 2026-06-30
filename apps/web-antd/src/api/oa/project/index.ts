@@ -9,6 +9,8 @@ export namespace ProjectInitiationBillApi {
     billCode: string;
     processInstanceId?: string;
     processStatus?: number;
+    presidentCorrectionDisplay?: boolean;
+    presidentCorrectionAwaitingResubmit?: boolean;
     projectName: string;
     projectType: number;
     priority?: number;

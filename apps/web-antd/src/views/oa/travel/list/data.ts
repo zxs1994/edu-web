@@ -63,7 +63,7 @@ export function useGridColumns(): VxeTableGridOptions<TravelApplyBillApi.TravelA
       field: 'processStatus',
       title: '单据状态',
       minWidth: 120,
-      cellRender: { name: 'CellDict', props: { type: DICT_TYPE.BPM_PROCESS_INSTANCE_STATUS } },
+      cellRender: { name: 'CellBillProcessStatus', props: { type: DICT_TYPE.BPM_PROCESS_INSTANCE_STATUS } },
     },
     { field: 'cause', title: '出差事由', minWidth: 150 },
     {

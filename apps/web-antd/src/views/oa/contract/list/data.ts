@@ -70,7 +70,7 @@ export function useGridColumns(): VxeTableGridOptions<ContractBillApi.ContractBi
       field: 'processStatus',
       title: '单据状态',
       minWidth: 120,
-      cellRender: { name: 'CellDict', props: { type: DICT_TYPE.BPM_PROCESS_INSTANCE_STATUS } },
+      cellRender: { name: 'CellBillProcessStatus', props: { type: DICT_TYPE.BPM_PROCESS_INSTANCE_STATUS } },
     },
     { field: 'contractTitle', title: '合同名称', minWidth: 150 },
     { field: 'contractCode', title: '合同编号', minWidth: 130 },

@@ -9,6 +9,9 @@ export namespace CorrectionBillApi {
     billCode: string;
     processInstanceId?: string;
     processStatus?: number;
+    sourceBillProcessStatus?: number;
+    presidentCorrectionDisplay?: boolean;
+    presidentCorrectionAwaitingResubmit?: boolean;
     sourceBillType: string;
     sourceBillId: number;
     sourceBillCode: string;

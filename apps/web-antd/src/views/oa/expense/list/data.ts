@@ -63,7 +63,7 @@ export function useGridColumns(): VxeTableGridOptions<ExpenseReimburseBillApi.Ex
       field: 'processStatus',
       title: '单据状态',
       minWidth: 120,
-      cellRender: { name: 'CellDict', props: { type: DICT_TYPE.BPM_PROCESS_INSTANCE_STATUS } },
+      cellRender: { name: 'CellBillProcessStatus', props: { type: DICT_TYPE.BPM_PROCESS_INSTANCE_STATUS } },
     },
     { field: 'totalAmount', title: '报销总金额', minWidth: 120 },
     {

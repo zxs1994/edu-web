@@ -24,6 +24,8 @@ export namespace ExpenseReimburseBillApi {
     billCode: string;
     processInstanceId?: string;
     processStatus?: number;
+    presidentCorrectionDisplay?: boolean;
+    presidentCorrectionAwaitingResubmit?: boolean;
     billType?: number;
     travelBillCode?: string;
     travelCause?: string;

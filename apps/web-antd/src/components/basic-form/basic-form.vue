@@ -33,6 +33,7 @@ import BpmProcessInstanceTaskList from '#/views/bpm/processInstance/detail/modul
 import BpmProcessInstanceTimeline from '#/views/bpm/processInstance/detail/modules/time-line.vue';
 
 import CardContainer from './card-container.vue';
+import BillCorrectionApprovalHistory from './bill-correction-approval-history.vue';
 import FooterForm from './footer-form.vue';
 import HeaderForm from './header-form.vue';
 import {
@@ -40,6 +41,7 @@ import {
   mergeFormDataProp,
 } from './form-data-merge';
 import { mergeSchemaDisabled } from './merge-schema-disabled';
+import { useBillCorrectionDisplay } from './use-bill-correction-display';
 
 interface Props {
   headerData?: headerDataProps;
@@ -58,6 +60,8 @@ interface Props {
   onSaveSubmit?: (isSubmit: boolean) => Promise<boolean | void>;
   /** 保存/提交成功后是否关闭标签页 */
   closeTabOnSaveSubmit?: boolean;
+  /** 会长纠错：原单据流程定义 Key，与 headerData.id 配合查询纠错历史 */
+  sourceBillType?: string;
 }
 const props = withDefaults(defineProps<Props>(), {
   headerData: () => ({
@@ -80,6 +84,7 @@ const props = withDefaults(defineProps<Props>(), {
   formSchema: () => [],
   disabled: false,
   closeTabOnSaveSubmit: true,
+  sourceBillType: undefined,
 });
 
 const emit = defineEmits([
@@ -96,7 +101,34 @@ const processModelView = ref<any>({}); // 流程模型视图
 const approvalDetailLoading = ref(false); // 审批详情的加载中
 // activityNodes 已在 props 中定义，不需要重复声明
 const taskListRef = ref<any>(null); // 任务列表引用
+const correctionHistoryRef = ref<InstanceType<typeof BillCorrectionApprovalHistory> | null>(null);
 const activityNodes = ref<any[]>(props.activityNodes || []);
+
+const headerId = computed(() => props.headerData.id);
+const headerProcessInstanceId = computed(() => props.headerData.processInstanceId);
+const headerPresidentCorrectionDisplay = computed(
+  () => props.headerData.presidentCorrectionDisplay,
+);
+const headerSourceBillType = computed(() => props.sourceBillType);
+
+const {
+  isReApprovalFlow,
+  isPresidentCorrectionOverlay,
+  loadCorrectionMeta,
+  mergePresidentCorrectionHeader,
+  onCorrectionHistoryLoaded,
+  shouldShowApprovalTabs,
+} = useBillCorrectionDisplay({
+  billId: headerId,
+  processInstanceId: headerProcessInstanceId,
+  presidentCorrectionDisplay: headerPresidentCorrectionDisplay,
+  sourceBillType: headerSourceBillType,
+});
+
+const displayHeaderData = computed(() => mergePresidentCorrectionHeader(props.headerData));
+
+/** 会长异议/纠错：仅展示单据信息 Tab，审批信息/流程图移至顶部纠错历史区 */
+const showApprovalTabs = computed(() => shouldShowApprovalTabs(props.headerData));
 
 // 使用公共的 footerLeft composable
 const { footerLeft } = useFooterLeft();
@@ -258,11 +290,14 @@ const deleteForm = () => {
 
 /** 手动刷新所有数据 */
 function refreshAllData() {
-  if (props.headerData.processInstanceId) {
+  if (props.sourceBillType && props.headerData.id) {
+    correctionHistoryRef.value?.refresh();
+    loadCorrectionMeta();
+  }
+  if (props.headerData.processInstanceId && showApprovalTabs.value) {
     getProcessModelView();
     getApprovalDetailData();
     setTimeout(() => {
-      // 设置延迟，防止数据还没加载完，导致刷新失败
       taskListRef.value?.refresh();
     }, 500);
   }
@@ -302,9 +337,9 @@ watch(
 onMounted(async () => {
   // 初始化表单
   initForm();
+  await loadCorrectionMeta();
 
-  // 如果已经有 processInstanceId，立即加载流程模型视图和审批详情
-  if (props.headerData.processInstanceId) {
+  if (showApprovalTabs.value && props.headerData.processInstanceId) {
     getProcessModelView();
     getApprovalDetailData();
   }
@@ -313,12 +348,29 @@ onMounted(async () => {
 watch(
   () => props.headerData.processInstanceId,
   (processInstanceId) => {
-    if (processInstanceId) {
+    if (processInstanceId && showApprovalTabs.value) {
       getProcessModelView();
       getApprovalDetailData();
     }
   },
 );
+
+watch(
+  () => [props.headerData.id, props.headerData.processInstanceId, props.sourceBillType] as const,
+  () => {
+    loadCorrectionMeta();
+  },
+);
+
+watch(showApprovalTabs, (show) => {
+  if (!show && activeKey.value !== '1') {
+    activeKey.value = '1';
+  }
+  if (show && props.headerData.processInstanceId) {
+    getProcessModelView();
+    getApprovalDetailData();
+  }
+});
 
 // 暴露方法给父组件使用
 defineExpose({
@@ -352,8 +404,21 @@ defineExpose({
   <Page class="min-h-screen bg-gray-50">
     <a-layout class="min-h-full bg-white">
       <a-layout-header :style="headerStyle">
-        <!-- 表头部分 -->
-        <HeaderForm :header-data="props.headerData" />
+        <!-- 表头：标题 → 纠错历史 → 单据编号等信息 -->
+        <HeaderForm :header-data="displayHeaderData">
+          <template #after-title>
+            <BillCorrectionApprovalHistory
+              v-if="props.sourceBillType && props.headerData.id"
+              ref="correctionHistoryRef"
+              class="correction-history-banner"
+              :source-bill-type="props.sourceBillType"
+              :source-bill-id="props.headerData.id"
+              :current-process-instance-id="props.headerData.processInstanceId"
+              :overlay-active="isPresidentCorrectionOverlay"
+              @loaded="onCorrectionHistoryLoaded"
+            />
+          </template>
+        </HeaderForm>
       </a-layout-header>
       <a-layout-content :style="contentStyle">
         <!-- 主体部分 -->
@@ -375,10 +440,7 @@ defineExpose({
           <a-tab-pane
             key="2"
             :tab="$t('common.approvalInfo')"
-            v-if="
-              props.headerData.processInstanceId &&
-              props.headerData.processStatus
-            "
+            v-if="showApprovalTabs"
           >
             <div
               v-if="approvalDetailLoading"
@@ -387,7 +449,11 @@ defineExpose({
               <Spin size="large" />
             </div>
             <div v-else>
-              <CardContainer :title="$t('common.approvalProgress')">
+              <CardContainer
+                :title="
+                  isReApprovalFlow ? '重审审批进度' : $t('common.approvalProgress')
+                "
+              >
                 <BpmProcessInstanceTimeline
                   :activity-nodes="
                     activityNodes && activityNodes.length > 0
@@ -401,7 +467,11 @@ defineExpose({
               </CardContainer>
             </div>
 
-            <CardContainer :title="$t('common.approvalRecord')">
+            <CardContainer
+              :title="
+                isReApprovalFlow ? '重审审批记录' : $t('common.approvalRecord')
+              "
+            >
               <BpmProcessInstanceTaskList
                 v-if="props.headerData.processInstanceId"
                 ref="taskListRef"
@@ -414,10 +484,7 @@ defineExpose({
             key="3"
             :tab="$t('common.processFlow')"
             :force-render="true"
-            v-if="
-              props.headerData.processInstanceId &&
-              props.headerData.processStatus
-            "
+            v-if="showApprovalTabs"
           >
             <div class="h-full">
               <ProcessInstanceSimpleViewer
@@ -474,6 +541,11 @@ defineExpose({
 
 :deep(.ant-layout-content) {
   flex: none;
+}
+
+.correction-history-banner {
+  padding: 0 20px 12px;
+  text-align: left;
 }
 
 /* 自定义 tabs 样式 - 使用CSS变量支持主题切换 */

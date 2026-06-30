@@ -24,7 +24,7 @@ import {
   submitTravelApplyBill,
 } from '#/api/oa/travel';
 import { AttachmentList } from '#/components/attachment-list';
-import { BasicForm, CardContainer } from '#/components/basic-form';
+import { BasicForm, CardContainer, finishBillFormAfterSaveSubmit } from '#/components/basic-form';
 import { ItineraryDetailList } from '#/components/itinerary-detail-list';
 import { $t } from '#/locales';
 
@@ -60,6 +60,10 @@ const isOverseasTravel = computed(() => {
 
 const billName = computed(() =>
   isOverseasTravel.value ? '出境差旅申请单' : '差旅申请单',
+);
+
+const sourceBillType = computed(() =>
+  isOverseasTravel.value ? 'oa_travel_apply_bill_copy' : 'oa_travel_apply_bill',
 );
 
 /** 当前用户是否为单据创建人 */
@@ -127,7 +131,13 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
       key: 'action_key_msg',
     });
 
-    closeCurrentTab();
+    await finishBillFormAfterSaveSubmit({
+      isSubmit,
+      presidentCorrectionDisplay: formData.value.presidentCorrectionDisplay,
+      reload: loadData,
+      closeTab: closeCurrentTab,
+      onReloaded: () => basicFormRef.value?.refreshAllData(),
+    });
   } catch (error) {
     console.error('保存失败:', error);
   } finally {
@@ -260,6 +270,7 @@ onBeforeRouteLeave(() => {
   <Loading :spinning="loading">
     <BasicForm
       ref="basicFormRef"
+      :source-bill-type="sourceBillType"
       :header-data="{
         ...formData,
         billName,

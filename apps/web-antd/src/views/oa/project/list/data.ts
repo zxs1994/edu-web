@@ -79,7 +79,7 @@ export function useGridColumns(): VxeTableGridOptions<ProjectInitiationBillApi.P
       field: 'processStatus',
       title: '立项状态',
       minWidth: 120,
-      cellRender: { name: 'CellDict', props: { type: DICT_TYPE.BPM_PROCESS_INSTANCE_STATUS } },
+      cellRender: { name: 'CellBillProcessStatus', props: { type: DICT_TYPE.BPM_PROCESS_INSTANCE_STATUS } },
     },
     { field: 'projectManagerName', title: '项目经理', minWidth: 100 },
     { field: 'deptName', title: '所属部门', minWidth: 120 },

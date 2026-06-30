@@ -19,6 +19,7 @@ import {
 import { getMyDraftBillPage } from '#/api/bpm/draftBill';
 import { DictTag } from '#/components/dict-tag';
 import { router } from '#/router';
+import { PRESIDENT_CORRECTION_DISPLAY_LABEL, shouldShowPresidentCorrectionStatusOnly } from '#/utils/correction-display';
 
 import { useGridColumns, useGridFormSchema } from './data';
 import {
@@ -30,6 +31,7 @@ import {
   deleteDraftBill,
   getDraftBillInfoRoute,
 } from '#/utils/bpm-draft-bill';
+import { getProcessInstanceMyDetailRoute } from '#/utils/bpm-process-instance-route';
 
 // 使用原始 ProcessInstance 类型
 type ExtendedProcessInstance = BpmProcessInstanceApi.ProcessInstance;
@@ -39,15 +41,12 @@ defineOptions({ name: 'BpmProcessInstanceMy' });
 const activeTab = ref<'draft' | 'running'>('running');
 
 // ============ 流程中 Tab ============
-/** 查看流程实例 */
+/** 查看流程实例 / 纠错中单据跳转业务详情 */
 function handleDetail(row: ExtendedProcessInstance) {
   if (isBillDeleted(row)) {
     return;
   }
-  router.push({
-    name: 'BpmProcessInstanceDetail',
-    query: { id: row.id.toString(), isTodo: 'false' },
-  });
+  router.push(getProcessInstanceMyDetailRoute(row));
 }
 
 /** 删除未提交的流程实例 */
@@ -189,12 +188,20 @@ onActivated(() => {
             <div class="flex items-center flex-wrap gap-1">
               <Tag v-if="isBillDeleted(row)" color="default">已删除</Tag>
               <template v-else>
+                <Tag
+                  v-if="shouldShowPresidentCorrectionStatusOnly(row)"
+                  color="error"
+                >
+                  {{ PRESIDENT_CORRECTION_DISPLAY_LABEL }}
+                </Tag>
                 <DictTag
+                  v-else
                   :type="DICT_TYPE.BPM_PROCESS_INSTANCE_STATUS"
                   :value="row.status"
                 />
                 <template
                   v-if="
+                    !shouldShowPresidentCorrectionStatusOnly(row) &&
                     row.status === BpmProcessInstanceStatus.RUNNING &&
                     row.tasks &&
                     row.tasks.length > 0

@@ -21,6 +21,8 @@ import { formatDate } from '@vben/utils';
 
 import { message } from 'ant-design-vue';
 
+import { PRESIDENT_CORRECTION_DISPLAY_LABEL } from '#/utils/correction-display';
+
 interface Props {
   headerData?: headerDataProps;
 }
@@ -92,6 +94,13 @@ const fallbackCopy = (text: string) => {
         </div>
         <div class="status-section">
           <a-tag
+            v-if="props.headerData.presidentCorrectionDisplay"
+            color="error"
+          >
+            {{ PRESIDENT_CORRECTION_DISPLAY_LABEL }}
+          </a-tag>
+          <a-tag
+            v-else
             :color="getStatusColor(props.headerData.processStatus)?.status"
           >
             {{ getStatusName(props.headerData.processStatus) }}
@@ -99,6 +108,7 @@ const fallbackCopy = (text: string) => {
         </div>
       </div>
     </div>
+    <slot name="after-title"></slot>
     <div class="info-row">
       <div class="info-content">
         <span class="info-item">

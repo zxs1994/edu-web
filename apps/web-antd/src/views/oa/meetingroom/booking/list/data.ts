@@ -131,7 +131,7 @@ export function useGridColumns(): VxeTableGridOptions<MeetingRoomBookingApi.Meet
       title: '单据状态',
       minWidth: 120,
       cellRender: {
-        name: 'CellDict',
+        name: 'CellBillProcessStatus',
         props: { type: DICT_TYPE.BPM_PROCESS_INSTANCE_STATUS },
       },
     },

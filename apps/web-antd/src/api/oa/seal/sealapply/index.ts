@@ -11,6 +11,8 @@ export namespace SealApplyBillApi {
     billCode: string;
     processInstanceId?: string;
     processStatus?: number;
+    presidentCorrectionDisplay?: boolean;
+    presidentCorrectionAwaitingResubmit?: boolean;
     sealId: number;
     sealNo: string;
     sealName?: string;

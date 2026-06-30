@@ -23,6 +23,8 @@ export namespace TravelApplyBillApi {
     billCode: string;
     processInstanceId?: string;
     processStatus?: number;
+    presidentCorrectionDisplay?: boolean;
+    presidentCorrectionAwaitingResubmit?: boolean;
     cause: string;
     travelStartDate: string;
     travelEndDate: string;
