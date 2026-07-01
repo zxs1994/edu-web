@@ -21,7 +21,7 @@ import {
   unfreezeCorrectionBill,
 } from '#/api/oa/correction';
 import { AttachmentList } from '#/components/attachment-list';
-import { BasicForm, CardContainer } from '#/components/basic-form';
+import { BasicForm, CardContainer, handleBillNotFoundAfterLoad } from '#/components/basic-form';
 import { $t } from '#/locales';
 
 import { useFormSchema } from './data';
@@ -169,6 +169,7 @@ async function loadData() {
       await basicFormRef.value.setFormValues(data);
     }
   } catch (error) {
+    if (handleBillNotFoundAfterLoad(error, closeCurrentTab)) return;
     console.error('获取纠错申请单详情失败:', error);
   } finally {
     loading.value = false;

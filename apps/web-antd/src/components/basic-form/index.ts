@@ -13,5 +13,5 @@ export { default as FormContent } from './form-content.vue';
 export { default as HeaderForm } from './header-form.vue';
 export { default as NoFlowForm } from './no-flow-form.vue';
 export { mergeSchemaDisabled } from './merge-schema-disabled';
-export { finishBillFormAfterSaveSubmit } from './bill-form-navigation';
+export { finishBillFormAfterSaveSubmit, handleBillNotFoundAfterLoad, isBillNotFoundError } from './bill-form-navigation';
 export * from './typing';

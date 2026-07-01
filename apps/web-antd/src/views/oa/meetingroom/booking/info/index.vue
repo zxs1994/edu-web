@@ -22,7 +22,7 @@ import {
   submitMeetingRoomBooking,
 } from '#/api/oa/meetingroom/booking';
 import { AttachmentList } from '#/components/attachment-list';
-import { BasicForm, CardContainer, finishBillFormAfterSaveSubmit } from '#/components/basic-form';
+import { BasicForm, CardContainer, finishBillFormAfterSaveSubmit, handleBillNotFoundAfterLoad } from '#/components/basic-form';
 import { $t } from '#/locales';
 
 import { MeetingRoomSelectModal } from '../components';
@@ -209,6 +209,7 @@ async function loadData() {
       await basicFormRef.value.setFormValues(data);
     }
   } catch (error) {
+    if (handleBillNotFoundAfterLoad(error, closeCurrentTab)) return;
     const errorMessage =
       error instanceof Error ? error.message : '获取会议室预定申请单详情失败';
     message.error(errorMessage);

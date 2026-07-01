@@ -24,7 +24,7 @@ import {
   submitContractBill,
 } from '#/api/oa/contract';
 import { AttachmentList } from '#/components/attachment-list';
-import { BasicForm, CardContainer, finishBillFormAfterSaveSubmit } from '#/components/basic-form';
+import { BasicForm, CardContainer, finishBillFormAfterSaveSubmit, handleBillNotFoundAfterLoad } from '#/components/basic-form';
 import { ContractDetailList } from '#/components/contract-detail-list';
 import { PaymentPlanList } from '#/components/payment-plan-list';
 import { $t } from '#/locales';
@@ -199,6 +199,7 @@ async function loadData() {
       await basicFormRef.value.setFormValues(data);
     }
   } catch (error) {
+    if (handleBillNotFoundAfterLoad(error, closeCurrentTab)) return;
     console.error('获取合同审批单详情失败:', error);
   } finally {
     loading.value = false;

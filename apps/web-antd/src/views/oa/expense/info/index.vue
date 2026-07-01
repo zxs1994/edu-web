@@ -26,7 +26,7 @@ import {
 } from '#/api/oa/expense';
 import { getTravelApplyBillPage } from '#/api/oa/travel';
 import { AttachmentList } from '#/components/attachment-list';
-import { BasicForm, CardContainer, finishBillFormAfterSaveSubmit } from '#/components/basic-form';
+import { BasicForm, CardContainer, finishBillFormAfterSaveSubmit, handleBillNotFoundAfterLoad } from '#/components/basic-form';
 import { ExpenseDetailList } from '#/components/expense-detail-list';
 import { filterEmptyExpenseDetails, normalizeExpenseDetail, normalizeTotalAmount } from '#/components/expense-detail-list/data';
 import { TravelApplySelectModal } from '#/views/oa/travel/components';
@@ -267,6 +267,7 @@ async function loadData() {
       });
     }
   } catch (error) {
+    if (handleBillNotFoundAfterLoad(error, closeCurrentTab)) return;
     console.error('获取差旅报销单详情失败:', error);
   } finally {
     loading.value = false;

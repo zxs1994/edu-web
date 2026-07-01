@@ -23,7 +23,7 @@ import {
   submitCarReturnBill,
 } from '#/api/oa/car/carreturn';
 import { AttachmentList } from '#/components/attachment-list';
-import { BasicForm, CardContainer, finishBillFormAfterSaveSubmit } from '#/components/basic-form';
+import { BasicForm, CardContainer, finishBillFormAfterSaveSubmit, handleBillNotFoundAfterLoad } from '#/components/basic-form';
 import { $t } from '#/locales';
 
 import { CarApplySelectModal, CarSelectModal } from '../../components';
@@ -192,6 +192,7 @@ async function loadData() {
       await basicFormRef.value.setFormValues(data);
     }
   } catch (error) {
+    if (handleBillNotFoundAfterLoad(error, closeCurrentTab)) return;
     const errorMessage =
       error instanceof Error ? error.message : '获取还车申请单详情失败';
     message.error(errorMessage);

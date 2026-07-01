@@ -25,7 +25,7 @@ import {
   submitSealApplyBill,
 } from '#/api/oa/seal/sealapply';
 import { AttachmentList } from '#/components/attachment-list';
-import { BasicForm, CardContainer, finishBillFormAfterSaveSubmit } from '#/components/basic-form';
+import { BasicForm, CardContainer, finishBillFormAfterSaveSubmit, handleBillNotFoundAfterLoad } from '#/components/basic-form';
 import { $t } from '#/locales';
 
 import { SealSelectModal } from '../../components';
@@ -274,6 +274,7 @@ async function loadData() {
       await basicFormRef.value.setFormValues(data);
     }
   } catch (error) {
+    if (handleBillNotFoundAfterLoad(error, closeCurrentTab)) return;
     const errorMessage =
       error instanceof Error ? error.message : '获取用印申请单详情失败';
     message.error(errorMessage);

@@ -24,7 +24,7 @@ import {
   submitTravelApplyBill,
 } from '#/api/oa/travel';
 import { AttachmentList } from '#/components/attachment-list';
-import { BasicForm, CardContainer, finishBillFormAfterSaveSubmit } from '#/components/basic-form';
+import { BasicForm, CardContainer, finishBillFormAfterSaveSubmit, handleBillNotFoundAfterLoad } from '#/components/basic-form';
 import { ItineraryDetailList } from '#/components/itinerary-detail-list';
 import { $t } from '#/locales';
 
@@ -219,6 +219,7 @@ async function loadData() {
       }
     }
   } catch (error) {
+    if (handleBillNotFoundAfterLoad(error, closeCurrentTab)) return;
     console.error('获取差旅申请单详情失败:', error);
   } finally {
     loading.value = false;

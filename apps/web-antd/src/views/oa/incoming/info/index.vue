@@ -24,7 +24,7 @@ import {
   submitIncomingDocumentBill,
 } from '#/api/oa/incoming';
 import { AttachmentList } from '#/components/attachment-list';
-import { BasicForm, CardContainer, finishBillFormAfterSaveSubmit } from '#/components/basic-form';
+import { BasicForm, CardContainer, finishBillFormAfterSaveSubmit, handleBillNotFoundAfterLoad } from '#/components/basic-form';
 import { $t } from '#/locales';
 
 import { useFormSchema } from './data';
@@ -193,6 +193,7 @@ async function loadData() {
       await basicFormRef.value.setFormValues(data);
     }
   } catch (error) {
+    if (handleBillNotFoundAfterLoad(error, closeCurrentTab)) return;
     console.error('获取收文办理单详情失败:', error);
   } finally {
     loading.value = false;

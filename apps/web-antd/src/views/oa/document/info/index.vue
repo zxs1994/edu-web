@@ -31,7 +31,7 @@ import {
 } from '#/api/oa/document';
 import { getRedTemplate } from '#/api/oa/red-template';
 import { AttachmentList } from '#/components/attachment-list';
-import { CardContainer, FooterForm, HeaderForm, finishBillFormAfterSaveSubmit, mergeSchemaDisabled } from '#/components/basic-form';
+import { CardContainer, FooterForm, HeaderForm, finishBillFormAfterSaveSubmit, handleBillNotFoundAfterLoad, mergeSchemaDisabled } from '#/components/basic-form';
 import BillCorrectionApprovalHistory from '#/components/basic-form/bill-correction-approval-history.vue';
 import { useBillCorrectionDisplay } from '#/components/basic-form/use-bill-correction-display';
 import { $t } from '#/locales';
@@ -345,6 +345,7 @@ async function loadData() {
       await getApprovalDetailData();
     }
   } catch (error) {
+    if (handleBillNotFoundAfterLoad(error, closeCurrentTab)) return;
     console.error('获取公文发文单详情失败:', error);
   } finally {
     loading.value = false;
