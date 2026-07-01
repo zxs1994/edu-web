@@ -30,6 +30,7 @@ export function useFormSchema(): VbenFormSchema[] {
     {
       fieldName: 'sealName',
       label: '印章名称',
+      rules: 'required',
       component: 'Input',
       componentProps: {
         placeholder: '请输入印章名称',

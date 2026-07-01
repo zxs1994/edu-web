@@ -95,13 +95,6 @@ export function useGridColumns(): VxeTableGridOptions<CarReturnBillApi.CarReturn
       resolveRoute: resolveOaDetailRoute('/oa/car/car-return-info'),
     }),
     {
-      field: 'processInstanceId',
-      title: '流程实例编号',
-      minWidth: 120,
-      headerAlign: 'center',
-      align: 'left',
-    },
-    {
       field: 'processStatus',
       title: '单据状态',
       minWidth: 120,
