@@ -11,15 +11,6 @@ import { getRangePickerDefaultProps } from '#/utils';
 /** BPM 流程分类：协同办公 */
 export const OA_CATEGORY_CODE = 'OA';
 
-/** 已完整接入纠错发起的流程定义 Key（发起纠错仍依赖后端 BillCorrectionSourceService） */
-export const CORRECTABLE_PROCESS_KEYS = [
-  'oa_contract_bill',
-  'oa_expense_reimburse_bill',
-  'oa_seal_apply_bill',
-  'oa_project_initiation_bill',
-  'oa_document_dispatch_bill',
-];
-
 /** 已提交流程状态（排除未提交） */
 export const SUBMITTED_PROCESS_STATUSES = [
   BpmProcessInstanceStatus.RUNNING,
@@ -159,7 +150,10 @@ export function useInitiateFormSchema(): VbenFormSchema[] {
       rules: 'required',
       defaultValue: 1,
       componentProps: {
-        options: getDictOptions(DICT_TYPE.OA_PRESIDENT_CORRECTION_TYPE, 'number'),
+        options: getDictOptions(
+          DICT_TYPE.OA_PRESIDENT_CORRECTION_TYPE,
+          'number',
+        ),
         placeholder: '请选择纠错类型',
       },
     },

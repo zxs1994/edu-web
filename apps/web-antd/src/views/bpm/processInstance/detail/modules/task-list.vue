@@ -69,7 +69,8 @@ const columns = shallowRef([
     slots: {
       default: 'slot-reason',
     },
-    minWidth: 200,
+    minWidth: 320,
+    showOverflow: false,
   },
   {
     field: 'durationInMillis',
@@ -102,9 +103,6 @@ const [Grid, gridApi] = useVbenVxeGrid({
     },
     toolbarConfig: {
       enabled: false,
-    },
-    cellConfig: {
-      height: 60,
     },
   } as VxeTableGridOptions<BpmTaskApi.Task>,
 });
@@ -188,17 +186,19 @@ defineExpose({
   <div class="flex h-full flex-col">
     <Grid>
       <template #slot-reason="{ row }">
-        <div class="flex flex-wrap items-center justify-center">
-          <span v-if="row.reason">{{ row.reason }}</span>
+        <div class="flex flex-wrap items-center justify-start gap-1 text-left">
+          <span v-if="row.reason" class="whitespace-pre-wrap break-all">
+            {{ row.reason }}
+          </span>
           <span v-else>-</span>
 
           <Button
             v-if="row.formId > 0"
-            type="primary"
-            @click="showFormDetail(row)"
-            size="small"
             ghost
             class="ml-1"
+            size="small"
+            type="primary"
+            @click="showFormDetail(row)"
           >
             <IconifyIcon icon="lucide:file-text" />
             <span class="!ml-0.5 text-xs">查看表单</span>

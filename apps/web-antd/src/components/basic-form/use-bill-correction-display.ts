@@ -20,7 +20,7 @@ export function useBillCorrectionDisplay(options: {
   const isPresidentCorrectionOverlay = computed(
     () =>
       options.presidentCorrectionDisplay?.value === true ||
-      correctionFreezeStatus.value === 1,
+      (correctionFreezeStatus.value === 1 && !isReApprovalFlow.value),
   );
 
   function onCorrectionHistoryLoaded(payload: {
@@ -45,7 +45,11 @@ export function useBillCorrectionDisplay(options: {
     hasCorrectionHistory.value = items.length > 0;
     correctionFreezeStatus.value = data.freezeStatus ?? 0;
     isReApprovalFlow.value = items.some(
-      (item) => item.newProcessInstanceId === options.processInstanceId.value,
+      (item) =>
+        item.newProcessInstanceId === options.processInstanceId.value ||
+        (!!options.processInstanceId.value &&
+          !item.newProcessInstanceId &&
+          item.sourceProcessInstanceId !== options.processInstanceId.value),
     );
   }
 
@@ -55,7 +59,8 @@ export function useBillCorrectionDisplay(options: {
   }) {
     return (
       !!header.processInstanceId &&
-      header.processStatus != null &&
+      header.processStatus !== null &&
+      header.processStatus !== undefined &&
       header.processStatus !== BpmProcessInstanceStatus.NOT_START
     );
   }
@@ -74,7 +79,9 @@ export function useBillCorrectionDisplay(options: {
     return true;
   }
 
-  function mergePresidentCorrectionHeader<T extends Record<string, any>>(header: T) {
+  function mergePresidentCorrectionHeader<T extends Record<string, any>>(
+    header: T,
+  ) {
     return {
       ...header,
       presidentCorrectionDisplay: isPresidentCorrectionOverlay.value,

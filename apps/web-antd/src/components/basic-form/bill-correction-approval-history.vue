@@ -16,10 +16,6 @@ import CardContainer from './card-container.vue';
 
 defineOptions({ name: 'BillCorrectionApprovalHistory' });
 
-const emit = defineEmits<{
-  loaded: [payload: { freezeStatus: number; hasHistory: boolean; isReApproval: boolean }];
-}>();
-
 const props = defineProps<{
   /** 当前单据流程实例 ID（用于判断是否处于重审） */
   currentProcessInstanceId?: string;
@@ -29,12 +25,21 @@ const props = defineProps<{
   sourceBillType?: string;
 }>();
 
-const CORRECTION_TYPE_OBJECTION = 1;
+const emit = defineEmits<{
+  loaded: [
+    payload: {
+      freezeStatus: number;
+      hasHistory: boolean;
+      isReApproval: boolean;
+    },
+  ];
+}>();
+
 const CORRECTION_TYPE_COUNCIL = 2;
 const CORRECTION_STATUS_IN_PROGRESS = 1;
 
 const loading = ref(false);
-const history = ref<PresidentCorrectionApi.BillHistory | null>(null);
+const history = ref<null | PresidentCorrectionApi.BillHistory>(null);
 const activityNodesMap = ref<Record<string, any[]>>({});
 const activeKeys = ref<string[]>([]);
 const isReApprovalFlag = ref(false);
@@ -46,7 +51,10 @@ const isReApproval = computed(() => {
     return false;
   }
   return history.value!.items!.some(
-    (item) => item.newProcessInstanceId === props.currentProcessInstanceId,
+    (item) =>
+      item.newProcessInstanceId === props.currentProcessInstanceId ||
+      (!item.newProcessInstanceId &&
+        item.sourceProcessInstanceId !== props.currentProcessInstanceId),
   );
 });
 
@@ -101,9 +109,7 @@ async function loadHistory() {
     const items = data.items ?? [];
     if (items.length > 0) {
       const last = items[items.length - 1];
-      activeKeys.value = last?.correctionId
-        ? [String(last.correctionId)]
-        : [];
+      activeKeys.value = last?.correctionId ? [String(last.correctionId)] : [];
     }
     await Promise.all(
       [
@@ -182,10 +188,7 @@ defineExpose({ isReApproval, hasHistory, refresh: loadHistory });
             :message="buildSummary(item)"
           />
 
-          <CardContainer
-            v-if="item.sourceProcessInstanceId"
-            title="原审批进度"
-          >
+          <CardContainer v-if="item.sourceProcessInstanceId" title="原审批进度">
             <BpmProcessInstanceTimeline
               :activity-nodes="
                 activityNodesMap[item.sourceProcessInstanceId] ?? []
