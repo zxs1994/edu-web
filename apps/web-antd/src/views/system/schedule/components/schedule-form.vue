@@ -39,21 +39,40 @@ const [Form, formApi] = useVbenForm({
   showDefaultActions: false,
 });
 
+/** 从待推送列表中排除已接收人 */
+function filterPendingReceiverIds(
+  pendingReceiverIds: number[] = [],
+  receivedReceiverIds: number[] = [],
+) {
+  const receivedSet = new Set(receivedReceiverIds);
+  return pendingReceiverIds.filter((id) => !receivedSet.has(id));
+}
+
 /** 保存日程 */
 async function handleSave(needPush = false) {
   const { valid } = await formApi.validate();
   if (!valid) {
     return;
   }
-  modalApi.lock();
   const formValues = await formApi.getValues();
   const data: any = { ...formValues };
-  // 清理前端专用字段
+  const receivedReceiverIds: number[] = data.receivedReceiverIds || [];
+  const receiverIds = filterPendingReceiverIds(
+    data.pendingReceiverIds,
+    receivedReceiverIds,
+  );
+  delete data.pendingReceiverIds;
+  delete data.receivedReceiverIds;
   delete data.receivers;
   delete data.receiverNames;
-  if (!data.pendingReceiverIds) {
-    data.pendingReceiverIds = [];
+  data.receiverIds = receiverIds;
+
+  if (needPush && receiverIds.length === 0) {
+    message.warning('请选择待推送接收人');
+    return;
   }
+
+  modalApi.lock();
   try {
     let scheduleId: number;
     if (formData.value?.id) {
@@ -63,14 +82,9 @@ async function handleSave(needPush = false) {
       scheduleId = await createSchedule(data);
     }
     if (needPush) {
-      if (data.pendingReceiverIds.length === 0) {
-        message.warning('请选择待推送接收人');
-        modalApi.unlock();
-        return;
-      }
       await pushSchedule({
         scheduleId,
-        receiverIds: data.pendingReceiverIds,
+        receiverIds,
       });
       message.success('保存并推送成功');
     } else {
@@ -106,17 +120,38 @@ const [Modal, modalApi] = useVbenModal({
     try {
       formData.value = await getSchedule(data.id);
       const formValues: any = { ...formData.value };
-      // 待推送接收人（从后端 pendingReceiverIds 直接回填）
+      if (formValues.isPushed) {
+        // 已推送：库中接收人视为已接收，待推送仅保留新增人选
+        formValues.receivedReceiverIds =
+          formValues.receivers?.map(
+            (r: SystemScheduleApi.Receiver) => r.receiverId,
+          ) || [];
+        formValues.pendingReceiverIds = filterPendingReceiverIds(
+          formValues.pendingReceiverIds,
+          formValues.receivedReceiverIds,
+        );
+        formValues.receiverNames =
+          formValues.receivers && formValues.receivers.length > 0
+            ? formValues.receivers
+                .map((r: SystemScheduleApi.Receiver) => r.receiverName)
+                .join('、')
+            : '';
+      } else {
+        // 未推送：库中接收人仍属于待推送
+        formValues.receivedReceiverIds = [];
+        if (
+          !formValues.pendingReceiverIds?.length &&
+          formValues.receivers?.length
+        ) {
+          formValues.pendingReceiverIds = formValues.receivers.map(
+            (r: SystemScheduleApi.Receiver) => r.receiverId,
+          );
+        }
+        formValues.receiverNames = '';
+      }
       if (!formValues.pendingReceiverIds) {
         formValues.pendingReceiverIds = [];
       }
-      // 已接收人（只读展示姓名）
-      formValues.receiverNames =
-        formValues.receivers && formValues.receivers.length > 0
-          ? formValues.receivers
-              .map((r: SystemScheduleApi.Receiver) => r.receiverName)
-              .join('、')
-          : '';
       delete formValues.receivers;
       await formApi.setValues(formValues);
     } finally {

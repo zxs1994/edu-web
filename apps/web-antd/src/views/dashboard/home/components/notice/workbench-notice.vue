@@ -3,7 +3,7 @@ import type { SystemNoticeApi } from '#/api/system/notice';
 
 import { computed, onActivated, onMounted, ref } from 'vue';
 
-import { DICT_TYPE } from '@vben/constants';
+import { DICT_TYPE, CommonStatusEnum } from '@vben/constants';
 import { getDictLabel } from '@vben/hooks';
 
 import { Badge, Empty, Spin, Tag } from 'ant-design-vue';
@@ -56,6 +56,7 @@ async function loadNoticeList() {
     const response = await getNoticePage({
       pageNo: 1,
       pageSize: props.maxRecordNum,
+      status: CommonStatusEnum.ENABLE,
     });
     noticeList.value = response.list || [];
     total.value = response.total || 0;

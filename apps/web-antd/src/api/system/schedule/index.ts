@@ -18,6 +18,7 @@ export namespace SystemScheduleApi {
     isPushed?: boolean;
     status?: number;
     remark?: string;
+    receiverIds?: number[];
     pendingReceiverIds?: number[];
     receivers?: Receiver[];
     createTime?: Date;

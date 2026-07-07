@@ -27,16 +27,6 @@ export function useGridFormSchema(): VbenFormSchema[] {
       },
     },
     {
-      fieldName: 'status',
-      label: '公告状态',
-      component: 'Select',
-      componentProps: {
-        options: getDictOptions(DICT_TYPE.COMMON_STATUS, 'number'),
-        placeholder: '请选择公告状态',
-        allowClear: true,
-      },
-    },
-    {
       fieldName: 'isImportant',
       label: '是否重要通知',
       component: 'Select',

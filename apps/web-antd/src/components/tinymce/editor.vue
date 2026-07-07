@@ -21,6 +21,7 @@ import { buildShortUUID, isNumber } from '@vben/utils';
 import Editor from '@tinymce/tinymce-vue';
 
 import { useUpload } from '#/components/upload/use-upload';
+import { extractUploadUrl } from '#/utils/attachment-url';
 
 import { bindHandlers } from './helper';
 import ImgUpload from './img-upload.vue';
@@ -143,8 +144,8 @@ const initOptions = computed((): InitOptions => {
         const file = blobInfo.blob() as File;
         const { httpRequest } = useUpload();
         httpRequest(file)
-          .then((url) => {
-            resolve(url);
+          .then((result) => {
+            resolve(extractUploadUrl(result));
           })
           .catch((error) => {
             console.error('tinymce 上传图片失败:', error);
@@ -276,14 +277,16 @@ function handleImageUploading(name: string) {
   setValue(editor, content);
 }
 
-function handleDone(name: string, url: string) {
+function handleDone(name: string, url: unknown) {
   const editor = unref(editorRef);
   if (!editor) {
     return;
   }
+  const imageUrl = extractUploadUrl(url);
   const content = editor?.getContent() ?? '';
   const val =
-    content?.replace(getUploadingImgName(name), `<img src="${url}"/>`) ?? '';
+    content?.replace(getUploadingImgName(name), `<img src="${imageUrl}"/>`) ??
+    '';
   setValue(editor, val);
 }
 

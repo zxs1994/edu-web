@@ -87,15 +87,25 @@ export function useFormSchema(): VbenFormSchema[] {
       },
     },
     {
+      fieldName: 'receivedReceiverIds',
+      component: 'Input',
+      dependencies: {
+        triggerFields: [''],
+        show: () => false,
+      },
+      defaultValue: [],
+    },
+    {
       fieldName: 'pendingReceiverIds',
       label: '待推送接收人',
       component: 'ApiSelect',
-      componentProps: {
+      componentProps: (values) => ({
         allowClear: true,
         mode: 'multiple',
         api: async () => {
           const data = await getSimpleUserList();
-          return data;
+          const receivedIds: number[] = values.receivedReceiverIds || [];
+          return data.filter((user) => !receivedIds.includes(user.id));
         },
         labelField: 'nickname',
         valueField: 'id',
@@ -107,7 +117,7 @@ export function useFormSchema(): VbenFormSchema[] {
             option.username?.toLowerCase().includes(input.toLowerCase())
           );
         },
-      },
+      }),
       defaultValue: [],
     },
     {

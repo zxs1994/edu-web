@@ -5,6 +5,7 @@ import type { SystemNoticeApi } from '#/api/system/notice';
 import { ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
+import { CommonStatusEnum } from '@vben/constants';
 
 import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import { getNoticePage } from '#/api/system/notice';
@@ -49,6 +50,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
             pageNo: page.currentPage,
             pageSize: page.pageSize,
             ...formValues,
+            status: CommonStatusEnum.ENABLE,
           });
         },
       },

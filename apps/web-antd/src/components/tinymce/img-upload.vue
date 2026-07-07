@@ -8,6 +8,7 @@ import { $t } from '@vben/locales';
 import { Button, Upload } from 'ant-design-vue';
 
 import { useUpload } from '#/components/upload/use-upload';
+import { extractUploadUrl } from '#/utils/attachment-url';
 
 defineOptions({ name: 'TinymceImageUpload' });
 
@@ -45,7 +46,7 @@ async function customRequest(info: UploadRequestOption<any>) {
   // 2. 执行上传
   const { httpRequest } = useUpload();
   try {
-    const url = await httpRequest(file);
+    const url = extractUploadUrl(await httpRequest(file));
     emit('done', name, url);
   } catch {
     emit('error', name);

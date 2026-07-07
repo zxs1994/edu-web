@@ -5,6 +5,7 @@ import type { SystemNoticeApi } from '#/api/system/notice';
 import { ref } from 'vue';
 
 import { confirm, Page, useVbenModal } from '@vben/common-ui';
+import { CommonStatusEnum } from '@vben/constants';
 import { isEmpty } from '@vben/utils';
 
 import { message } from 'ant-design-vue';
@@ -171,6 +172,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
               type: 'link',
               icon: ACTION_ICON.ADD,
               auth: ['system:notice:update'],
+              disabled: row.status === CommonStatusEnum.DISABLE,
               onClick: handlePush.bind(null, row),
             },
             {
