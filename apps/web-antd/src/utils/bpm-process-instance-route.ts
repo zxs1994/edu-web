@@ -1,7 +1,7 @@
 import type { BpmProcessInstanceApi } from '#/api/bpm/processInstance';
 
 /** 流程定义 key → 业务单据详情路由（与 BPM 模型 formCustomCreatePath 对齐，作兜底） */
-const PROCESS_KEY_INFO_PATH: Record<string, string> = {
+export const PROCESS_KEY_INFO_PATH: Record<string, string> = {
   oa_car_apply_bill: '/oa/car/car-apply-info',
   oa_car_return_bill: '/oa/car/car-return-info',
   oa_seal_apply_bill: '/oa/seal/seal-apply-info',

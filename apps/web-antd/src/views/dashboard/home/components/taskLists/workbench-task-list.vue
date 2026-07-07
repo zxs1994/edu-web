@@ -16,7 +16,9 @@ import {
   markWorkbenchTabAsRead,
 } from '#/api/bpm/task';
 import { router } from '#/router';
-import { formatTaskBillStatus, isBillDeleted } from '#/utils/bpm-bill-status';
+import { isBillDeleted } from '#/utils/bpm-bill-status';
+import { getPresidentCorrectionResubmitTodoRoute } from '#/utils/bpm-correction-resubmit-todo';
+import TaskBillStatusTag from '#/components/task-bill-status-tag/task-bill-status-tag.vue';
 
 interface Props {
   maxRecordNum?: number;
@@ -120,7 +122,6 @@ const columns = computed(() => {
       dataIndex: 'status',
       key: 'status',
       width: tab === 'myBill' ? 200 : 100,
-      customRender: ({ record }: any) => formatTaskBillStatus(record, tab),
     },
     {
       title: '摘要',
@@ -387,6 +388,11 @@ function handleBillCodeClick(record: any) {
       break;
     }
     case 'todo': {
+      const correctionRoute = getPresidentCorrectionResubmitTodoRoute(record);
+      if (correctionRoute) {
+        router.push(correctionRoute);
+        break;
+      }
       // 待办任务：跳转到待办办理页
       router.push({
         name: 'BpmProcessInstanceTodoDetail',
@@ -407,6 +413,11 @@ function handleBillCodeClick(record: any) {
 // 办理任务（待办任务）
 function handleProcess(record: any) {
   if (isBillDeleted(record)) {
+    return;
+  }
+  const correctionRoute = getPresidentCorrectionResubmitTodoRoute(record);
+  if (correctionRoute) {
+    router.push(correctionRoute);
     return;
   }
   // 待办任务：跳转到待办办理页
@@ -672,6 +683,11 @@ onActivated(() => {
               }}
             </span>
             <span v-else>-</span>
+          </template>
+          <template
+            v-else-if="column.key === 'status' && activeTab !== 'myBill'"
+          >
+            <TaskBillStatusTag :record="record" :tab="activeTab" />
           </template>
           <template
             v-else-if="column.key === 'status' && activeTab === 'myBill'"

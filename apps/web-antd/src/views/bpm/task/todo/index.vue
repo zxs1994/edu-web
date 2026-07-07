@@ -8,6 +8,8 @@ import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import { getTaskTodoPage } from '#/api/bpm/task';
 import { router } from '#/router';
 import { isBillDeleted } from '#/utils/bpm-bill-status';
+import { getPresidentCorrectionResubmitTodoRoute } from '#/utils/bpm-correction-resubmit-todo';
+import TaskBillStatusTag from '#/components/task-bill-status-tag/task-bill-status-tag.vue';
 
 import { useGridColumns, useGridFormSchema } from './data';
 
@@ -16,6 +18,11 @@ defineOptions({ name: 'BpmTodoTask' });
 /** 办理任务 */
 function handleAudit(row: BpmTaskApi.Task) {
   if (isBillDeleted(row)) {
+    return;
+  }
+  const correctionRoute = getPresidentCorrectionResubmitTodoRoute(row as any);
+  if (correctionRoute) {
+    router.push(correctionRoute);
     return;
   }
   router.push({
@@ -77,6 +84,9 @@ const [Grid] = useVbenVxeGrid({
           {{ row.processInstance.billCode }}
         </span>
         <span v-else>-</span>
+      </template>
+      <template #slot-status="{ row }">
+        <TaskBillStatusTag :record="row" tab="todo" />
       </template>
       <template #actions="{ row }">
         <span v-if="isBillDeleted(row)" class="text-gray-400">-</span>

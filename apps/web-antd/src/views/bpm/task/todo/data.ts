@@ -178,8 +178,7 @@ export function useGridColumns(): VxeTableGridOptions['columns'] {
       field: 'processInstance.billDeleted',
       title: '审批状态',
       minWidth: 100,
-      formatter: ({ row }: { row: any }) =>
-        row.processInstance?.billDeleted ? '已删除' : '待处理',
+      slots: { default: 'slot-status' },
     },
     {
       title: '操作',
