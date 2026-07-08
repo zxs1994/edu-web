@@ -23,17 +23,7 @@ export function useFormSchema(): VbenFormSchema[] {
       },
     },
 
-    // ========== 第1行：合同编号、合同名称、合同类型、合同性质 ==========
-    {
-      fieldName: 'contractCode',
-      label: '合同编号',
-      rules: 'required',
-      component: 'Input',
-      componentProps: {
-        placeholder: '请输入合同编号',
-        disabled: false,
-      },
-    },
+    // ========== 第1行：合同名称、合同类型、合同编号、对方单位 ==========
     {
       fieldName: 'contractTitle',
       label: '合同名称',
@@ -51,6 +41,15 @@ export function useFormSchema(): VbenFormSchema[] {
       componentProps: {
         options: getDictOptions(DICT_TYPE.OA_CONTRACT_TYPE, 'number'),
         placeholder: '请选择合同类型',
+      },
+    },
+    {
+      fieldName: 'contractCode',
+      label: '合同编号',
+      component: 'Input',
+      componentProps: {
+        placeholder: '审批通过后自动生成',
+        disabled: true,
       },
     },
     {

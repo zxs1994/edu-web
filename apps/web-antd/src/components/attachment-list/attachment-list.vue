@@ -4,7 +4,7 @@ import type { AttachmentApi } from '#/api/common/attachment';
 
 import { computed, nextTick, ref, watch } from 'vue';
 
-import { message } from 'ant-design-vue';
+import { Button, message, Modal } from 'ant-design-vue';
 
 import { TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useUpload } from '#/components/upload/use-upload';
@@ -56,6 +56,94 @@ const emit = defineEmits<{
 /** 表格内部数据 */
 const tableData = ref<AttachmentApi.AttachmentSaveReq[]>([]);
 const { httpRequest } = useUpload('oa/attachment');
+const IMAGE_EXTENSIONS = new Set([
+  'bmp',
+  'gif',
+  'jpeg',
+  'jpg',
+  'png',
+  'svg',
+  'webp',
+]);
+const imagePreviewVisible = ref(false);
+const imagePreviewItems = ref<{ fileName: string; url: string }[]>([]);
+const imagePreviewIndex = ref(0);
+const currentPreviewItem = computed(
+  () => imagePreviewItems.value[imagePreviewIndex.value] || null,
+);
+const hasPrevImage = computed(() => imagePreviewIndex.value > 0);
+const hasNextImage = computed(
+  () => imagePreviewIndex.value < imagePreviewItems.value.length - 1,
+);
+
+function getAttachmentExtension(row: AttachmentApi.AttachmentSaveReq) {
+  return (
+    row.fileExtension ||
+    row.fileName?.split('.').pop() ||
+    ''
+  ).toLowerCase();
+}
+
+function isImageAttachment(row: AttachmentApi.AttachmentSaveReq) {
+  return IMAGE_EXTENSIONS.has(getAttachmentExtension(row));
+}
+
+function resolveImagePreviewItems() {
+  return tableData.value
+    .map((item) => ({
+      id: item.id,
+      fileName: item.fileName || '图片',
+      fileExtension: item.fileExtension,
+      uploadTime: item.uploadTime,
+      url: getAttachmentAccessUrl(item),
+    }))
+    .filter((item) => !!item.url);
+}
+
+function openImagePreview(row: AttachmentApi.AttachmentSaveReq) {
+  const items = resolveImagePreviewItems().filter((item) =>
+    IMAGE_EXTENSIONS.has(
+      (
+        item.fileExtension ||
+        item.fileName.split('.').pop() ||
+        ''
+      ).toLowerCase(),
+    ),
+  );
+  if (items.length === 0) {
+    message.warning('暂无可预览的图片附件');
+    return;
+  }
+  const currentUrl = getAttachmentAccessUrl(row);
+  const targetIndex = items.findIndex(
+    (item) =>
+      (!!item.id && !!row.id && item.id === row.id) ||
+      (item.fileName === row.fileName && item.uploadTime === row.uploadTime) ||
+      item.url === currentUrl,
+  );
+  imagePreviewItems.value = items.map((item) => ({
+    fileName: item.fileName,
+    url: item.url,
+  }));
+  imagePreviewIndex.value = targetIndex === -1 ? 0 : targetIndex;
+  imagePreviewVisible.value = true;
+}
+
+function handleCloseImagePreview() {
+  imagePreviewVisible.value = false;
+}
+
+function handlePrevImage() {
+  if (hasPrevImage.value) {
+    imagePreviewIndex.value -= 1;
+  }
+}
+
+function handleNextImage() {
+  if (hasNextImage.value) {
+    imagePreviewIndex.value += 1;
+  }
+}
 
 function getAttachmentAccessUrl(row: AttachmentApi.AttachmentSaveReq) {
   return resolveAttachmentAccessUrl(row);
@@ -125,6 +213,10 @@ async function handlePreview(row: AttachmentApi.AttachmentSaveReq) {
       console.error('文本预览失败:', error);
       message.error('文本预览失败');
     }
+    return;
+  }
+  if (isImageAttachment(row)) {
+    openImagePreview(row);
     return;
   }
   window.open(url, '_blank');
@@ -312,6 +404,43 @@ watch(
         </template>
       </Grid>
     </div>
+    <Modal
+      :open="imagePreviewVisible"
+      :title="currentPreviewItem?.fileName || '图片预览'"
+      :footer="null"
+      width="70vw"
+      @cancel="handleCloseImagePreview"
+    >
+      <div class="image-preview-wrap">
+        <div class="image-preview-toolbar">
+          <Button
+            size="small"
+            :disabled="!hasPrevImage"
+            @click="handlePrevImage"
+          >
+            上一张
+          </Button>
+          <span class="image-preview-index">
+            {{ imagePreviewIndex + 1 }} / {{ imagePreviewItems.length }}
+          </span>
+          <Button
+            size="small"
+            :disabled="!hasNextImage"
+            @click="handleNextImage"
+          >
+            下一张
+          </Button>
+        </div>
+        <div class="image-preview-body">
+          <img
+            v-if="currentPreviewItem"
+            :src="currentPreviewItem.url"
+            :alt="currentPreviewItem.fileName"
+            class="preview-image"
+          />
+        </div>
+      </div>
+    </Modal>
   </div>
 </template>
 
@@ -331,5 +460,38 @@ watch(
 .attachment-list > div {
   padding: 0;
   margin: 0;
+}
+
+.image-preview-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.image-preview-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.image-preview-index {
+  min-width: 70px;
+  font-size: 13px;
+  text-align: center;
+}
+
+.image-preview-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 420px;
+  max-height: 70vh;
+}
+
+.preview-image {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
 }
 </style>

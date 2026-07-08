@@ -92,6 +92,10 @@ export function useFormSchema(): VbenFormSchema[] {
       fieldName: 'hostPerson',
       label: '主办人',
       component: 'Input',
+      dependencies: {
+        triggerFields: [''],
+        show: () => false,
+      },
       componentProps: {
         placeholder: '请输入主办人姓名',
       },
@@ -101,8 +105,13 @@ export function useFormSchema(): VbenFormSchema[] {
       label: '领导批示',
       component: 'Textarea',
       formItemClass: 'col-span-full',
+      dependencies: {
+        triggerFields: ['leaderInstruction'],
+        show: (values: Record<string, any>) =>
+          !!String(values?.leaderInstruction || '').trim(),
+      },
       componentProps: {
-        placeholder: '请输入领导批示',
+        readonly: true,
       },
     },
     {
@@ -110,6 +119,10 @@ export function useFormSchema(): VbenFormSchema[] {
       label: '办理结果',
       component: 'Textarea',
       formItemClass: 'col-span-full',
+      dependencies: {
+        triggerFields: [''],
+        show: () => false,
+      },
       componentProps: {
         placeholder: '请输入办理结果',
       },
@@ -118,6 +131,10 @@ export function useFormSchema(): VbenFormSchema[] {
       fieldName: 'handlingDeadline',
       label: '办理期限',
       component: 'Input',
+      dependencies: {
+        triggerFields: [''],
+        show: () => false,
+      },
       componentProps: {
         placeholder: '请输入办理期限',
         addonAfter: '日',

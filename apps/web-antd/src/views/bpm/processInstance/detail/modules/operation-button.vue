@@ -43,6 +43,7 @@ import {
   getNextApprovalNodes,
 } from '#/api/bpm/processInstance';
 import * as TaskApi from '#/api/bpm/task';
+import { getIncomingDocumentBill, saveIncomingDocumentBill } from '#/api/oa/incoming';
 import * as UserApi from '#/api/system/user';
 import { setConfAndFields2 } from '#/components/form-create';
 import { useFooterLeft } from '#/utils/useFooterLeft';
@@ -107,17 +108,27 @@ const nextAssigneesActivityNode = ref<BpmProcessInstanceApi.ApprovalNodeInfo[]>(
   [],
 ); // 下一个审批节点信息
 const nextAssigneesTimelineRef = ref(); // 下一个节点审批人时间线组件的引用
+const isFinalApproveNode = ref(false); // 当前是否最后一级审批节点
 const approveReasonForm: any = reactive({
   reason: '',
   signPicUrl: '',
   nextAssignees: {},
+});
+const approveOpinionLabel = computed(() => {
+  if (
+    props.processDefinition?.key === 'oa_incoming_document_bill' &&
+    isFinalApproveNode.value
+  ) {
+    return '批示';
+  }
+  return `${nodeTypeName.value}意见`;
 });
 const approveReasonRule: Record<string, any> = computed(() => {
   return {
     reason: [
       {
         required: reasonRequire.value,
-        message: `${nodeTypeName.value}意见不能为空`,
+        message: `${approveOpinionLabel.value}不能为空`,
         trigger: 'blur',
       },
     ],
@@ -269,6 +280,9 @@ function closePopover(type: string, formRef: any | FormInstance) {
   }
   if (popOverVisible.value[type]) popOverVisible.value[type] = false;
   nextAssigneesActivityNode.value = [];
+  if (type === 'approve') {
+    isFinalApproveNode.value = false;
+  }
   // 清理 Timeline 组件中的自定义审批人数据
   if (nextAssigneesTimelineRef.value) {
     nextAssigneesTimelineRef.value.batchSetCustomApproveUsers({});
@@ -284,6 +298,7 @@ async function initNextAssigneesFormField() {
     taskId: runningTask.value.id,
     processVariablesStr: JSON.stringify(variables),
   });
+  isFinalApproveNode.value = !data || data.length === 0;
   if (data && data.length > 0) {
     const customApproveUsersData: Record<string, any[]> = {}; // 用于收集需要设置到 Timeline 组件的自定义审批人数据
     data.forEach((node: BpmProcessInstanceApi.ApprovalNodeInfo) => {
@@ -362,6 +377,21 @@ async function handleAudit(pass: boolean, formRef: FormInstance | undefined) {
       const nextAssigneesValid = validateNextAssignees();
       if (!nextAssigneesValid) return;
       const variables = getUpdatedProcessInstanceVariables();
+      // 公文收文最后一级审批：将批示同步回写到业务单据字段 leaderInstruction
+      if (
+        props.processDefinition?.key === 'oa_incoming_document_bill' &&
+        isFinalApproveNode.value &&
+        approveReasonForm.reason?.trim()
+      ) {
+        const billId = Number(props.processInstance?.businessKey);
+        if (!Number.isNaN(billId) && billId > 0) {
+          const bill = await getIncomingDocumentBill(billId);
+          await saveIncomingDocumentBill({
+            ...bill,
+            leaderInstruction: approveReasonForm.reason.trim(),
+          });
+        }
+      }
       // 审批通过数据
       const data = {
         id: runningTask.value.id,
@@ -785,10 +815,10 @@ defineExpose({ loadTodoTask });
                 </div>
               </FormItem>
 
-              <FormItem :label="`${nodeTypeName}意见`" name="reason">
+              <FormItem :label="approveOpinionLabel" name="reason">
                 <Textarea
                   v-model:value="approveReasonForm.reason"
-                  :placeholder="`请输入${nodeTypeName}意见`"
+                  :placeholder="`请输入${approveOpinionLabel}`"
                   :rows="4"
                 />
               </FormItem>
