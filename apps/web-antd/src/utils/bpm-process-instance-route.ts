@@ -10,6 +10,7 @@ export const PROCESS_KEY_INFO_PATH: Record<string, string> = {
   oa_document_dispatch_bill: '/oa/document/document-dispatch-info',
   oa_expense_reimburse_bill: '/oa/expense-travel/expense-reimburse-info',
   oa_daily_expense_bill: '/oa/expense-travel/daily-expense-info',
+  oa_expense_payment_bill: '/oa/expense-travel/expense-payment-info',
   oa_project_initiation_bill: '/oa/contract/project-initiation-info',
   oa_travel_apply_bill: '/oa/expense-travel/travel-apply-info',
   oa_travel_apply_bill_copy: '/oa/expense-travel/travel-apply-info',

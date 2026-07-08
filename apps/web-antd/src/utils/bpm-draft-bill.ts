@@ -4,6 +4,7 @@ import { deleteContractBill } from '#/api/oa/contract';
 import { deleteCorrectionBill } from '#/api/oa/correction';
 import { deleteDocumentDispatchBill } from '#/api/oa/document';
 import { deleteExpenseReimburseBill } from '#/api/oa/expense';
+import { deleteExpensePaymentBill } from '#/api/oa/expense-payment';
 import { deleteIncomingDocumentBill } from '#/api/oa/incoming';
 import { deleteMeetingRoomBooking } from '#/api/oa/meetingroom/booking';
 import { deleteProjectInitiationBill } from '#/api/oa/project';
@@ -26,6 +27,7 @@ const DRAFT_BILL_DELETE_MAP: Record<string, DraftBillDeleteHandler> = {
   oa_document_dispatch_bill: deleteDocumentDispatchBill,
   oa_expense_reimburse_bill: deleteExpenseReimburseBill,
   oa_daily_expense_bill: deleteExpenseReimburseBill,
+  oa_expense_payment_bill: deleteExpensePaymentBill,
   oa_project_initiation_bill: deleteProjectInitiationBill,
   oa_travel_apply_bill: deleteTravelApplyBill,
   oa_travel_apply_bill_copy: deleteTravelApplyBill,
