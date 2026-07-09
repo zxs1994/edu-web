@@ -451,6 +451,7 @@ onBeforeRouteLeave(() => {
         <CardContainer title="费用明细">
           <ExpenseDetailList
             v-model="formData.details"
+            :bill-type="2"
             :readonly="readonly"
             @update:total="handleTotalAmountChange"
           />

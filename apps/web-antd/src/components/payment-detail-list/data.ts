@@ -1,7 +1,7 @@
 import type { ExpensePaymentBillApi } from '#/api/oa/expense-payment';
 
 import { DICT_TYPE } from '@vben/constants';
-import { getDictOptions } from '@vben/hooks';
+import { getDictLabel, getDictOptions } from '@vben/hooks';
 
 export function formatPaymentExpenseDate(value: unknown): string {
   if (value === null || value === undefined || value === '') {
@@ -141,4 +141,14 @@ export function usePaymentDetailColumns(readonly = false): any[] {
 
 export function getExpenseTypeOptions() {
   return getDictOptions(DICT_TYPE.OA_EXPENSE_PAYMENT_DETAIL_TYPE);
+}
+
+export function getExpenseTypeLabel(value: unknown): string {
+  if (value === null || value === undefined || value === '') {
+    return '';
+  }
+  return (
+    getDictLabel(DICT_TYPE.OA_EXPENSE_PAYMENT_DETAIL_TYPE, value) ||
+    String(value)
+  );
 }

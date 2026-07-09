@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import type { VbenFormSchema } from '#/adapter/form';
-import type { ExpenseReimburseBillApi } from '#/api/oa/expense';
+import type { ReceptionApplyBillApi } from '#/api/oa/reception';
 
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
-import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
+import { onBeforeRouteLeave, useRoute } from 'vue-router';
 
 import { Loading } from '@vben/common-ui';
 import {
@@ -14,28 +14,22 @@ import { useTabs } from '@vben/hooks';
 import { preferences, updatePreferences } from '@vben/preferences';
 import { useUserStore } from '@vben/stores';
 
-import { Alert, Button, message } from 'ant-design-vue';
+import { Button, message } from 'ant-design-vue';
 
 import { withdrawProcessToStart } from '#/api/bpm/task';
 import {
-  deleteExpenseReimburseBill,
-  getExpenseReimburseBill,
-  saveExpenseReimburseBill,
-  submitExpenseReimburseBill,
-} from '#/api/oa/expense';
+  deleteReceptionApplyBill,
+  getReceptionApplyBill,
+  saveReceptionApplyBill,
+  submitReceptionApplyBill,
+} from '#/api/oa/reception';
 import { AttachmentList } from '#/components/attachment-list';
 import { BasicForm, CardContainer, finishBillFormAfterSaveSubmit, handleBillNotFoundAfterLoad } from '#/components/basic-form';
-import { ExpenseDetailList } from '#/components/expense-detail-list';
-import {
-  filterEmptyExpenseDetails,
-  normalizeExpenseDetail,
-  normalizeTotalAmount,
-} from '#/components/expense-detail-list/data';
 import { $t } from '#/locales';
 
 import { useFormSchema } from './data';
 
-defineOptions({ name: 'OaDailyExpenseBillInfo' });
+defineOptions({ name: 'OaReceptionApplyBillInfo' });
 
 const props = defineProps<{
   activityNodes?: any[];
@@ -50,9 +44,7 @@ const props = defineProps<{
 }>();
 
 const route = useRoute();
-const router = useRouter();
 const userStore = useUserStore();
-/** 当前用户是否为单据创建人 */
 const isCreator = computed(() => {
   const creator = formData.value?.creator;
   if (!creator) return true;
@@ -60,9 +52,7 @@ const isCreator = computed(() => {
 });
 const { closeCurrentTab } = useTabs();
 
-const formData = ref<Partial<ExpenseReimburseBillApi.ExpenseReimburseBill>>(
-  {},
-);
+const formData = ref<Partial<ReceptionApplyBillApi.ReceptionApplyBill>>({});
 const readonly = ref(false);
 const loading = ref(false);
 const basicFormRef = ref();
@@ -73,7 +63,6 @@ function initFormSchema() {
   formSchema.value = useFormSchema();
 }
 
-// 获取当前单据ID（每次调用都重新计算，避免缓存问题）
 function getCurrentId(): number | undefined {
   if (props.id) {
     return typeof props.id === 'string' ? Number(props.id) : props.id;
@@ -87,9 +76,12 @@ function handleClose() {
   closeCurrentTab();
 }
 
+function handleUploadAttachment() {
+  attachmentListRef.value?.handleTriggerUpload();
+}
+
 async function handleSaveAndSubmit(isSubmit: boolean) {
   loading.value = true;
-
   if (!basicFormRef.value) return;
 
   if (isSubmit) {
@@ -102,26 +94,13 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
 
   try {
     const formValues = isSubmit
-      ? ((await basicFormRef.value.getFormValues()) as ExpenseReimburseBillApi.ExpenseReimburseBill)
-      : ((await basicFormRef.value.getFormValues(
-          false,
-        )) as ExpenseReimburseBillApi.ExpenseReimburseBill);
+      ? ((await basicFormRef.value.getFormValues()) as ReceptionApplyBillApi.ReceptionApplyBill)
+      : ((await basicFormRef.value.getFormValues(false)) as ReceptionApplyBillApi.ReceptionApplyBill);
 
-    const validDetails = filterEmptyExpenseDetails(formData.value.details);
-    formData.value.details = validDetails;
-    const totalAmount = normalizeTotalAmount(formValues.totalAmount, validDetails);
-
-    const data = {
-      ...formData.value,
-      ...formValues,
-      billType: 1,
-      totalAmount,
-      details: validDetails,
-    };
-
+    const data = { ...formData.value, ...formValues };
     id = await (isSubmit
-      ? submitExpenseReimburseBill(data)
-      : saveExpenseReimburseBill(data));
+      ? submitReceptionApplyBill(data)
+      : saveReceptionApplyBill(data));
     formData.value.id = id;
 
     message.success({
@@ -147,7 +126,7 @@ async function handleDelete() {
   if (!id) return;
   loading.value = true;
   try {
-    await deleteExpenseReimburseBill(id);
+    await deleteReceptionApplyBill(id);
     message.success('删除成功');
     closeCurrentTab();
   } catch (error) {
@@ -158,10 +137,7 @@ async function handleDelete() {
 }
 
 async function handleRevoke(reason: string) {
-  if (
-    formData.value.processInstanceId !== undefined &&
-    formData.value.processInstanceId !== null
-  ) {
+  if (formData.value.processInstanceId) {
     loading.value = true;
     try {
       await withdrawProcessToStart({
@@ -179,7 +155,6 @@ async function handleRevoke(reason: string) {
 }
 
 async function loadData() {
-  // 每次加载前重新计算id，确保从路由或props获取最新值
   id = getCurrentId() ?? id;
 
   if (id === undefined || id === null) {
@@ -192,11 +167,10 @@ async function loadData() {
       deptName: userStore.userInfo?.deptName || '',
       processStatus: BpmProcessInstanceStatus.NOT_START,
       createTime: new Date(),
-      paymentStatus: 0,
-      billType: 1,
-      totalAmount: 0,
       billCode: '',
-      details: [],
+      guestCount: 1,
+      accompanyCount: 0,
+      estimatedCost: 0,
       attachments: [],
     };
     return;
@@ -204,55 +178,26 @@ async function loadData() {
 
   loading.value = true;
   try {
-    const data = await getExpenseReimburseBill(id);
+    const data = await getReceptionApplyBill(id);
     readonly.value =
       props.isApproval === true
         ? props.isApproval
-        : !BpmProcessInstanceStatusEditValue.includes(
-            data.processStatus as number,
-          ) || !isCreator.value;
+        : !BpmProcessInstanceStatusEditValue.includes(data.processStatus as number)
+          || !isCreator.value;
 
-    const details = (data.details || []).map((item, index) =>
-      normalizeExpenseDetail(item, index),
-    );
-    // 先计算总费用，确保从明细重新计算
-    const totalAmount = normalizeTotalAmount(undefined, details);
-
-    formData.value = {
-      ...data,
-      details,
-      totalAmount,
-    };
-
+    formData.value = { ...data };
     if (basicFormRef.value) {
-      await basicFormRef.value.setFormValues({
-        ...data,
-        totalAmount,
-      });
+      await basicFormRef.value.setFormValues(data);
     }
   } catch (error) {
     if (handleBillNotFoundAfterLoad(error, closeCurrentTab)) return;
-    console.error('获取日常报销单详情失败:', error);
+    console.error('获取接待申请单详情失败:', error);
   } finally {
     loading.value = false;
     nextTick(() => {
       basicFormRef.value?.refreshAllData();
     });
   }
-}
-
-function handleUploadAttachment() {
-  if (attachmentListRef.value) {
-    attachmentListRef.value.handleTriggerUpload();
-  }
-}
-
-/**
- * 费用明细合计金额变化 → 更新表单中的报销总金额
- */
-async function handleTotalAmountChange(total: number) {
-  if (!basicFormRef.value) return;
-  await basicFormRef.value.setFormValues({ totalAmount: total }, false);
 }
 
 async function beforeApproval(): Promise<boolean> {
@@ -266,7 +211,6 @@ defineExpose({
 });
 
 onMounted(() => {
-  // 从发起流程进入时，隐藏侧边栏
   if (route.query.from === 'startProcess') {
     updatePreferences({ sidebar: { hidden: true } });
   }
@@ -291,10 +235,10 @@ onBeforeRouteLeave(() => {
   <Loading :spinning="loading">
     <BasicForm
       ref="basicFormRef"
-      source-bill-type="oa_daily_expense_bill"
+      source-bill-type="oa_reception_apply_bill"
       :header-data="{
         ...formData,
-        billName: '日常报销单',
+        billName: '接待申请单',
       }"
       :form-data="formData"
       :form-schema="formSchema"
@@ -314,15 +258,6 @@ onBeforeRouteLeave(() => {
         <div class="copy-reason-text">抄送意见：{{ props.copyReason }}</div>
       </template>
       <template #form-extension>
-        <CardContainer title="费用明细">
-          <ExpenseDetailList
-            v-model="formData.details"
-            :bill-type="1"
-            :readonly="readonly"
-            @update:total="handleTotalAmountChange"
-          />
-        </CardContainer>
-
         <CardContainer :title="$t('common.attachmentInfo')">
           <template #extra>
             <Button
@@ -342,31 +277,6 @@ onBeforeRouteLeave(() => {
             :hide-upload-button="true"
           />
         </CardContainer>
-
-        <CardContainer title="报销规范">
-          <Alert
-            type="warning"
-            show-icon
-            :closable="false"
-            message="报销规范提示"
-          >
-            <template #description>
-              <div class="reimbursement-rules">
-                <p>
-                  1. 每笔费用需对应相应的发票或收据，附件中需包含发票金额。
-                </p>
-                <p>2. 发票抬头需与公司名称及报销主体一致。</p>
-                <p>
-                  3.
-                  发票日期需在报销期间内（前后不超过3个工作日）。
-                </p>
-                <p>
-                  4. 发票金额与报销金额需一致，如有差异需在备注中说明原因。
-                </p>
-              </div>
-            </template>
-          </Alert>
-        </CardContainer>
       </template>
     </BasicForm>
   </Loading>
@@ -381,15 +291,5 @@ onBeforeRouteLeave(() => {
   text-align: center;
   background-color: rgb(0 0 0 / 4%);
   border-bottom: 1px solid #f0f0f0;
-}
-
-.reimbursement-rules {
-  line-height: 2;
-  font-size: 13px;
-  color: rgb(0 0 0 / 75%);
-}
-
-.reimbursement-rules p {
-  margin: 0;
 }
 </style>

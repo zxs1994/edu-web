@@ -202,9 +202,11 @@ const OA_DICT = {
   OA_SECRECY_LEVEL: 'oa_secrecy_level',
   OA_DISCLOSURE_CATEGORY: 'oa_disclosure_category',
   OA_EXPENSE_TYPE: 'oa_expense_type',
+  OA_TRAVEL_EXPENSE_TYPE: 'oa_travel_expense_type',
   OA_EXPENSE_PAYMENT_TYPE: 'oa_expense_payment_type',
   OA_EXPENSE_PAYMENT_PROJECT: 'oa_expense_payment_project',
   OA_EXPENSE_PAYMENT_DETAIL_TYPE: 'oa_expense_payment_detail_type',
+  OA_RECEPTION_DINING_STANDARD: 'oa_reception_dining_standard',
   OA_EXPENSE_PAYMENT_STATUS: 'oa_expense_payment_status', // 报销支付状态
   OA_PAYMENT_METHOD: 'oa_payment_method',
   OA_PROJECT_TYPE: 'oa_project_type',

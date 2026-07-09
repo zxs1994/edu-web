@@ -80,12 +80,132 @@ function formatSummary(summary: any) {
     .join(', ');
 }
 
+// 格式化日期时间
+function formatDateTime(text: any) {
+  return text ? new Date(text).toLocaleString('zh-CN') : '-';
+}
+
 // 获取列定义
 const columns = computed(() => {
   const tab = activeTab.value;
 
-  // 基础列（所有Tab都有）
-  const baseColumns: any[] = [
+  const companyColumn = {
+    title: '所属公司',
+    dataIndex: ['processInstance', 'companyName'],
+    key: 'companyName',
+    width: 160,
+    ellipsis: true,
+    customRender: ({ record }: any) => {
+      if (tab === 'copy' || tab === 'myBill') {
+        return record.companyName || '-';
+      }
+      return record.processInstance?.companyName || '-';
+    },
+  };
+
+  const deptColumn = {
+    title: '所属部门',
+    dataIndex: ['processInstance', 'deptName'],
+    key: 'deptName',
+    width: 160,
+    ellipsis: true,
+    customRender: ({ record }: any) => {
+      if (tab === 'copy' || tab === 'myBill') {
+        return record.deptName || '-';
+      }
+      return record.processInstance?.deptName || '-';
+    },
+  };
+
+  // 前置列：接收日期、任务节点、所属公司、所属部门
+  const prefixColumns: any[] = [];
+  // 其余特殊列（不含已前置的日期、节点）
+  const restSpecialColumns: any[] = [];
+
+  switch (tab) {
+    case 'copy': {
+      prefixColumns.push(
+        {
+          title: '抄送时间',
+          dataIndex: 'createTime',
+          key: 'copyTime',
+          width: 160,
+          customRender: ({ text }: any) => formatDateTime(text),
+        },
+        {
+          title: '抄送节点',
+          dataIndex: 'activityName',
+          key: 'activityName',
+          width: 120,
+        },
+        companyColumn,
+        deptColumn,
+      );
+      break;
+    }
+    case 'done': {
+      prefixColumns.push(
+        {
+          title: '审批时间',
+          dataIndex: 'endTime',
+          key: 'endTime',
+          width: 160,
+          customRender: ({ text }: any) => formatDateTime(text),
+        },
+        {
+          title: '任务节点',
+          dataIndex: 'name',
+          key: 'taskName',
+          width: 120,
+        },
+        companyColumn,
+        deptColumn,
+      );
+      restSpecialColumns.push({
+        title: '审批建议',
+        dataIndex: 'reason',
+        key: 'reason',
+        width: 150,
+        ellipsis: true,
+      });
+      break;
+    }
+    case 'myBill': {
+      prefixColumns.push(companyColumn, deptColumn);
+      restSpecialColumns.push({
+        title: '发起时间',
+        dataIndex: 'createTime',
+        key: 'createTime',
+        width: 160,
+        customRender: ({ text }: any) => formatDateTime(text),
+      });
+      break;
+    }
+    case 'todo': {
+      prefixColumns.push(
+        {
+          title: '接收时间',
+          dataIndex: 'createTime',
+          key: 'receiveTime',
+          width: 160,
+          customRender: ({ text }: any) => formatDateTime(text),
+        },
+        {
+          title: '任务节点',
+          dataIndex: 'name',
+          key: 'taskName',
+          width: 120,
+        },
+        companyColumn,
+        deptColumn,
+      );
+      break;
+    }
+    // No default
+  }
+
+  // 其余基础列
+  const restBaseColumns: any[] = [
     {
       title: '单据类型',
       dataIndex: ['processInstance', 'name'],
@@ -154,127 +274,7 @@ const columns = computed(() => {
         return record.processInstance?.startUser?.nickname || '-';
       },
     },
-    {
-      title: '所属公司',
-      dataIndex: ['processInstance', 'companyName'],
-      key: 'companyName',
-      width: 160,
-      ellipsis: true,
-      customRender: ({ record }: any) => {
-        if (tab === 'copy' || tab === 'myBill') {
-          return record.companyName || '-';
-        }
-        return record.processInstance?.companyName || '-';
-      },
-    },
-    {
-      title: '所属部门',
-      dataIndex: ['processInstance', 'deptName'],
-      key: 'deptName',
-      width: 160,
-      ellipsis: true,
-      customRender: ({ record }: any) => {
-        if (tab === 'copy' || tab === 'myBill') {
-          return record.deptName || '-';
-        }
-        return record.processInstance?.deptName || '-';
-      },
-    },
   ];
-
-  // 特殊列
-  const specialColumns: any[] = [];
-
-  switch (tab) {
-    case 'copy': {
-      // 抄送我的：抄送节点、抄送时间
-      specialColumns.push(
-        {
-          title: '抄送节点',
-          dataIndex: 'activityName',
-          key: 'activityName',
-          width: 120,
-        },
-        {
-          title: '抄送时间',
-          dataIndex: 'createTime',
-          key: 'copyTime',
-          width: 160,
-          customRender: ({ text }: any) => {
-            return text ? new Date(text).toLocaleString('zh-CN') : '-';
-          },
-        },
-      );
-
-      break;
-    }
-    case 'done': {
-      // 已办任务：任务节点、审批时间、审批建议
-      specialColumns.push(
-        {
-          title: '任务节点',
-          dataIndex: 'name',
-          key: 'taskName',
-          width: 120,
-        },
-        {
-          title: '审批时间',
-          dataIndex: 'endTime',
-          key: 'endTime',
-          width: 160,
-          customRender: ({ text }: any) => {
-            return text ? new Date(text).toLocaleString('zh-CN') : '-';
-          },
-        },
-        {
-          title: '审批建议',
-          dataIndex: 'reason',
-          key: 'reason',
-          width: 150,
-          ellipsis: true,
-        },
-      );
-
-      break;
-    }
-    case 'myBill': {
-      // 我的单据：发起时间
-      specialColumns.push({
-        title: '发起时间',
-        dataIndex: 'createTime',
-        key: 'createTime',
-        width: 160,
-        customRender: ({ text }: any) => {
-          return text ? new Date(text).toLocaleString('zh-CN') : '-';
-        },
-      });
-
-      break;
-    }
-    case 'todo': {
-      // 待办任务：任务节点、接收时间
-      specialColumns.push(
-        {
-          title: '任务节点',
-          dataIndex: 'name',
-          key: 'taskName',
-          width: 120,
-        },
-        {
-          title: '接收时间',
-          dataIndex: 'createTime',
-          key: 'receiveTime',
-          width: 160,
-          customRender: ({ text }: any) => {
-            return text ? new Date(text).toLocaleString('zh-CN') : '-';
-          },
-        },
-      );
-
-      break;
-    }
-    // No default
-  }
 
   // 操作列
   const actionColumn = {
@@ -284,7 +284,12 @@ const columns = computed(() => {
     fixed: 'right' as const,
   };
 
-  return [...baseColumns, ...specialColumns, actionColumn];
+  return [
+    ...prefixColumns,
+    ...restBaseColumns,
+    ...restSpecialColumns,
+    actionColumn,
+  ];
 });
 
 // 加载数据

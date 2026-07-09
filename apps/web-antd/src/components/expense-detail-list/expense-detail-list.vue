@@ -11,8 +11,9 @@ import { TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   calcExpenseDetailsTotal,
   createExpenseDetail,
-  EXPENSE_TYPE_OPTIONS,
   formatExpenseDate,
+  getExpenseTypeLabel,
+  getExpenseTypeOptions,
   normalizeExpenseDetail,
   useExpenseDetailColumns,
 } from './data';
@@ -20,11 +21,14 @@ import {
 interface Props {
   modelValue?: ExpenseReimburseBillApi.ExpenseReimburseDetail[];
   readonly?: boolean;
+  /** 1=日常报销，2=差旅报销 */
+  billType?: number;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   modelValue: () => [],
   readonly: false,
+  billType: 2,
 });
 
 const emit = defineEmits<{
@@ -125,6 +129,10 @@ const topActions = computed(() => {
   ];
 });
 
+const expenseTypeOptions = computed(() =>
+  getExpenseTypeOptions(props.billType),
+);
+
 const [Grid, gridApi] = useVbenVxeGrid({
   gridOptions: {
     columns: useExpenseDetailColumns(props.readonly),
@@ -220,10 +228,10 @@ watch(
             :value="row.expenseType || undefined"
             class="cell-select"
             placeholder="请选择"
-            :options="EXPENSE_TYPE_OPTIONS"
+            :options="expenseTypeOptions"
             @change="(val: any) => updateField(row, 'expenseType', String(val || ''))"
           />
-          <span v-else>{{ row.expenseType }}</span>
+          <span v-else>{{ getExpenseTypeLabel(row.expenseType, props.billType) || '-' }}</span>
         </template>
 
         <!-- 发生日期 -->

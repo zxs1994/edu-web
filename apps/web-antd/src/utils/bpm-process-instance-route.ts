@@ -16,6 +16,7 @@ export const PROCESS_KEY_INFO_PATH: Record<string, string> = {
   oa_travel_apply_bill_copy: '/oa/expense-travel/travel-apply-info',
   oa_incoming_document_bill: '/oa/document/incoming-document-info',
   oa_correction_bill: '/oa/correction/correction-info',
+  oa_reception_apply_bill: '/oa/reception/reception-apply-info',
 };
 
 /**

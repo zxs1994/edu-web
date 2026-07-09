@@ -1,15 +1,59 @@
 import type { ExpenseReimburseBillApi } from '#/api/oa/expense';
 
+import { DICT_TYPE } from '@vben/constants';
+import { getDictLabel, getDictOptions } from '@vben/hooks';
+
 /**
- * 费用类型选项
+ * @deprecated 差旅报销已改为字典 oa_travel_expense_type
  */
-export const EXPENSE_TYPE_OPTIONS = [
-  { label: '交通费', value: '交通费' },
-  { label: '住宿费', value: '住宿费' },
-  { label: '餐饮费', value: '餐饮费' },
-  { label: '通讯费', value: '通讯费' },
-  { label: '其他', value: '其他' },
+export const TRAVEL_EXPENSE_TYPE_OPTIONS = [
+  { label: '交通费', value: '1' },
+  { label: '住宿费', value: '2' },
+  { label: '餐饮费', value: '3' },
+  { label: '通讯费', value: '4' },
+  { label: '其他', value: '5' },
 ];
+
+/** @deprecated 请使用 getExpenseTypeOptions(billType) */
+export const EXPENSE_TYPE_OPTIONS = TRAVEL_EXPENSE_TYPE_OPTIONS;
+
+export function getDailyExpenseTypeOptions() {
+  return getDictOptions(DICT_TYPE.OA_EXPENSE_TYPE);
+}
+
+export function getTravelExpenseTypeOptions() {
+  return getDictOptions(DICT_TYPE.OA_TRAVEL_EXPENSE_TYPE);
+}
+
+export function getDailyExpenseTypeLabel(value: unknown): string {
+  if (value === null || value === undefined || value === '') {
+    return '';
+  }
+  return (
+    getDictLabel(DICT_TYPE.OA_EXPENSE_TYPE, value) || String(value)
+  );
+}
+
+export function getTravelExpenseTypeLabel(value: unknown): string {
+  if (value === null || value === undefined || value === '') {
+    return '';
+  }
+  return (
+    getDictLabel(DICT_TYPE.OA_TRAVEL_EXPENSE_TYPE, value) || String(value)
+  );
+}
+
+export function getExpenseTypeOptions(billType = 2) {
+  return billType === 1
+    ? getDailyExpenseTypeOptions()
+    : getTravelExpenseTypeOptions();
+}
+
+export function getExpenseTypeLabel(value: unknown, billType = 2): string {
+  return billType === 1
+    ? getDailyExpenseTypeLabel(value)
+    : getTravelExpenseTypeLabel(value);
+}
 
 /**
  * 统一格式化发生日期，兼容字符串/数组/时间戳

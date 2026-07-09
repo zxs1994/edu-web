@@ -12,6 +12,7 @@ import {
   calcPaymentDetailsTotal,
   createPaymentDetail,
   formatPaymentExpenseDate,
+  getExpenseTypeLabel,
   getExpenseTypeOptions,
   normalizePaymentDetail,
   usePaymentDetailColumns,
@@ -189,7 +190,7 @@ watch(
           :options="expenseTypeOptions"
           @change="(val: any) => updateField(row, 'expenseType', String(val || ''))"
         />
-        <span v-else>{{ row.expenseType }}</span>
+        <span v-else>{{ getExpenseTypeLabel(row.expenseType) || '-' }}</span>
       </template>
       <template #expenseDate="{ row }">
         <DatePicker

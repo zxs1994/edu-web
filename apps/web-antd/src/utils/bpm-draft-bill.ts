@@ -8,6 +8,7 @@ import { deleteExpensePaymentBill } from '#/api/oa/expense-payment';
 import { deleteIncomingDocumentBill } from '#/api/oa/incoming';
 import { deleteMeetingRoomBooking } from '#/api/oa/meetingroom/booking';
 import { deleteProjectInitiationBill } from '#/api/oa/project';
+import { deleteReceptionApplyBill } from '#/api/oa/reception';
 import { deleteSealApplyBill } from '#/api/oa/seal/sealapply';
 import { deleteTravelApplyBill } from '#/api/oa/travel';
 import { deleteEmployeeEntryBill } from '#/api/hrm/employee-entry';
@@ -33,6 +34,7 @@ const DRAFT_BILL_DELETE_MAP: Record<string, DraftBillDeleteHandler> = {
   oa_travel_apply_bill_copy: deleteTravelApplyBill,
   oa_incoming_document_bill: deleteIncomingDocumentBill,
   oa_correction_bill: deleteCorrectionBill,
+  oa_reception_apply_bill: deleteReceptionApplyBill,
   hr_employee_entry_bill: deleteEmployeeEntryBill,
   hr_employee_regular_bill: deleteEmployeeRegularBill,
   hr_employee_transfer_bill: deleteEmployeeTransferBill,
