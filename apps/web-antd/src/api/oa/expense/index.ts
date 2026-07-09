@@ -101,3 +101,9 @@ export function exportExpenseReimburseBill(params: any) {
     params,
   });
 }
+
+export function exportExpenseBillDetail(params: { billType: string; id: number }) {
+  return requestClient.download('/oa/bill/export-detail', {
+    params,
+  });
+}

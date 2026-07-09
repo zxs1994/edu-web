@@ -2,15 +2,13 @@
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { ExpenseReimburseBillApi } from '#/api/oa/expense';
 
-import { onActivated } from 'vue';
+import { onActivated, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
 import {
   BpmProcessInstanceStatus,
 } from '@vben/constants';
-import { downloadFileFromBlobPart } from '@vben/utils';
-
 import { message } from 'ant-design-vue';
 
 import {
@@ -19,8 +17,6 @@ import {
   useVbenVxeGrid,
 } from '#/adapter/vxe-table';
 import {
-  deleteExpenseReimburseBill,
-  exportExpenseReimburseBill,
   getExpenseReimburseBillPage,
   updateExpenseReimburseBill,
 } from '#/api/oa/expense';
@@ -36,6 +32,8 @@ function onRefresh() {
   gridApi.query();
 }
 
+const checkedRows = ref<ExpenseReimburseBillApi.ExpenseReimburseBill[]>([]);
+
 /* function handleCreate(billType: number) {
   const path = billType === 1
     ? '/oa/expense-travel/daily-expense-info'
@@ -46,30 +44,47 @@ function onRefresh() {
   });
 } */
 
-async function handleDelete(
-  row: ExpenseReimburseBillApi.ExpenseReimburseBill,
-) {
-  const hideLoading = message.loading({
-    content: $t('ui.actionMessage.deleting', [row.id]),
-    key: 'action_key_msg',
-  });
-  try {
-    await deleteExpenseReimburseBill(row.id as number);
-    message.success({
-      content: $t('ui.actionMessage.deleteSuccess', [row.id]),
-      key: 'action_key_msg',
-    });
-    onRefresh();
-  } finally {
-    hideLoading();
-  }
-}
-
 async function handleExport() {
   const data = await exportExpenseReimburseBill(
     await gridApi.formApi.getValues(),
   );
   downloadFileFromBlobPart({ fileName: '报销单.xls', source: data });
+}
+
+async function handleExportSelectedDetail() {
+  if (checkedRows.value.length === 0) {
+    message.warning('请先勾选要导出的单据');
+    return;
+  }
+  const hideLoading = message.loading(`正在导出 ${checkedRows.value.length} 份单据...`, 0);
+  let successCount = 0;
+  try {
+    for (const row of checkedRows.value) {
+      if (!row.id) {
+        continue;
+      }
+      try {
+        const data = await exportExpenseBillDetail({
+          billType: '107',
+          id: Number(row.id),
+        });
+        const fileName = `差旅报销单-${row.billCode || row.id}.xlsx`;
+        downloadFileFromBlobPart({ fileName, source: data });
+        successCount++;
+      } catch (error: any) {
+        message.error(`导出失败：${row.billCode || row.id}，${error?.message || '请稍后重试'}`);
+      }
+    }
+    if (successCount > 0) {
+      message.success(`导出完成，成功 ${successCount} 份`);
+    }
+  } finally {
+    hideLoading();
+  }
+}
+
+function handleRowCheckboxChange() {
+  checkedRows.value = gridApi.grid.getCheckboxRecords() as ExpenseReimburseBillApi.ExpenseReimburseBill[];
 }
 
 function handleDetail(row: ExpenseReimburseBillApi.ExpenseReimburseBill) {
@@ -124,8 +139,13 @@ const [Grid, gridApi] = useVbenVxeGrid({
       },
     },
     rowConfig: { keyField: 'id', isHover: true },
+    checkboxConfig: { highlight: true },
     toolbarConfig: { refresh: { code: 'query' }, search: true },
   } as VxeTableGridOptions<ExpenseReimburseBillApi.ExpenseReimburseBill>,
+  gridEvents: {
+    checkboxAll: handleRowCheckboxChange,
+    checkboxChange: handleRowCheckboxChange,
+  },
 });
 
 onActivated(() => {
@@ -153,13 +173,21 @@ onActivated(() => {
               auth: ['oa:expense-reimburse-bill:create'],
               onClick: () => handleCreate(1),
             }, */
-            {
+            /* {
               label: $t('ui.actionTitle.export'),
               type: 'primary',
               icon: ACTION_ICON.DOWNLOAD,
               auth: ['oa:expense-reimburse-bill:export'],
               onClick: handleExport,
             },
+            {
+              label: '导出选中单据',
+              type: 'primary',
+              icon: ACTION_ICON.DOWNLOAD,
+              auth: ['oa:expense-reimburse-bill:export'],
+              disabled: checkedRows.length === 0,
+              onClick: handleExportSelectedDetail,
+            }, */
           ]"
         />
       </template>
