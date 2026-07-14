@@ -73,3 +73,9 @@ export function exportReceptionApplyBill(params: Record<string, any>) {
     params,
   });
 }
+
+export function exportReceptionApplyBillDetail(params: { billType: string; id: number }) {
+  return requestClient.download('/oa/bill/export-detail', {
+    params,
+  });
+}

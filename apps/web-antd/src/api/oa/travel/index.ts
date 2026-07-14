@@ -103,3 +103,9 @@ export function exportTravelApplyBill(params: any) {
     params,
   });
 }
+
+export function exportTravelApplyBillDetail(params: { billType: string; id: number }) {
+  return requestClient.download('/oa/bill/export-detail', {
+    params,
+  });
+}

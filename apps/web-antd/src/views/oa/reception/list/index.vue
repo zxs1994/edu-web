@@ -2,19 +2,18 @@
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { ReceptionApplyBillApi } from '#/api/oa/reception';
 
-import { onActivated } from 'vue';
+import { onActivated, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
 import { BpmProcessInstanceStatus } from '@vben/constants';
-// import { downloadFileFromBlobPart } from '@vben/utils';
-
+import { downloadFileFromBlobPart } from '@vben/utils';
 import { message } from 'ant-design-vue';
 
 import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   deleteReceptionApplyBill,
-  // exportReceptionApplyBill,
+  exportReceptionApplyBillDetail,
   getReceptionApplyBillPage,
 } from '#/api/oa/reception';
 import { $t } from '#/locales';
@@ -26,10 +25,13 @@ const router = useRouter();
 defineOptions({ name: 'OaReceptionApplyBillList' });
 
 const INFO_PATH = '/oa/reception/reception-apply-info';
+const BILL_TYPE = '115';
 
 function onRefresh() {
   gridApi.query();
 }
+
+const checkedRows = ref<ReceptionApplyBillApi.ReceptionApplyBill[]>([]);
 
 async function handleDelete(row: ReceptionApplyBillApi.ReceptionApplyBill) {
   const hideLoading = message.loading({
@@ -48,27 +50,48 @@ async function handleDelete(row: ReceptionApplyBillApi.ReceptionApplyBill) {
   }
 }
 
-// 导出功能暂时不用
-// async function handleExport() {
-//   const data = await exportReceptionApplyBill(await gridApi.formApi.getValues());
-//   downloadFileFromBlobPart({ fileName: '接待申请单.xls', source: data });
-// }
+async function handleExportSelectedDetail() {
+  const exportableRows = checkedRows.value.filter(
+    (row) => row.processStatus === BpmProcessInstanceStatus.APPROVE,
+  );
+  if (exportableRows.length === 0) {
+    message.warning('仅支持导出审批通过的单据，请先勾选符合条件的单据');
+    return;
+  }
+  const hideLoading = message.loading(`正在导出 ${exportableRows.length} 份单据...`, 0);
+  let successCount = 0;
+  try {
+    for (const row of exportableRows) {
+      if (!row.id) {
+        continue;
+      }
+      try {
+        const data = await exportReceptionApplyBillDetail({
+          billType: BILL_TYPE,
+          id: Number(row.id),
+        });
+        const fileName = `接待申请单-${row.billCode || row.id}.xlsx`;
+        downloadFileFromBlobPart({ fileName, source: data });
+        successCount++;
+      } catch (error: any) {
+        message.error(`导出失败：${row.billCode || row.id}，${error?.message || '请稍后重试'}`);
+      }
+    }
+    if (successCount > 0) {
+      message.success(`导出完成，成功 ${successCount} 份`);
+    }
+  } finally {
+    hideLoading();
+  }
+}
+
+function handleRowCheckboxChange() {
+  checkedRows.value = gridApi.grid.getCheckboxRecords() as ReceptionApplyBillApi.ReceptionApplyBill[];
+}
 
 function handleDetail(row: ReceptionApplyBillApi.ReceptionApplyBill) {
   router.push(getOaDetailRoute(row, INFO_PATH));
 }
-
-// 新增功能暂时不用
-// function handleCreate() {
-//   router.push({
-//     path: INFO_PATH,
-//     query: {
-//       from: 'startProcess',
-//       processDefinitionKey: 'oa_reception_apply_bill',
-//       t: String(Date.now()),
-//     },
-//   });
-// }
 
 const [Grid, gridApi] = useVbenVxeGrid({
   formOptions: {
@@ -92,8 +115,17 @@ const [Grid, gridApi] = useVbenVxeGrid({
       },
     },
     rowConfig: { keyField: 'id', isHover: true },
-    toolbarConfig: { refresh: true, search: true },
+    checkboxConfig: {
+      highlight: true,
+      checkMethod: ({ row }: { row: ReceptionApplyBillApi.ReceptionApplyBill }) =>
+        row.processStatus === BpmProcessInstanceStatus.APPROVE,
+    },
+    toolbarConfig: { refresh: { code: 'query' }, search: true },
   } as VxeTableGridOptions<ReceptionApplyBillApi.ReceptionApplyBill>,
+  gridEvents: {
+    checkboxAll: handleRowCheckboxChange,
+    checkboxChange: handleRowCheckboxChange,
+  },
 });
 
 onActivated(() => {
@@ -104,28 +136,20 @@ onActivated(() => {
 <template>
   <Page auto-content-height>
     <Grid table-title="接待申请单">
-      <!-- 新增、导出功能暂时不用
       <template #toolbar-tools>
         <TableAction
           :actions="[
             {
-              label: $t('ui.actionTitle.create', ['接待申请单']),
-              type: 'primary',
-              icon: ACTION_ICON.ADD,
-              auth: ['oa:reception-apply-bill:create'],
-              onClick: handleCreate,
-            },
-            {
-              label: $t('ui.actionTitle.export'),
+              label: '导出选中单据',
               type: 'primary',
               icon: ACTION_ICON.DOWNLOAD,
               auth: ['oa:reception-apply-bill:export'],
-              onClick: handleExport,
+              disabled: checkedRows.length === 0,
+              onClick: handleExportSelectedDetail,
             },
           ]"
         />
       </template>
-      -->
       <template #actions="{ row }">
         <TableAction
           :actions="[

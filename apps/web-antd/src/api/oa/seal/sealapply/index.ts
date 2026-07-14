@@ -126,3 +126,10 @@ export function checkTimeConflict(data: {
 export function exportSealApplyBill(params: any) {
   return requestClient.download('/oa/seal-apply-bill/export-excel', { params });
 }
+
+/** 导出用印申请单详情（打印模板） */
+export function exportSealApplyBillDetail(params: { billType: string; id: number }) {
+  return requestClient.download('/oa/bill/export-detail', {
+    params,
+  });
+}

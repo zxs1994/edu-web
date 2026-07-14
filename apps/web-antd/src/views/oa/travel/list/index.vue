@@ -2,12 +2,12 @@
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { TravelApplyBillApi } from '#/api/oa/travel';
 
-import { onActivated } from 'vue';
+import { onActivated, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
+import { BpmProcessInstanceStatus } from '@vben/constants';
 import { downloadFileFromBlobPart } from '@vben/utils';
-
 import { message } from 'ant-design-vue';
 
 import {
@@ -17,7 +17,7 @@ import {
 } from '#/adapter/vxe-table';
 import {
   deleteTravelApplyBill,
-  exportTravelApplyBill,
+  exportTravelApplyBillDetail,
   getTravelApplyBillPage,
 } from '#/api/oa/travel';
 import { $t } from '#/locales';
@@ -32,12 +32,11 @@ function onRefresh() {
   gridApi.query();
 }
 
-/* function handleCreate() {
-  router.push({
-    path: '/oa/expense-travel/travel-apply-info',
-    query: { t: Date.now() },
-  });
-} */
+const checkedRows = ref<TravelApplyBillApi.TravelApplyBill[]>([]);
+
+function resolveTravelBillType(row: TravelApplyBillApi.TravelApplyBill) {
+  return row.travelType === 2 ? '113' : '109';
+}
 
 function handleDetail(row: TravelApplyBillApi.TravelApplyBill) {
   router.push(getTravelDetailRoute(row));
@@ -60,9 +59,44 @@ async function handleDelete(row: TravelApplyBillApi.TravelApplyBill) {
   }
 }
 
-async function handleExport() {
-  const data = await exportTravelApplyBill(await gridApi.formApi.getValues());
-  downloadFileFromBlobPart({ fileName: '差旅申请.xls', source: data });
+async function handleExportSelectedDetail() {
+  const exportableRows = checkedRows.value.filter(
+    (row) => row.processStatus === BpmProcessInstanceStatus.APPROVE,
+  );
+  if (exportableRows.length === 0) {
+    message.warning('仅支持导出审批通过的单据，请先勾选符合条件的单据');
+    return;
+  }
+  const hideLoading = message.loading(`正在导出 ${exportableRows.length} 份单据...`, 0);
+  let successCount = 0;
+  try {
+    for (const row of exportableRows) {
+      if (!row.id) {
+        continue;
+      }
+      try {
+        const data = await exportTravelApplyBillDetail({
+          billType: resolveTravelBillType(row),
+          id: Number(row.id),
+        });
+        const prefix = row.travelType === 2 ? '出境出差申请单' : '出差申请单';
+        const fileName = `${prefix}-${row.billCode || row.id}.xlsx`;
+        downloadFileFromBlobPart({ fileName, source: data });
+        successCount++;
+      } catch (error: any) {
+        message.error(`导出失败：${row.billCode || row.id}，${error?.message || '请稍后重试'}`);
+      }
+    }
+    if (successCount > 0) {
+      message.success(`导出完成，成功 ${successCount} 份`);
+    }
+  } finally {
+    hideLoading();
+  }
+}
+
+function handleRowCheckboxChange() {
+  checkedRows.value = gridApi.grid.getCheckboxRecords() as TravelApplyBillApi.TravelApplyBill[];
 }
 
 const [Grid, gridApi] = useVbenVxeGrid({
@@ -87,8 +121,17 @@ const [Grid, gridApi] = useVbenVxeGrid({
       },
     },
     rowConfig: { keyField: 'id', isHover: true },
+    checkboxConfig: {
+      highlight: true,
+      checkMethod: ({ row }: { row: TravelApplyBillApi.TravelApplyBill }) =>
+        row.processStatus === BpmProcessInstanceStatus.APPROVE,
+    },
     toolbarConfig: { refresh: { code: 'query' }, search: true },
   } as VxeTableGridOptions<TravelApplyBillApi.TravelApplyBill>,
+  gridEvents: {
+    checkboxAll: handleRowCheckboxChange,
+    checkboxChange: handleRowCheckboxChange,
+  },
 });
 
 onActivated(() => {
@@ -102,19 +145,13 @@ onActivated(() => {
       <template #toolbar-tools>
         <TableAction
           :actions="[
-            /* {
-              label: $t('ui.actionTitle.create'),
-              type: 'primary',
-              icon: ACTION_ICON.ADD,
-              auth: ['oa:travel-apply-bill:create'],
-              onClick: handleCreate,
-            }, */
             {
-              label: $t('ui.actionTitle.export'),
+              label: '导出选中单据',
               type: 'primary',
               icon: ACTION_ICON.DOWNLOAD,
               auth: ['oa:travel-apply-bill:export'],
-              onClick: handleExport,
+              disabled: checkedRows.length === 0,
+              onClick: handleExportSelectedDetail,
             },
           ]"
         />

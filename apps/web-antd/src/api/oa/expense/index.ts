@@ -102,8 +102,12 @@ export function exportExpenseReimburseBill(params: any) {
   });
 }
 
-export function exportExpenseBillDetail(params: { billType: string; id: number }) {
+export function exportExpenseBillDetail(
+  params: { billType: string; id: number },
+  config?: { responseReturn?: 'body' | 'raw' },
+) {
   return requestClient.download('/oa/bill/export-detail', {
     params,
+    ...config,
   });
 }

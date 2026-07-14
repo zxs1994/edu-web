@@ -9,6 +9,7 @@ import { Page } from '@vben/common-ui';
 import {
   BpmProcessInstanceStatus,
 } from '@vben/constants';
+import { downloadFileFromBlobPart } from '@vben/utils';
 import { message } from 'ant-design-vue';
 
 import {
@@ -17,6 +18,7 @@ import {
   useVbenVxeGrid,
 } from '#/adapter/vxe-table';
 import {
+  exportExpenseBillDetail,
   getExpenseReimburseBillPage,
   updateExpenseReimburseBill,
 } from '#/api/oa/expense';
@@ -44,32 +46,46 @@ const checkedRows = ref<ExpenseReimburseBillApi.ExpenseReimburseBill[]>([]);
   });
 } */
 
-async function handleExport() {
-  const data = await exportExpenseReimburseBill(
-    await gridApi.formApi.getValues(),
-  );
-  downloadFileFromBlobPart({ fileName: '报销单.xls', source: data });
+function parseDownloadFileName(disposition?: string) {
+  if (!disposition) {
+    return undefined;
+  }
+  const utf8Match = disposition.match(/filename\*=UTF-8''([^;]+)/i);
+  if (utf8Match?.[1]) {
+    return decodeURIComponent(utf8Match[1]);
+  }
+  const plainMatch = disposition.match(/filename="?([^";]+)"?/i);
+  return plainMatch?.[1] ? decodeURIComponent(plainMatch[1]) : undefined;
 }
 
 async function handleExportSelectedDetail() {
-  if (checkedRows.value.length === 0) {
-    message.warning('请先勾选要导出的单据');
+  const exportableRows = checkedRows.value.filter(
+    (row) => row.processStatus === BpmProcessInstanceStatus.APPROVE,
+  );
+  if (exportableRows.length === 0) {
+    message.warning('仅支持导出审批通过的单据，请先勾选符合条件的单据');
     return;
   }
-  const hideLoading = message.loading(`正在导出 ${checkedRows.value.length} 份单据...`, 0);
+  const hideLoading = message.loading(`正在导出 ${exportableRows.length} 份单据...`, 0);
   let successCount = 0;
   try {
-    for (const row of checkedRows.value) {
+    for (const row of exportableRows) {
       if (!row.id) {
         continue;
       }
       try {
-        const data = await exportExpenseBillDetail({
-          billType: '107',
-          id: Number(row.id),
-        });
-        const fileName = `差旅报销单-${row.billCode || row.id}.xlsx`;
-        downloadFileFromBlobPart({ fileName, source: data });
+        const response: any = await exportExpenseBillDetail(
+          {
+            billType: row.billType === 1 ? '112' : '107',
+            id: Number(row.id),
+          },
+          { responseReturn: 'raw' },
+        );
+        const prefix = row.billType === 1 ? '日常报销单' : '差旅报销单';
+        const fileName =
+          parseDownloadFileName(response?.headers?.['content-disposition'])
+          || `${prefix}-${row.billCode || row.id}.xlsx`;
+        downloadFileFromBlobPart({ fileName, source: response.data });
         successCount++;
       } catch (error: any) {
         message.error(`导出失败：${row.billCode || row.id}，${error?.message || '请稍后重试'}`);
@@ -139,7 +155,11 @@ const [Grid, gridApi] = useVbenVxeGrid({
       },
     },
     rowConfig: { keyField: 'id', isHover: true },
-    checkboxConfig: { highlight: true },
+    checkboxConfig: {
+      highlight: true,
+      checkMethod: ({ row }: { row: ExpenseReimburseBillApi.ExpenseReimburseBill }) =>
+        row.processStatus === BpmProcessInstanceStatus.APPROVE,
+    },
     toolbarConfig: { refresh: { code: 'query' }, search: true },
   } as VxeTableGridOptions<ExpenseReimburseBillApi.ExpenseReimburseBill>,
   gridEvents: {
@@ -173,13 +193,6 @@ onActivated(() => {
               auth: ['oa:expense-reimburse-bill:create'],
               onClick: () => handleCreate(1),
             }, */
-            /* {
-              label: $t('ui.actionTitle.export'),
-              type: 'primary',
-              icon: ACTION_ICON.DOWNLOAD,
-              auth: ['oa:expense-reimburse-bill:export'],
-              onClick: handleExport,
-            },
             {
               label: '导出选中单据',
               type: 'primary',
@@ -187,7 +200,7 @@ onActivated(() => {
               auth: ['oa:expense-reimburse-bill:export'],
               disabled: checkedRows.length === 0,
               onClick: handleExportSelectedDetail,
-            }, */
+            },
           ]"
         />
       </template>
