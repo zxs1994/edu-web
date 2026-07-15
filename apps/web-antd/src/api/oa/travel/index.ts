@@ -30,6 +30,7 @@ export namespace TravelApplyBillApi {
     travelEndDate: string;
     travelDays: number;
     companion: string;
+    travelerCount?: number;
     estimatedCost: number;
     reimbursementStatus?: number;
     travelType?: number;

@@ -82,7 +82,7 @@ const attachmentListRef = ref();
 const formSchema = shallowRef<VbenFormSchema[]>([]);
 
 function initFormSchema() {
-  formSchema.value = useFormSchema();
+  formSchema.value = useFormSchema(isOverseasTravel.value);
 }
 
 let id: number | undefined = (() => {

@@ -4,7 +4,7 @@ import type { ExpenseReimburseBillApi } from '#/api/oa/expense';
 
 import { computed, nextTick, ref, watch } from 'vue';
 
-import { DatePicker, Select } from 'ant-design-vue';
+import { DatePicker, InputNumber, Select } from 'ant-design-vue';
 
 import { TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 
@@ -14,6 +14,8 @@ import {
   formatExpenseDate,
   getExpenseTypeLabel,
   getExpenseTypeOptions,
+  getTransportTypeLabel,
+  getTransportTypeOptions,
   normalizeExpenseDetail,
   useExpenseDetailColumns,
 } from './data';
@@ -132,6 +134,8 @@ const topActions = computed(() => {
 const expenseTypeOptions = computed(() =>
   getExpenseTypeOptions(props.billType),
 );
+
+const transportTypeOptions = computed(() => getTransportTypeOptions());
 
 const [Grid, gridApi] = useVbenVxeGrid({
   gridOptions: {
@@ -274,6 +278,34 @@ watch(
           <span v-else>{{ row.destination }}</span>
         </template>
 
+        <!-- 交通工具 -->
+        <template #transportType="{ row }">
+          <Select
+            v-if="!props.readonly"
+            :value="row.transportType !== undefined && row.transportType !== null ? row.transportType : undefined"
+            allow-clear
+            class="cell-select"
+            placeholder="请选择"
+            :options="transportTypeOptions as any"
+            @change="(val: any) => updateField(row, 'transportType', val === undefined || val === null || val === '' ? undefined : Number(val))"
+          />
+          <span v-else>{{ getTransportTypeLabel(row.transportType) || '-' }}</span>
+        </template>
+
+        <!-- 单据张数 -->
+        <template #receiptCount="{ row }">
+          <InputNumber
+            v-if="!props.readonly"
+            :value="row.receiptCount !== undefined && row.receiptCount !== null ? row.receiptCount : undefined"
+            class="cell-input-number"
+            :min="0"
+            :precision="0"
+            placeholder="请输入"
+            @change="(val: any) => updateField(row, 'receiptCount', val === null || val === undefined || val === '' ? undefined : Number(val))"
+          />
+          <span v-else>{{ row.receiptCount ?? '' }}</span>
+        </template>
+
         <!-- 金额 -->
         <template #amount="{ row, $rowIndex }">
           <input
@@ -367,6 +399,10 @@ watch(
 }
 
 .cell-date-picker {
+  width: 100%;
+}
+
+.cell-input-number {
   width: 100%;
 }
 

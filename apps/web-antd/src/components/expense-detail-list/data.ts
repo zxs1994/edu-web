@@ -55,6 +55,17 @@ export function getExpenseTypeLabel(value: unknown, billType = 2): string {
     : getTravelExpenseTypeLabel(value);
 }
 
+export function getTransportTypeOptions() {
+  return getDictOptions(DICT_TYPE.OA_TRANSPORT_TYPE, 'number');
+}
+
+export function getTransportTypeLabel(value: unknown): string {
+  if (value === null || value === undefined || value === '') {
+    return '';
+  }
+  return getDictLabel(DICT_TYPE.OA_TRANSPORT_TYPE, value) || String(value);
+}
+
 /**
  * 统一格式化发生日期，兼容字符串/数组/时间戳
  */
@@ -97,7 +108,11 @@ export function isEmptyExpenseDetail(
   ].some((value) => String(value || '').trim());
   const hasDate = !!formatExpenseDate(detail.expenseDate);
   const hasAmount = Number(detail.amount) > 0;
-  return !hasText && !hasDate && !hasAmount;
+  const hasTransport =
+    detail.transportType !== null && detail.transportType !== undefined;
+  const hasReceiptCount =
+    detail.receiptCount !== null && detail.receiptCount !== undefined;
+  return !hasText && !hasDate && !hasAmount && !hasTransport && !hasReceiptCount;
 }
 
 /** 过滤空行 */
@@ -143,6 +158,14 @@ export function normalizeExpenseDetail(
     ...detail,
     expenseDate: formatExpenseDate(detail.expenseDate),
     amount: Number(detail.amount) || 0,
+    transportType:
+      detail.transportType === null || detail.transportType === undefined
+        ? undefined
+        : Number(detail.transportType),
+    receiptCount:
+      detail.receiptCount === null || detail.receiptCount === undefined
+        ? undefined
+        : Number(detail.receiptCount),
     rowKey:
       detail.rowKey ||
       (detail.id != null ? `id_${detail.id}` : `loaded_${index}_${Date.now()}`),
@@ -159,8 +182,10 @@ export function createExpenseDetail(
     expenseDate: '',
     departure: '',
     destination: '',
+    transportType: undefined,
     amount: 0,
     description: '',
+    receiptCount: undefined,
     sortOrder,
     rowKey: `new_${Date.now()}_${Math.random().toString(36).slice(2)}`,
   };
@@ -199,6 +224,19 @@ export function useExpenseDetailColumns(readonly: boolean = false): any[] {
       title: '到达地',
       minWidth: 130,
       slots: { default: 'destination' },
+    },
+    {
+      field: 'transportType',
+      title: '交通工具',
+      minWidth: 130,
+      slots: { default: 'transportType' },
+    },
+    {
+      field: 'receiptCount',
+      title: '单据张数',
+      minWidth: 110,
+      align: 'right',
+      slots: { default: 'receiptCount' },
     },
     {
       field: 'amount',

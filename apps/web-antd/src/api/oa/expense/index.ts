@@ -12,8 +12,10 @@ export namespace ExpenseReimburseBillApi {
     expenseDate: string;
     departure: string;
     destination: string;
+    transportType?: number;
     amount: number;
     description: string;
+    receiptCount?: number;
     sortOrder?: number;
     rowKey?: string;
     createTime?: Date;
