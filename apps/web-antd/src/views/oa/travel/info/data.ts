@@ -33,7 +33,7 @@ function handleTravelDateChange(values: Record<string, any>, formApi: any) {
   }
 }
 
-export function useFormSchema(isOverseas = false): VbenFormSchema[] {
+export function useFormSchema(_isOverseas = false): VbenFormSchema[] {
   return [
     {
       fieldName: 'id',
@@ -107,7 +107,7 @@ export function useFormSchema(isOverseas = false): VbenFormSchema[] {
     {
       fieldName: 'companion',
       label: '同行人',
-      rules: isOverseas ? 'required' : undefined,
+      rules: 'required',
       component: 'Input',
       componentProps: {
         placeholder: '请输入同行人',
@@ -115,17 +115,13 @@ export function useFormSchema(isOverseas = false): VbenFormSchema[] {
     },
     {
       fieldName: 'travelerCount',
-      label: '出行人数（含本人）',
-      rules: isOverseas ? 'required' : undefined,
+      label: '人数(含本人)',
+      rules: 'required',
       component: 'InputNumber',
       componentProps: {
-        placeholder: '请输入出行人数',
+        placeholder: '请输入人数',
         min: 1,
         precision: 0,
-      },
-      dependencies: {
-        triggerFields: [''],
-        show: () => isOverseas,
       },
     },
     {

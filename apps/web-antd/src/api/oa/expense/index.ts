@@ -33,6 +33,7 @@ export namespace ExpenseReimburseBillApi {
     travelCause?: string;
     cause?: string;
     totalAmount: number;
+    travelerCount?: number;
     paymentStatus?: number;
     creator?: number;
     creatorName?: string;

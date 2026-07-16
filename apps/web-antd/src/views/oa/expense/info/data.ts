@@ -62,6 +62,17 @@ export function useFormSchema(
       },
     },
     {
+      fieldName: 'travelerCount',
+      label: '人数(含本人)',
+      rules: 'required',
+      component: 'InputNumber',
+      componentProps: {
+        placeholder: '本单据补贴领取人数',
+        min: 1,
+        precision: 0,
+      },
+    },
+    {
       fieldName: 'remark',
       label: '备注',
       component: 'Textarea',
