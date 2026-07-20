@@ -8,6 +8,8 @@ import { App, ConfigProvider, theme } from 'ant-design-vue';
 
 import { antdLocale } from '#/locales';
 
+import AppVersionBadge from '#/components/AppVersionBadge.vue';
+
 defineOptions({ name: 'App' });
 
 const { isDark } = usePreferences();
@@ -34,6 +36,7 @@ const tokenTheme = computed(() => {
   <ConfigProvider :locale="antdLocale" :theme="tokenTheme">
     <App>
       <RouterView />
+      <AppVersionBadge />
     </App>
   </ConfigProvider>
 </template>
