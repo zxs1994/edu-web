@@ -72,14 +72,14 @@ export function useGridColumns(): VxeTableGridOptions<TravelApplyBillApi.TravelA
       title: '开始日期',
       minWidth: 120,
       formatter: ({ cellValue }: { cellValue: any }) =>
-        cellValue ? String(cellValue).substring(0, 16) : '',
+        cellValue ? String(cellValue).substring(0, 10) : '',
     },
     {
       field: 'travelEndDate',
       title: '结束日期',
       minWidth: 120,
       formatter: ({ cellValue }: { cellValue: any }) =>
-        cellValue ? String(cellValue).substring(0, 16) : '',
+        cellValue ? String(cellValue).substring(0, 10) : '',
     },
     { field: 'travelDays', title: '天数', minWidth: 80 },
     { field: 'estimatedCost', title: '预计费用', minWidth: 120 },

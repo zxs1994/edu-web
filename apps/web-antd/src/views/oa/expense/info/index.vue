@@ -28,11 +28,17 @@ import { getTravelApplyBillPage } from '#/api/oa/travel';
 import { AttachmentList } from '#/components/attachment-list';
 import { BasicForm, CardContainer, finishBillFormAfterSaveSubmit, handleBillNotFoundAfterLoad } from '#/components/basic-form';
 import { ExpenseDetailList } from '#/components/expense-detail-list';
-import { filterEmptyExpenseDetails, normalizeExpenseDetail, normalizeTotalAmount } from '#/components/expense-detail-list/data';
+import { calcExpenseDetailsTotal, filterEmptyExpenseDetails, normalizeExpenseDetail } from '#/components/expense-detail-list/data';
 import { TravelApplySelectModal } from '#/views/oa/travel/components';
 import { $t } from '#/locales';
 
-import { useFormSchema } from './data';
+import {
+  calcSubsidyAmount,
+  calcTravelReimburseTotal,
+  MEAL_SUBSIDY_STANDARD,
+  TRAFFIC_SUBSIDY_STANDARD,
+  useFormSchema,
+} from './data';
 
 defineOptions({ name: 'OaExpenseReimburseBillInfo' });
 
@@ -95,7 +101,7 @@ function buildTravelCause(
 }
 
 function initFormSchema() {
-  formSchema.value = useFormSchema(travelApplyModalRef, readonly);
+  formSchema.value = useFormSchema(travelApplyModalRef, readonly, recalcTotalAmount);
 }
 
 // 获取当前单据ID（每次调用都重新计算，避免缓存问题）
@@ -134,7 +140,7 @@ async function handleSaveAndSubmit(isSubmit: boolean) {
 
     const validDetails = filterEmptyExpenseDetails(formData.value.details);
     formData.value.details = validDetails;
-    const totalAmount = normalizeTotalAmount(formValues.totalAmount, validDetails);
+    const totalAmount = calcTravelReimburseTotal(validDetails, formValues);
 
     const data = {
       ...formData.value,
@@ -249,8 +255,8 @@ async function loadData() {
     const details = (data.details || []).map((item, index) =>
       normalizeExpenseDetail(item, index),
     );
-    // 先计算总费用，确保从明细重新计算
-    const totalAmount = normalizeTotalAmount(undefined, details);
+    // 明细 + 交通/伙食补贴汇总总金额
+    const totalAmount = calcTravelReimburseTotal(details, data);
 
     formData.value = {
       ...data,
@@ -346,13 +352,37 @@ function handleUploadAttachment() {
   }
 }
 
-/**
- * 费用明细合计金额变化 → 更新表单中的报销总金额
- */
-async function handleTotalAmountChange(total: number) {
+async function recalcTotalAmount(detailTotal?: number) {
   if (!basicFormRef.value) return;
+  const vals = (await basicFormRef.value.getFormValues(
+    false,
+  )) as ExpenseReimburseBillApi.ExpenseReimburseBill;
+  const detailsSum =
+    detailTotal === undefined
+      ? calcExpenseDetailsTotal(formData.value.details)
+      : detailTotal;
+  const total =
+    Math.round(
+      (detailsSum +
+        calcSubsidyAmount(
+          vals.trafficSubsidyDays,
+          vals.trafficSubsidyPeople,
+          TRAFFIC_SUBSIDY_STANDARD,
+        ) +
+        calcSubsidyAmount(
+          vals.mealSubsidyDays,
+          vals.mealSubsidyPeople,
+          MEAL_SUBSIDY_STANDARD,
+        )) *
+        100,
+    ) / 100;
   formData.value.totalAmount = total;
   await basicFormRef.value.setFormValues({ totalAmount: total }, false);
+}
+
+/** 费用明细合计变化 → 重算总金额（含补贴） */
+async function handleTotalAmountChange(detailTotal: number) {
+  await recalcTotalAmount(detailTotal);
 }
 
 async function beforeApproval(): Promise<boolean> {

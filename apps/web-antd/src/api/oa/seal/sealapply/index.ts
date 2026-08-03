@@ -29,6 +29,7 @@ export namespace SealApplyBillApi {
     documentCount?: number;
     contractAmount?: number;
     contractParty?: string;
+    destinationUnit?: string;
     expectedUseTime?: Date;
     actualUseTime?: Date;
     expectedReturnTime?: Date;

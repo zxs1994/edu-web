@@ -162,6 +162,14 @@ export function useFormSchema(
       },
     },
     {
+      fieldName: 'destinationUnit',
+      label: '发往单位',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入发往单位',
+      },
+    },
+    {
       fieldName: 'contractAmount',
       label: '合同金额',
       component: 'InputAmount',

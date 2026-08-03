@@ -28,7 +28,7 @@ import { BasicForm, CardContainer, finishBillFormAfterSaveSubmit, handleBillNotF
 import { ItineraryDetailList } from '#/components/itinerary-detail-list';
 import { $t } from '#/locales';
 
-import { calcTravelDays, useFormSchema } from './data';
+import { useFormSchema } from './data';
 
 defineOptions({ name: 'OaTravelApplyBillInfo' });
 
@@ -213,10 +213,6 @@ async function loadData() {
 
     if (basicFormRef.value) {
       await basicFormRef.value.setFormValues(data);
-      const days = calcTravelDays(data.travelStartDate, data.travelEndDate);
-      if (days !== undefined) {
-        await basicFormRef.value.setFormValues({ travelDays: days });
-      }
     }
   } catch (error) {
     if (handleBillNotFoundAfterLoad(error, closeCurrentTab)) return;

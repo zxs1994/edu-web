@@ -2,33 +2,17 @@ import type { VbenFormSchema } from '#/adapter/form';
 
 import { message } from 'ant-design-vue';
 
-export function calcTravelDays(start: any, end: any): number | undefined {
-  if (!start || !end) return undefined;
-  const s = new Date(typeof start === 'number' ? start : String(start));
-  const e = new Date(typeof end === 'number' ? end : String(end));
-  if (isNaN(s.getTime()) || isNaN(e.getTime())) return undefined;
-  const diffMs = e.getTime() - s.getTime();
-  if (diffMs > 0) {
-    return Math.round((diffMs / (1000 * 60 * 60 * 24)) * 10) / 10;
-  }
-  return undefined;
-}
-
 function handleTravelDateChange(values: Record<string, any>, formApi: any) {
-  const days = calcTravelDays(values.travelStartDate, values.travelEndDate);
-  formApi?.setFieldValue('travelDays', days);
-
   if (values.travelStartDate && values.travelEndDate) {
     const start = new Date(String(values.travelStartDate));
     const end = new Date(String(values.travelEndDate));
     if (
       !isNaN(start.getTime()) &&
       !isNaN(end.getTime()) &&
-      end.getTime() <= start.getTime()
+      end.getTime() < start.getTime()
     ) {
-      message.error('结束日期必须晚于开始日期');
+      message.error('结束日期不能早于开始日期');
       formApi?.setFieldValue('travelEndDate', undefined);
-      formApi?.setFieldValue('travelDays', undefined);
     }
   }
 }
@@ -66,9 +50,8 @@ export function useFormSchema(_isOverseas = false): VbenFormSchema[] {
       rules: 'required',
       component: 'DatePicker',
       componentProps: {
-        showTime: true,
-        format: 'YYYY-MM-DD HH:mm',
-        valueFormat: 'YYYY-MM-DD HH:mm:ss',
+        format: 'YYYY-MM-DD',
+        valueFormat: 'YYYY-MM-DD',
         placeholder: '请选择开始日期',
       },
       dependencies: {
@@ -82,9 +65,8 @@ export function useFormSchema(_isOverseas = false): VbenFormSchema[] {
       rules: 'required',
       component: 'DatePicker',
       componentProps: {
-        showTime: true,
-        format: 'YYYY-MM-DD HH:mm',
-        valueFormat: 'YYYY-MM-DD HH:mm:ss',
+        format: 'YYYY-MM-DD',
+        valueFormat: 'YYYY-MM-DD',
         placeholder: '请选择结束日期',
       },
       dependencies: {
@@ -95,10 +77,10 @@ export function useFormSchema(_isOverseas = false): VbenFormSchema[] {
     {
       fieldName: 'travelDays',
       label: '出差天数',
+      rules: 'required',
       component: 'InputNumber',
       componentProps: {
-        placeholder: '自动计算',
-        disabled: true,
+        placeholder: '请输入出差天数',
         min: 0,
         step: 0.5,
         precision: 1,
