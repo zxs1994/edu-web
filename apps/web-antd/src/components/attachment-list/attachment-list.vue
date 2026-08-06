@@ -43,7 +43,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   modelValue: () => [],
   readonly: false,
-  maxCount: 10,
+  maxCount: 20,
   accept: '*',
   maxSize: 10,
   hideUploadButton: false,

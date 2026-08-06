@@ -104,20 +104,12 @@ export function useAssignDataPermissionFormSchema(): VbenFormSchema[] {
       fieldName: 'dataScope',
       label: '权限范围',
       componentProps: {
-        options: getDictOptions(DICT_TYPE.SYSTEM_DATA_SCOPE, 'number'),
+        // 业务仅开放「全部数据权限」
+        options: [
+          { label: '全部数据权限', value: SystemDataScopeEnum.ALL },
+        ],
       },
-    },
-    {
-      fieldName: 'dataScopeDeptIds',
-      label: '部门范围',
-      component: 'Input',
-      formItemClass: 'items-start',
-      dependencies: {
-        triggerFields: ['dataScope'],
-        show: (values) => {
-          return values.dataScope === SystemDataScopeEnum.DEPT_CUSTOM;
-        },
-      },
+      rules: z.number().default(SystemDataScopeEnum.ALL),
     },
   ];
 }

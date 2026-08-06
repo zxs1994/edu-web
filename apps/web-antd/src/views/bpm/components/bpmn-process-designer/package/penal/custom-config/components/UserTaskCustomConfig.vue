@@ -265,12 +265,10 @@ const resetCustomConfigList = () => {
     });
   }
 
-  // 是否需要签名
-  signEnable.value =
-    elExtensionElements.value.values?.find(
-      (ex: any) => ex.$type === `${prefix}:SignEnable`,
-    ) ||
-    bpmnInstances().moddle.create(`${prefix}:SignEnable`, { value: false });
+  // 签名：前端已隐藏，固定为否
+  signEnable.value = bpmnInstances().moddle.create(`${prefix}:SignEnable`, {
+    value: false,
+  });
 
   // 审批意见
   reasonRequire.value =
@@ -675,16 +673,6 @@ onMounted(async () => {
         </RadioGroup>
       </div>
     </div>
-
-    <Divider orientation="left">是否需要签名</Divider>
-    <Form.Item name="signEnable">
-      <Switch
-        v-model:checked="signEnable.value"
-        checked-children="是"
-        un-checked-children="否"
-        @change="updateElementExtensions"
-      />
-    </Form.Item>
 
     <Divider orientation="left">审批意见</Divider>
     <Form.Item name="reasonRequire">

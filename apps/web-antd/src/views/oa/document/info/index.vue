@@ -544,7 +544,7 @@ onBeforeRouteLeave(() => {
                       ref="attachmentListRef"
                       v-model="formData.attachments"
                       :readonly="isDisabled"
-                      :max-count="10"
+                      :max-count="20"
                       :max-size="20"
                       :hide-upload-button="true"
                     />

@@ -301,7 +301,7 @@ onBeforeRouteLeave(() => {
           <Alert type="warning" :closable="false" class="attachment-tips">
             <template #description>
               <div class="attachment-tips-content">
-                <p>附件要求：支持 PDF / JPG / PNG / Excel 格式，单个文件 ≤ 20MB，最多上传 10 个文件。</p>
+                <p>附件要求：支持 PDF / JPG / PNG / Excel 格式，单个文件 ≤ 20MB，最多上传 20 个文件。</p>
                 <p>对公必传：发票（PDF）、合同扫描件、报价单/比价单 | 对私必传：发票照片、消费明细（行程单/订单截图）</p>
                 <p>会议/培训类必传：通知、议程、签到表</p>
               </div>
@@ -311,7 +311,7 @@ onBeforeRouteLeave(() => {
             ref="attachmentListRef"
             v-model="formData.attachments"
             :readonly="readonly"
-            :max-count="10"
+            :max-count="20"
             :max-size="20"
             :hide-upload-button="true"
           />

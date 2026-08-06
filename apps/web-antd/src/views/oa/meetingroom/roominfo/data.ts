@@ -216,7 +216,7 @@ export function useFormSchema(): VbenFormSchema[] {
       // 附件字段占据整行，放在备注上方
       formItemClass: 'col-span-2',
       componentProps: {
-        maxCount: 10,
+        maxCount: 20,
         maxSize: 10,
         listType: 'text',
         showUploadList: {

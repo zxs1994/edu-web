@@ -375,8 +375,8 @@ async function saveConfig() {
     header: configForm.value.taskCompleteListener?.header,
     body: configForm.value.taskCompleteListener?.body,
   };
-  // 签名
-  currentNode.value.signEnable = configForm.value.signEnable;
+  // 签名：前端已隐藏，固定为否
+  currentNode.value.signEnable = false;
   // 审批意见
   currentNode.value.reasonRequire = configForm.value.reasonRequire;
   // 跳过表达式
@@ -460,8 +460,8 @@ function showUserTaskNodeConfig(node: SimpleFlowNode) {
     header: node.taskCompleteListener?.header ?? [],
     body: node.taskCompleteListener?.body ?? [],
   };
-  // 6. 签名
-  configForm.value.signEnable = node?.signEnable ?? false;
+  // 6. 签名：前端已隐藏，固定为否
+  configForm.value.signEnable = false;
   // 7. 审批意见
   configForm.value.reasonRequire = node?.reasonRequire ?? false;
   // 8. 跳过表达式
@@ -1122,17 +1122,6 @@ onMounted(() => {
                     </Col>
                   </Row>
                 </RadioGroup>
-              </FormItem>
-            </div>
-
-            <div v-if="currentNode.type === BpmNodeTypeEnum.USER_TASK_NODE">
-              <Divider content-position="left">是否需要签名</Divider>
-              <FormItem name="signEnable">
-                <Switch
-                  v-model:checked="configForm.signEnable"
-                  checked-children="是"
-                  un-checked-children="否"
-                />
               </FormItem>
             </div>
 
