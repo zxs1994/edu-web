@@ -506,7 +506,7 @@ function handleViewMore() {
     myBill: 'BpmProcessInstanceMy',
     todo: 'BpmTodoTask',
     done: 'BpmDoneTask',
-    copy: 'BpmCopyTask',
+    copy: 'BpmProcessInstanceCopy',
   };
 
   const routeName = routeNameMap[activeTab.value];

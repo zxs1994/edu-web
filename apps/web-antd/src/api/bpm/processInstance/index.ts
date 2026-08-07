@@ -113,6 +113,9 @@ export namespace BpmProcessInstanceApi {
     }[];
     taskId: string;
     billDeleted?: boolean;
+    billCode?: string;
+    companyName?: string;
+    deptName?: string;
   }
 
   /** 流程实例的打印数据响应 */

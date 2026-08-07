@@ -12,7 +12,7 @@ import { isBillDeleted } from '#/utils/bpm-bill-status';
 
 import { useGridColumns, useGridFormSchema } from './data';
 
-defineOptions({ name: 'BpmCopyTask' });
+defineOptions({ name: 'BpmProcessInstanceCopy' });
 
 /** 任务详情 */
 function handleDetail(row: BpmProcessInstanceApi.ProcessInstanceCopyRespVO) {
