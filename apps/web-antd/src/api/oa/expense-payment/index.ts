@@ -96,3 +96,13 @@ export function exportExpensePaymentBill(params: Record<string, any>) {
     params,
   });
 }
+
+export function exportExpensePaymentBillDetail(
+  params: { billType: string; id: number },
+  config?: { responseReturn?: 'body' | 'raw' },
+) {
+  return requestClient.download('/oa/expense-payment-bill/export-detail-excel', {
+    params,
+    ...config,
+  });
+}
