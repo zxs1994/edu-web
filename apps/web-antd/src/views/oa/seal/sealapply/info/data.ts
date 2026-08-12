@@ -201,9 +201,8 @@ export function useFormSchema(
       rules: 'required',
       component: 'DatePicker',
       componentProps: {
-        showTime: true,
-        format: 'YYYY-MM-DD HH:mm:ss',
-        valueFormat: 'x',
+        format: 'YYYY-MM-DD',
+        valueFormat: 'YYYY-MM-DD',
         placeholder: '请选择预计用章时间',
       },
       dependencies: {
@@ -248,9 +247,8 @@ export function useFormSchema(
       label: '预计归还时间',
       component: 'DatePicker',
       componentProps: {
-        showTime: true,
-        format: 'YYYY-MM-DD HH:mm:ss',
-        valueFormat: 'x',
+        format: 'YYYY-MM-DD',
+        valueFormat: 'YYYY-MM-DD',
         placeholder: '请选择预计归还时间',
       },
       dependencies: {
@@ -276,9 +274,8 @@ export function useFormSchema(
       label: '实际归还时间',
       component: 'DatePicker',
       componentProps: {
-        showTime: true,
-        format: 'YYYY-MM-DD HH:mm:ss',
-        valueFormat: 'x',
+        format: 'YYYY-MM-DD',
+        valueFormat: 'YYYY-MM-DD',
         placeholder: '请选择实际归还时间',
         // 当canReturnEdit为true时，即使在只读模式下也可以编辑
         disabled: () => {

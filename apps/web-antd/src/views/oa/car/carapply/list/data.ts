@@ -121,7 +121,7 @@ export function useGridColumns(): VxeTableGridOptions<CarApplyBillApi.CarApplyBi
       field: 'goTime',
       title: '出车时间',
       minWidth: 140,
-      formatter: 'formatDateTime',
+      formatter: 'formatDate',
       headerAlign: 'center',
       align: 'left',
     },

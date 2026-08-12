@@ -129,10 +129,9 @@ export function useGridFormSchema(modalRef?: any): VbenFormSchema[] {
       label: '预计用章时间',
       component: 'RangePicker',
       componentProps: {
-        ...getRangePickerDefaultProps(),
-        showTime: true,
-        format: 'YYYY-MM-DD HH:mm:ss',
-        valueFormat: 'YYYY-MM-DD HH:mm:ss',
+        format: 'YYYY-MM-DD',
+        valueFormat: 'YYYY-MM-DD',
+        placeholder: ['开始日期', '结束日期'],
       },
     },
     {
@@ -202,7 +201,7 @@ export function useGridColumns(): VxeTableGridOptions<SealApplyBillApi.SealApply
       field: 'expectedUseTime',
       title: '预计用章时间',
       minWidth: 140,
-      formatter: 'formatDateTime',
+      formatter: 'formatDate',
     },
     {
       field: 'expectedReturnTime',

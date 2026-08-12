@@ -175,7 +175,7 @@ watch(
             class="cell-date-picker"
             placeholder="请选择日期"
             format="YYYY-MM-DD"
-            value-format="YYYY-MM-DD HH:mm:ss"
+            value-format="YYYY-MM-DD"
             @change="(val: any) => updateField(row, 'startDate', String(val || ''))"
           />
           <span v-else>{{ formatItineraryDate(row.startDate) }}</span>
@@ -189,7 +189,7 @@ watch(
             class="cell-date-picker"
             placeholder="请选择日期"
             format="YYYY-MM-DD"
-            value-format="YYYY-MM-DD HH:mm:ss"
+            value-format="YYYY-MM-DD"
             @change="(val: any) => updateField(row, 'endDate', String(val || ''))"
           />
           <span v-else>{{ formatItineraryDate(row.endDate) }}</span>

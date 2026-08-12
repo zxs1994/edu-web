@@ -94,10 +94,9 @@ export function useGridFormSchema(): VbenFormSchema[] {
       label: '会议开始时间',
       component: 'RangePicker',
       componentProps: {
-        ...getRangePickerDefaultProps(),
-        showTime: true,
-        format: 'YYYY-MM-DD HH:mm:ss',
-        valueFormat: 'YYYY-MM-DD HH:mm:ss',
+        format: 'YYYY-MM-DD',
+        valueFormat: 'YYYY-MM-DD',
+        placeholder: ['开始日期', '结束日期'],
       },
     },
     {
@@ -179,7 +178,7 @@ export function useGridColumns(): VxeTableGridOptions<MeetingRoomBookingApi.Meet
       field: 'meetingStartTime',
       title: '会议开始时间',
       minWidth: 160,
-      formatter: 'formatDateTime',
+      formatter: 'formatDate',
     },
     {
       field: 'meetingEndTime',

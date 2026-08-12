@@ -60,9 +60,8 @@ export function useFormSchema(
       rules: 'required',
       component: 'DatePicker',
       componentProps: {
-        showTime: true,
-        format: 'YYYY-MM-DD HH:mm:ss',
-        valueFormat: 'x',
+        format: 'YYYY-MM-DD',
+        valueFormat: 'YYYY-MM-DD',
         placeholder: '请选择出车时间',
       },
       dependencies: {
@@ -86,9 +85,8 @@ export function useFormSchema(
       rules: 'required',
       component: 'DatePicker',
       componentProps: {
-        showTime: true,
-        format: 'YYYY-MM-DD HH:mm:ss',
-        valueFormat: 'x',
+        format: 'YYYY-MM-DD',
+        valueFormat: 'YYYY-MM-DD',
         placeholder: '请选择回车时间',
       },
       dependencies: {

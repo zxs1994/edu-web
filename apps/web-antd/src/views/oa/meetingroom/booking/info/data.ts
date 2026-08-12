@@ -94,12 +94,8 @@ export function useFormSchema(
       rules: 'required',
       component: 'DatePicker',
       componentProps: {
-        showTime: {
-          format: 'HH:mm',
-          minuteStep: 30, // 限制只能选择整点或半点
-        },
-        format: 'YYYY-MM-DD HH:mm',
-        valueFormat: 'x', // 使用时间戳格式
+        format: 'YYYY-MM-DD',
+        valueFormat: 'YYYY-MM-DD',
         placeholder: '请选择会议开始时间',
         disabledDate: (current: any) => {
           // 禁用过去的日期
@@ -126,12 +122,8 @@ export function useFormSchema(
       rules: 'required',
       component: 'DatePicker',
       componentProps: {
-        showTime: {
-          format: 'HH:mm',
-          minuteStep: 30, // 限制只能选择整点或半点
-        },
-        format: 'YYYY-MM-DD HH:mm',
-        valueFormat: 'x', // 使用时间戳格式
+        format: 'YYYY-MM-DD',
+        valueFormat: 'YYYY-MM-DD',
         placeholder: '请选择会议结束时间',
         disabledDate: (current: any) => {
           // 禁用过去的日期

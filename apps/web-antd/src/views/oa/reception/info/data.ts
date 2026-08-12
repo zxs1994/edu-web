@@ -29,9 +29,8 @@ export function useFormSchema(): VbenFormSchema[] {
       rules: 'required',
       component: 'DatePicker',
       componentProps: {
-        showTime: true,
-        format: 'YYYY-MM-DD HH:mm',
-        valueFormat: 'YYYY-MM-DD HH:mm:ss',
+        format: 'YYYY-MM-DD',
+        valueFormat: 'YYYY-MM-DD',
         class: 'w-full',
         placeholder: '请选择就餐时间',
       },
