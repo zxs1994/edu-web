@@ -7,7 +7,6 @@ import type { BpmProcessInstanceApi } from '#/api/bpm/processInstance';
 import { computed, nextTick, reactive, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { useVbenModal } from '@vben/common-ui';
 import {
   BpmCandidateStrategyEnum,
   BpmModelFormType,
@@ -29,7 +28,6 @@ import {
   Card,
   Form,
   FormItem,
-  Image,
   message,
   Popover,
   Select,
@@ -48,7 +46,6 @@ import * as UserApi from '#/api/system/user';
 import { setConfAndFields2 } from '#/components/form-create';
 import { useFooterLeft } from '#/utils/useFooterLeft';
 
-import Signature from './signature.vue';
 import ProcessInstanceTimeline from './time-line.vue';
 
 defineOptions({ name: 'ProcessInstanceBtnContainer' });
@@ -65,16 +62,6 @@ const props = defineProps<{
   beforeApproval?: () => Promise<boolean>; // 审批前的业务表单处理函数
 }>(); // 当前登录的编号
 const emit = defineEmits(['success']);
-
-const [SignatureModal, signatureModalApi] = useVbenModal({
-  connectedComponent: Signature,
-  destroyOnClose: true,
-});
-
-/** 创建流程表达式 */
-function openSignatureModal() {
-  signatureModalApi.setData(null).open();
-}
 
 const router = useRouter(); // 路由
 const userStore = useUserStore();
@@ -103,7 +90,6 @@ const nodeTypeName = ref('审批'); // 节点类型名称
 // 审批通过意见表单
 const reasonRequire = ref();
 const approveFormRef = ref<FormInstance>();
-const approveSignFormRef = ref();
 const nextAssigneesActivityNode = ref<BpmProcessInstanceApi.ApprovalNodeInfo[]>(
   [],
 ); // 下一个审批节点信息
@@ -399,10 +385,7 @@ async function handleAudit(pass: boolean, formRef: FormInstance | undefined) {
         variables, // 审批通过, 把修改的字段值赋于流程实例变量
         nextAssignees: approveReasonForm.nextAssignees, // 下个自选节点选择的审批人信息
       } as any;
-      // 签名
-      if (runningTask.value.signEnable) {
-        data.signPicUrl = approveReasonForm.signPicUrl;
-      }
+      // 签名已禁用，不再提交 signPicUrl
       // 多表单处理，并且有额外的 approveForm 表单，需要校验 + 拼接到 data 表单里提交
       // TODO 芋艿 任务有多表单这里要如何处理，会和可编辑的字段冲突
       const formCreateApi = approveFormFApi.value;
@@ -718,12 +701,6 @@ function getUpdatedProcessInstanceVariables() {
   return variables;
 }
 
-/** 处理签名完成 */
-function handleSignFinish(url: string) {
-  approveReasonForm.signPicUrl = url;
-  approveFormRef.value?.validateFields(['signPicUrl']);
-}
-
 /** 处理弹窗可见性 */
 function handlePopoverVisible(visible: boolean) {
   if (!visible) {
@@ -796,24 +773,27 @@ defineExpose({ loadTodoTask });
                   />
                 </div>
               </FormItem>
-              <FormItem
-                v-if="runningTask.signEnable"
-                label="签名"
-                name="signPicUrl"
-                ref="approveSignFormRef"
-              >
-                <Button @click="openSignatureModal" type="primary">
-                  {{ approveReasonForm.signPicUrl ? '重新签名' : '点击签名' }}
-                </Button>
+              <!-- 签名已禁用，永远不展示 -->
+              <!--
+                <FormItem
+                  v-if="runningTask.signEnable"
+                  label="签名"
+                  name="signPicUrl"
+                  ref="approveSignFormRef"
+                >
+                  <Button @click="openSignatureModal" type="primary">
+                    {{ approveReasonForm.signPicUrl ? '重新签名' : '点击签名' }}
+                  </Button>
 
-                <div class="mt-2">
-                  <Image
-                    class="float-left h-40 w-80"
-                    v-if="approveReasonForm.signPicUrl"
-                    :src="approveReasonForm.signPicUrl"
-                  />
-                </div>
-              </FormItem>
+                  <div class="mt-2">
+                    <Image
+                      class="float-left h-40 w-80"
+                      v-if="approveReasonForm.signPicUrl"
+                      :src="approveReasonForm.signPicUrl"
+                    />
+                  </div>
+                </FormItem>
+              -->
 
               <FormItem :label="approveOpinionLabel" name="reason">
                 <Textarea
@@ -1382,9 +1362,6 @@ defineExpose({ loadTodoTask });
       <Button @click="closeCurrentTab()"> 关闭 </Button>
     </Space>
   </div>
-
-  <!-- 签名弹窗 -->
-  <SignatureModal @success="handleSignFinish" />
 </template>
 
 <style lang="scss" scoped>
