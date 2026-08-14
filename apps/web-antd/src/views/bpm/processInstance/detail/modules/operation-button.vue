@@ -23,15 +23,12 @@ import { isEmpty } from '@vben/utils';
 
 import FormCreate from '@form-create/ant-design-vue';
 import {
-  Alert,
   Button,
   Card,
   Form,
   FormItem,
   message,
   Popover,
-  Select,
-  SelectOption,
   Space,
   Textarea,
 } from 'ant-design-vue';
@@ -41,7 +38,10 @@ import {
   getNextApprovalNodes,
 } from '#/api/bpm/processInstance';
 import * as TaskApi from '#/api/bpm/task';
-import { getIncomingDocumentBill, saveIncomingDocumentBill } from '#/api/oa/incoming';
+import {
+  getIncomingDocumentBill,
+  saveIncomingDocumentBill,
+} from '#/api/oa/incoming';
 import * as UserApi from '#/api/system/user';
 import { setConfAndFields2 } from '#/components/form-create';
 import { useFooterLeft } from '#/utils/useFooterLeft';
@@ -53,13 +53,13 @@ defineOptions({ name: 'ProcessInstanceBtnContainer' });
 // 定义 success 事件，用于操作成功后的回调
 
 const props = defineProps<{
+  beforeApproval?: () => Promise<boolean>; // 审批前的业务表单处理函数
   normalForm: any; // 流程表单 formCreate
   normalFormApi: any; // 流程表单 formCreate Api
   processDefinition: any; // 流程定义信息
   processInstance: any; // 流程实例信息
   userOptions: UserApi.SystemUserApi.User[];
   writableFields: string[]; // 流程表单可以编辑的字段
-  beforeApproval?: () => Promise<boolean>; // 审批前的业务表单处理函数
 }>(); // 当前登录的编号
 const emit = defineEmits(['success']);
 
@@ -118,9 +118,10 @@ const approveReasonRule: Record<string, any> = computed(() => {
         trigger: 'blur',
       },
     ],
-    signPicUrl: [
-      { required: true, message: '签名不能为空', trigger: 'change' },
-    ],
+    // 签名已禁用，不再校验签名必填
+    // signPicUrl: [
+    //   { required: true, message: '签名不能为空', trigger: 'change' },
+    // ],
     nextAssignees: [
       { required: true, message: '审批人不能为空', trigger: 'blur' },
     ],
