@@ -3,6 +3,8 @@ import type { GridLayoutItem, LayoutConfig } from '../types/layout';
 
 import { onMounted, ref } from 'vue';
 
+import { useAccess } from '@vben/access';
+
 import { Empty, Spin } from 'ant-design-vue';
 import { GridItem, GridLayout } from 'grid-layout-plus';
 
@@ -15,6 +17,57 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const { hasAccessByCodes } = useAccess();
+
+const OVERVIEW_CODE = 'edu_info_overview';
+const OVERVIEW_PERMISSION = 'edu:dashboard:overview';
+
+/** 自带背景的组件，不再套白色卡片壳，避免底部露白 */
+const PLAIN_COMPONENT_CODES = new Set([
+  OVERVIEW_CODE,
+  'workbench_welcome',
+]);
+
+function isPlainComponent(code: string) {
+  return PLAIN_COMPONENT_CODES.has(code);
+}
+
+function overlapsX(
+  item: Pick<GridLayoutItem, 'x' | 'w'>,
+  x: number,
+  w: number,
+) {
+  return item.x < x + w && item.x + item.w > x;
+}
+
+/**
+ * 无权限时移除信息总览
+ */
+function filterUnauthorizedOverview(items: GridLayoutItem[]): GridLayoutItem[] {
+  if (hasAccessByCodes([OVERVIEW_PERMISSION])) {
+    return items;
+  }
+  return items.filter((item) => item.componentCode !== OVERVIEW_CODE);
+}
+
+/** 按碰撞上收，消掉设计器/删组件后留下的纵向空洞 */
+function compactColumns(items: GridLayoutItem[]): GridLayoutItem[] {
+  if (items.length === 0) return items;
+
+  const sorted = [...items].sort((a, b) => a.y - b.y || a.x - b.x);
+  const placed: GridLayoutItem[] = [];
+
+  for (const item of sorted) {
+    let targetY = 0;
+    for (const other of placed) {
+      if (overlapsX(item, other.x, other.w)) {
+        targetY = Math.max(targetY, other.y + other.h);
+      }
+    }
+    placed.push({ ...item, y: targetY });
+  }
+  return placed;
+}
 
 const loading = ref(false);
 const layout = ref<GridLayoutItem[]>([]);
@@ -37,7 +90,7 @@ async function loadLayout() {
     const layoutItems = await getHomePageLayoutList(props.pageId);
 
     // 转换为 GridLayoutItem 格式
-    layout.value = layoutItems.map((item) => ({
+    const mapped = layoutItems.map((item) => ({
       i: `item-${item.id}`,
       x: item.positionX,
       y: item.positionY,
@@ -49,6 +102,13 @@ async function loadLayout() {
       isResizable: false,
       static: true, // 静态模式
     }));
+
+    // 尊重设计器布局；仅无权限时移除总览并上收空洞
+    let items = filterUnauthorizedOverview(mapped);
+    if (!hasAccessByCodes([OVERVIEW_PERMISSION])) {
+      items = compactColumns(items);
+    }
+    layout.value = items;
 
     // 尝试从第一个组件的配置中恢复全局配置（临时方案）
     const firstItem = layoutItems[0];
@@ -151,7 +211,12 @@ onMounted(() => {
           class="layout-item"
         >
           <div
-            class="layout-item-content h-full w-full overflow-hidden rounded bg-white shadow-sm"
+            class="layout-item-content h-full w-full overflow-hidden"
+            :class="
+              isPlainComponent(item.componentCode)
+                ? 'layout-item-content--plain'
+                : 'rounded bg-white shadow-sm'
+            "
             style="height: 100%"
           >
             <ComponentWrapper
@@ -192,8 +257,18 @@ onMounted(() => {
   padding: 0;
 }
 
+.layout-item-content--plain {
+  overflow: visible !important;
+  background: transparent;
+  box-shadow: none;
+}
+
 /* 强制所有子组件铺满卡片高度 */
 :deep(.layout-item-content > *) {
+  height: 100% !important;
+}
+
+:deep(.layout-item-content--plain > *) {
   height: 100% !important;
 }
 

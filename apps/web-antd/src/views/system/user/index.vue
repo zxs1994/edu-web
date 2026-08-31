@@ -8,7 +8,7 @@ import type { SystemUserApi } from '#/api/system/user';
 import { onMounted, ref } from 'vue';
 
 import { confirm, Page, useVbenModal } from '@vben/common-ui';
-import { DICT_TYPE } from '@vben/constants';
+import { CommonStatusEnum, DICT_TYPE } from '@vben/constants';
 import { getDictLabel } from '@vben/hooks';
 import { downloadFileFromBlobPart, isEmpty } from '@vben/utils';
 
@@ -66,8 +66,8 @@ async function handleExport() {
 
 /** 选择部门 */
 const searchDeptId = ref<number | undefined>(undefined);
-async function handleDeptSelect(dept: SystemDeptApi.Dept) {
-  searchDeptId.value = dept.id;
+async function handleDeptSelect(dept?: SystemDeptApi.Dept) {
+  searchDeptId.value = dept?.id;
   handleRefresh();
 }
 
@@ -88,6 +88,10 @@ function handleEdit(row: SystemUserApi.User) {
 
 /** 删除用户 */
 async function handleDelete(row: SystemUserApi.User) {
+  if (isSuperAdminUser(row)) {
+    message.warning('不能删除超级管理员用户');
+    return;
+  }
   const hideLoading = message.loading({
     content: $t('ui.actionMessage.deleting', [row.username]),
     duration: 0,
@@ -103,6 +107,11 @@ async function handleDelete(row: SystemUserApi.User) {
 
 /** 批量删除用户 */
 async function handleDeleteBatch() {
+  const rows = gridApi.grid.getCheckboxRecords() as SystemUserApi.User[];
+  if (rows.some((row) => isSuperAdminUser(row))) {
+    message.warning('选中用户包含超级管理员，不能删除');
+    return;
+  }
   await confirm($t('ui.actionMessage.deleteBatchConfirm'));
   const hideLoading = message.loading({
     content: $t('ui.actionMessage.deletingBatch'),
@@ -134,7 +143,40 @@ function handleResetPassword(row: SystemUserApi.User) {
 
 /** 分配角色 */
 function handleAssignRole(row: SystemUserApi.User) {
+  if (isFixedIdentityUser(row)) {
+    message.warning('学生/教培账号不允许重新分配角色');
+    return;
+  }
   assignRoleModalApi.setData(row).open();
+}
+
+/** 是否为学生或教培身份账号（禁止分配角色） */
+function isFixedIdentityUser(row: SystemUserApi.User) {
+  const roleIds = (row.roleIds ?? []).map(Number);
+  if (roleIds.length === 0 || roleList.value.length === 0) {
+    return false;
+  }
+  return roleList.value.some(
+    (role) =>
+      roleIds.includes(Number(role.id)) &&
+      (role.code === 'student' || role.code === 'teacher'),
+  );
+}
+
+/** 是否为超级管理员（禁止删除/禁用） */
+function isSuperAdminUser(row: SystemUserApi.User) {
+  // 约定账号兜底：角色列表未加载完成时也能拦
+  if (row.username === 'admin') {
+    return true;
+  }
+  const roleIds = (row.roleIds ?? []).map(Number);
+  if (roleIds.length === 0 || roleList.value.length === 0) {
+    return false;
+  }
+  return roleList.value.some(
+    (role) =>
+      roleIds.includes(Number(role.id)) && role.code === 'super_admin',
+  );
 }
 
 /** 更新用户状态 */
@@ -142,6 +184,13 @@ async function handleStatusChange(
   newStatus: number,
   row: SystemUserApi.User,
 ): Promise<boolean | undefined> {
+  if (
+    newStatus === CommonStatusEnum.DISABLE &&
+    isSuperAdminUser(row)
+  ) {
+    message.warning('不能禁用超级管理员用户');
+    return false;
+  }
   return new Promise((resolve, reject) => {
     confirm({
       content: `你要将${row.username}的状态切换为【${getDictLabel(DICT_TYPE.COMMON_STATUS, newStatus)}】吗？`,
@@ -276,10 +325,18 @@ const [Grid, gridApi] = useVbenVxeGrid({
                   danger: true,
                   icon: ACTION_ICON.DELETE,
                   auth: ['system:user:delete'],
-                  popConfirm: {
-                    title: $t('ui.actionMessage.deleteConfirm', [row.username]),
-                    confirm: handleDelete.bind(null, row),
-                  },
+                  disabled: isSuperAdminUser(row),
+                  tooltip: isSuperAdminUser(row)
+                    ? '不能删除超级管理员用户'
+                    : undefined,
+                  popConfirm: isSuperAdminUser(row)
+                    ? undefined
+                    : {
+                        title: $t('ui.actionMessage.deleteConfirm', [
+                          row.username,
+                        ]),
+                        confirm: handleDelete.bind(null, row),
+                      },
                 },
               ]"
               :drop-down-actions="[
@@ -287,6 +344,10 @@ const [Grid, gridApi] = useVbenVxeGrid({
                   label: '分配角色',
                   type: 'link',
                   auth: ['system:permission:assign-user-role'],
+                  disabled: isFixedIdentityUser(row),
+                  tooltip: isFixedIdentityUser(row)
+                    ? '学生/教培账号不允许重新分配角色'
+                    : undefined,
                   onClick: handleAssignRole.bind(null, row),
                 },
                 {

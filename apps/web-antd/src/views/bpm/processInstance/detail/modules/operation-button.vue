@@ -38,10 +38,6 @@ import {
   getNextApprovalNodes,
 } from '#/api/bpm/processInstance';
 import * as TaskApi from '#/api/bpm/task';
-import {
-  getIncomingDocumentBill,
-  saveIncomingDocumentBill,
-} from '#/api/oa/incoming';
 import * as UserApi from '#/api/system/user';
 import { setConfAndFields2 } from '#/components/form-create';
 import { useFooterLeft } from '#/utils/useFooterLeft';
@@ -364,21 +360,6 @@ async function handleAudit(pass: boolean, formRef: FormInstance | undefined) {
       const nextAssigneesValid = validateNextAssignees();
       if (!nextAssigneesValid) return;
       const variables = getUpdatedProcessInstanceVariables();
-      // 公文收文最后一级审批：将批示同步回写到业务单据字段 leaderInstruction
-      if (
-        props.processDefinition?.key === 'oa_incoming_document_bill' &&
-        isFinalApproveNode.value &&
-        approveReasonForm.reason?.trim()
-      ) {
-        const billId = Number(props.processInstance?.businessKey);
-        if (!Number.isNaN(billId) && billId > 0) {
-          const bill = await getIncomingDocumentBill(billId);
-          await saveIncomingDocumentBill({
-            ...bill,
-            leaderInstruction: approveReasonForm.reason.trim(),
-          });
-        }
-      }
       // 审批通过数据
       const data = {
         id: runningTask.value.id,

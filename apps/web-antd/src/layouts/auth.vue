@@ -42,7 +42,7 @@ const currentYear = new Date().getFullYear();
             :alt="appName"
             :src="logoSrc"
             class="mr-3 drop-shadow-lg"
-            width="48"
+            width="30"
           />
           <div>
             <h1 class="text-xl font-bold text-white">{{ appName }}</h1>

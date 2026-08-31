@@ -5,6 +5,7 @@ import { computed, watch } from 'vue';
 
 import { DICT_TYPE } from '@vben/constants';
 import { getDictLabel } from '@vben/hooks';
+import { IconifyIcon } from '@vben/icons';
 
 import { Modal, Tag } from 'ant-design-vue';
 
@@ -94,14 +95,14 @@ watch(
       <div class="mb-4 rounded-lg bg-gray-50 p-3">
         <div class="grid grid-cols-2 gap-2 text-sm">
           <div class="flex items-center gap-2 text-gray-600">
-            <iconify-icon icon="carbon:user" class="text-base" />
+            <IconifyIcon icon="carbon:user" class="text-base" />
             <span>发布人:</span>
             <span class="text-gray-900">{{
               notice.creatorName || notice.creator || '-'
             }}</span>
           </div>
           <div class="flex items-center gap-2 text-gray-600">
-            <iconify-icon icon="carbon:time" class="text-base" />
+            <IconifyIcon icon="carbon:time" class="text-base" />
             <span>发布时间:</span>
             <span class="text-gray-900">{{
               formatDateTime(notice.createTime)

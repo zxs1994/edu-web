@@ -84,12 +84,24 @@ class PreferenceManager {
     this.initialPreferences = merge({}, overrides, defaultPreferences);
 
     // 加载缓存的偏好设置并与初始配置合并
+    // 注意：defu 左侧优先，因此 cachedPreferences 会覆盖 overrides 中的同名项
     const cachedPreferences = this.loadFromCache() || {};
     const mergedPreference = merge(
       {},
       cachedPreferences,
       this.initialPreferences,
     );
+
+    // 应用名/公司名以项目 overrides（来自 VITE_APP_TITLE）为准，避免旧缓存一直显示旧标题
+    if (overrides.app?.name) {
+      mergedPreference.app.name = overrides.app.name;
+    }
+    if (overrides.copyright?.companyName) {
+      mergedPreference.copyright = {
+        ...mergedPreference.copyright,
+        companyName: overrides.copyright.companyName,
+      };
+    }
 
     // 执行版本迁移，强制覆盖旧缓存中的默认值
     const cachedVersion =

@@ -77,8 +77,14 @@ const [Form, formApi] = useVbenForm({
 async function handleSubmit(values: Recordable<any>) {
   try {
     formApi.setLoading(true);
-    // 提交表单
-    await updateUserProfile(values as SystemUserProfileApi.UpdateProfileReqVO);
+    // 仅提交资料字段，避免把 profile 其它字段一并提交
+    await updateUserProfile({
+      nickname: values.nickname,
+      mobile: values.mobile,
+      email: values.email,
+      sex: values.sex,
+      avatar: values.avatar,
+    });
     // 关闭并提示
     emit('success');
     message.success($t('ui.actionMessage.operationSuccess'));
@@ -94,7 +100,13 @@ watch(
   () => props.profile,
   (newProfile) => {
     if (newProfile) {
-      formApi.setValues(newProfile);
+      formApi.setValues({
+        nickname: newProfile.nickname,
+        mobile: newProfile.mobile,
+        email: newProfile.email,
+        sex: newProfile.sex,
+        avatar: newProfile.avatar,
+      });
     }
   },
   { immediate: true },

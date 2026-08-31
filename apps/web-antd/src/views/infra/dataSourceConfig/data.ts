@@ -32,10 +32,10 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'username',
-      label: '用户名',
+      label: '用户账号',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入用户名',
+        placeholder: '请输入用户账号',
       },
       rules: 'required',
     },
@@ -73,7 +73,7 @@ export function useGridColumns(): VxeTableGridOptions['columns'] {
     },
     {
       field: 'username',
-      title: '用户名',
+      title: '用户账号',
       minWidth: 120,
     },
     {

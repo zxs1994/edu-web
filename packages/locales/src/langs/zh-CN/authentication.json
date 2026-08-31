@@ -1,6 +1,6 @@
 {
   "welcomeBack": "欢迎登录",
-  "pageTitle": "中国引航协会办公自动化平台",
+  "pageTitle": "智能航海班务系统",
   "pageDesc": "高效协同 · 智慧办公 · 数字引航",
   "loginSuccess": "登录成功",
   "loginSuccessDesc": "欢迎回来",
@@ -10,7 +10,7 @@
   "password": "密码",
   "nickname": "昵称",
   "tenant": "租户",
-  "usernameTip": "请输入用户名",
+  "usernameTip": "请输入用户账号",
   "passwordTip": "请输入密码",
   "nicknameTip": "请输入昵称",
   "tenantTip": "请选择租户",

@@ -61,6 +61,8 @@ setupVbenVxeTable({
         },
         customConfig: {
           mode: 'modal',
+          // 开启后需配合表格唯一 id，列显隐/宽度/冻结/排序才会写入 localStorage
+          storage: true,
         },
         proxyConfig: {
           autoLoad: true,

@@ -99,7 +99,8 @@ const [Grid, gridApi] = useVbenVxeGrid({
       isHover: true,
     },
     toolbarConfig: {
-      refresh: { code: 'query' },
+      refresh: true,
+      refreshOptions: { code: 'query' },
       search: true,
     },
   } as VxeTableGridOptions<EmployeeResignationBillApi.EmployeeResignationBill>,

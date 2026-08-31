@@ -64,11 +64,11 @@ export function useFormSchema(): VbenFormSchema[] {
       rules: 'mobile',
     },
     {
-      label: '用户名称',
+      label: '用户账号',
       fieldName: 'username',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入用户名称',
+        placeholder: '请输入用户账号',
       },
       rules: 'required',
       dependencies: {

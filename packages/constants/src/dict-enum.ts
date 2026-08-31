@@ -240,6 +240,19 @@ const HRM_DICT = {
   HRM_LEAVE_TYPE: 'hrm_leave_type', // 请假类型
 } as const;
 
+/** ========== EDU - 教培模块 ========== */
+const EDU_DICT = {
+  EDU_STUDENT_STATUS: 'edu_student_status', // 学生在校状态
+  EDU_TEACHER_TITLE: 'edu_teacher_title', // 教培职称/职级
+  EDU_TEACHER_REWARD: 'edu_teacher_reward', // 教培报酬/奖励标准
+  EDU_ACTIVITY_TYPE: 'edu_activity_type', // 专项活动类型
+  EDU_ACTIVITY_CYCLE: 'edu_activity_cycle', // 专项活动周期
+  EDU_FEE_MODE: 'edu_fee_mode', // 专项活动计费模式
+  EDU_FEE_SIDE: 'edu_fee_side', // 专项活动费用侧
+  EDU_FEE_TYPE: 'edu_fee_type', // 专项活动费用类型
+  EDU_FEE_CURRENCY: 'edu_fee_currency', // 专项活动费用币种
+} as const;
+
 /** 字典类型枚举 - 统一导出 */
 const DICT_TYPE = {
   ...AI_DICT,
@@ -256,6 +269,7 @@ const DICT_TYPE = {
   ...COMMON_DICT,
   ...OA_DICT,
   ...HRM_DICT,
+  ...EDU_DICT,
 } as const;
 
 export { DICT_TYPE };

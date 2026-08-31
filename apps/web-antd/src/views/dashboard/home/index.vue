@@ -49,11 +49,7 @@ onMounted(() => {
 
 <template>
   <Page
-    :content-class="{
-      'p-0!': true,
-      'm-0!': true,
-    }"
-    :content-style="{ height: 'calc(100vh - 64px)', padding: '0', margin: '0' }"
+    :content-style="{ height: 'calc(100vh - 64px)'}"
   >
     <Spin :spinning="loading" tip="加载首页配置...">
       <div v-if="previewPageId" class="preview-banner">

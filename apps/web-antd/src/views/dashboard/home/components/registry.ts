@@ -19,6 +19,7 @@ import WorkbenchSchedule from './schedule/workbench-schedule.vue';
 import AnalyticsVisitsData from './statistics/analytics-visits-data.vue';
 // 统计卡片组件
 import AnalyticsVisits from './statistics/analytics-visits.vue';
+import EduInfoOverview from './statistics/edu-info-overview.vue';
 // 任务列表组件
 import WorkbenchTaskList from './taskLists/workbench-task-list.vue';
 // 欢迎组件
@@ -73,6 +74,13 @@ registerComponent({
   component: AnalyticsVisits,
   name: '访问统计',
   description: '展示网站访问数据统计',
+});
+
+registerComponent({
+  code: 'edu_info_overview',
+  component: EduInfoOverview,
+  name: '信息总览',
+  description: '展示学员数、师资人数、总课次、本月报名数',
 });
 
 registerComponent({

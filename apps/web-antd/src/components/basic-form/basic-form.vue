@@ -513,6 +513,7 @@ defineExpose({
             @re-create="reCreateForm"
             @delete="deleteForm"
             :process-status="props.headerData.processStatus"
+            :process-instance-id="props.headerData.processInstanceId"
             :bill-code="props.headerData.billCode"
             :creator="props.headerData.creator"
             :hide-submit="props.hideSubmit"

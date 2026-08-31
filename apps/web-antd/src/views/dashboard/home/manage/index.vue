@@ -85,8 +85,8 @@ async function handleSetMyHome(row: SystemHomePageApi.HomePage) {
 /** 进入设计器 */
 function handleDesign(row: SystemHomePageApi.HomePage) {
   router.push({
-    path: '/workspace/home/designer',
-    query: { pageId: row.id },
+    name: 'HomeDesigner',
+    query: { pageId: String(row.id) },
   });
 }
 
@@ -118,7 +118,8 @@ const [Grid, gridApi] = useVbenVxeGrid({
       isHover: true,
     },
     toolbarConfig: {
-      refresh: { code: 'query' },
+      refresh: true,
+      refreshOptions: { code: 'query' },
       search: true,
     },
     proxyConfig: {

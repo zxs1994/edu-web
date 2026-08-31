@@ -71,6 +71,11 @@ const props = defineProps({
     type: [String, Number] as any,
     default: undefined,
   },
+  /** 流程实例ID（有实例且审批中才显示撤回） */
+  processInstanceId: {
+    type: String,
+    default: '',
+  },
 });
 const emit = defineEmits([
   'close',
@@ -193,14 +198,17 @@ const confirmRevoke = async () => {
     >
       {{ $t('common.save') }}
     </Button>
-    <!-- 【撤回】按钮 - 已禁用 -->
-    <!--
+    <!-- 【撤回】按钮：制单人 + 审批中 + 已有流程实例 -->
     <Popover
       v-model:open="revokePopoverVisible"
       placement="top"
       :overlay-style="{ minWidth: '400px' }"
       trigger="click"
-      v-if="false"
+      v-if="
+        processInstanceId &&
+        processStatus === BpmProcessInstanceStatus.RUNNING &&
+        isCreator
+      "
     >
       <Button type="primary" @click="openRevokePopover">
         {{ $t('common.revoke') }}
@@ -230,7 +238,6 @@ const confirmRevoke = async () => {
         </div>
       </template>
     </Popover>
-    -->
     <!-- 【删除】按钮 -->
     <Popover
       v-model:open="deletePopoverVisible"

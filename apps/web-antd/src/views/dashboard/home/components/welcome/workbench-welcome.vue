@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { computed, onMounted, ref } from 'vue';
 
+import { IconifyIcon } from '@vben/icons';
 import { useUserStore } from '@vben/stores';
 
 // @ts-ignore - solarlunar 没有类型定义
@@ -377,11 +378,11 @@ onMounted(() => {
           </div>
           <div class="flex items-center gap-4 text-sm text-white/80">
             <span class="flex items-center gap-1">
-              <iconify-icon icon="carbon:calendar" class="text-lg" />
+              <IconifyIcon icon="carbon:calendar" class="text-lg" />
               {{ currentDate }}
             </span>
             <span class="flex items-center gap-1">
-              <iconify-icon icon="carbon:events" class="text-lg" />
+              <IconifyIcon icon="carbon:events" class="text-lg" />
               {{ lunarDate }}
             </span>
           </div>
@@ -456,7 +457,7 @@ onMounted(() => {
           <div class="weather-data flex flex-1 items-start gap-6">
             <div class="relative z-10 flex flex-col">
               <div class="mb-1 flex items-center gap-2">
-                <iconify-icon
+                <IconifyIcon
                   :icon="weather.icon"
                   class="text-5xl text-white"
                 />
@@ -485,13 +486,13 @@ onMounted(() => {
           v-else-if="showWeather && weatherLoading"
           class="flex items-center gap-2 text-white/80"
         >
-          <iconify-icon icon="line-md:loading-twotone-loop" class="text-2xl" />
+          <IconifyIcon icon="line-md:loading-twotone-loop" class="text-2xl" />
           <span class="text-sm">加载天气中...</span>
         </div>
 
         <!-- 装饰图标 -->
         <div v-else class="flex items-center">
-          <iconify-icon
+          <IconifyIcon
             icon="carbon:sun"
             class="animate-spin-slow text-6xl text-white/20"
           />
@@ -696,11 +697,21 @@ onMounted(() => {
 
 /* 固定背景渐变 - 蓝色系（与原型一致，不随天气变化） */
 .workbench-welcome {
+  height: 100%;
+  box-sizing: border-box;
   /* 固定蓝色渐变背景，参考原型颜色 */
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
   box-shadow:
     0 4px 6px -1px rgb(0 0 0 / 10%),
     0 2px 4px -1px rgb(0 0 0 / 6%);
+}
+
+.welcome-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 /* 天气框装饰 */

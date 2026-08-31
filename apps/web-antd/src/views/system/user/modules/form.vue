@@ -1,25 +1,40 @@
 <script lang="ts" setup>
+import type { SystemRoleApi } from '#/api/system/role';
 import type { SystemUserApi } from '#/api/system/user';
 
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 import { useVbenModal } from '@vben/common-ui';
 
 import { message } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
+import { getSimpleRoleList } from '#/api/system/role';
 import { createUser, getUser, updateUser } from '#/api/system/user';
 import { $t } from '#/locales';
 
-import { useFormSchema } from '../data';
+import { isFixedIdentityUser, useFormSchema } from '../data';
 
 const emit = defineEmits(['success']);
 const formData = ref<SystemUserApi.User>();
+const roleList = ref<SystemRoleApi.Role[]>([]);
+
 const getTitle = computed(() => {
   return formData.value?.id
     ? $t('ui.actionTitle.edit', ['用户'])
     : $t('ui.actionTitle.create', ['用户']);
 });
+
+function refreshSchema() {
+  formApi.updateSchema(
+    useFormSchema({
+      isFixedIdentity: isFixedIdentityUser(
+        formData.value?.roleIds,
+        roleList.value,
+      ),
+    }),
+  );
+}
 
 const [Form, formApi] = useVbenForm({
   commonConfig: {
@@ -58,6 +73,7 @@ const [Modal, modalApi] = useVbenModal({
       formData.value = undefined;
       return;
     }
+    refreshSchema();
     // 加载数据
     const data = modalApi.getData<SystemUserApi.User>();
     if (!data || !data.id) {
@@ -66,12 +82,19 @@ const [Modal, modalApi] = useVbenModal({
     modalApi.lock();
     try {
       formData.value = await getUser(data.id);
-      // 设置到 values
-      await formApi.setValues(formData.value);
+      // 设置到 values（排除 roleIds，避免多余字段进入表单）
+      const { roleIds: _roleIds, ...userValues } = formData.value;
+      await formApi.setValues(userValues);
+      refreshSchema();
     } finally {
       modalApi.unlock();
     }
   },
+});
+
+onMounted(async () => {
+  roleList.value = await getSimpleRoleList();
+  refreshSchema();
 });
 </script>
 

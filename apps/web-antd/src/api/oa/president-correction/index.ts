@@ -1,60 +1,37 @@
 import { requestClient } from '#/api/request';
-import type { BpmProcessInstanceApi } from '#/api/bpm/processInstance';
-import type { PageParam, PageResult } from '@vben/request';
+
+/** OA 业务已移除；保留空实现供 BPM/会长纠错相关页面编译通过 */
 
 export namespace PresidentCorrectionApi {
-  export interface InitiateReq {
-    sourceBillType: string;
-    sourceBillId: number;
-    correctionType: number;
-    correctionReason: string;
-    councilDecision?: number;
-    councilDecisionFile?: string;
-    correctionResult?: string;
-  }
-
   export interface BillHistoryItem {
-    correctionId: number;
-    approvalVersion?: number;
-    correctionType: number;
-    correctionReason?: string;
-    revokeUserName?: string;
-    revokeTime?: string;
-    sourceProcessInstanceId?: string;
     newProcessInstanceId?: string;
-    correctionStatus?: number;
-    correctionResult?: string;
-    councilDecisionFile?: string;
+    [key: string]: any;
   }
-
   export interface BillHistory {
-    freezeStatus?: number;
-    correctionStatus?: number;
     items?: BillHistoryItem[];
+    freezeStatus?: number;
+  }
+  export interface PageReq {
+    [key: string]: any;
+  }
+  export interface InitiateReq {
+    [key: string]: any;
   }
 }
 
-export function initiatePresidentCorrection(
-  data: PresidentCorrectionApi.InitiateReq,
-) {
-  return requestClient.post<number>('/oa/president-correction/initiate', data);
-}
-
-/** 会长纠错 - 可纠错流程实例分页 */
-export function getPresidentCorrectionPage(params: PageParam) {
-  return requestClient.get<PageResult<BpmProcessInstanceApi.ProcessInstance>>(
-    '/bpm/process-instance/president-correction-page',
-    { params },
-  );
-}
-
-/** 业务单据纠错历史（审批页展示） */
-export function getBillCorrectionHistory(params: {
-  sourceBillId: number;
+export async function getBillCorrectionHistory(_params: {
   sourceBillType: string;
-}) {
-  return requestClient.get<PresidentCorrectionApi.BillHistory>(
-    '/oa/president-correction/bill-history',
-    { params },
-  );
+  sourceBillId: number;
+}): Promise<PresidentCorrectionApi.BillHistory> {
+  return { items: [], freezeStatus: 0 };
+}
+
+export async function getPresidentCorrectionPage(_params: any) {
+  return { list: [], total: 0 };
+}
+
+export async function initiatePresidentCorrection(
+  _data: PresidentCorrectionApi.InitiateReq,
+) {
+  return requestClient.post('/oa/president-correction/initiate', _data);
 }

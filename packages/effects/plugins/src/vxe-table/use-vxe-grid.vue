@@ -239,8 +239,44 @@ const options = computed(() => {
   if (mergedOptions.formConfig) {
     mergedOptions.formConfig.enabled = false;
   }
+  // 列设置 storage 依赖唯一 id；未显式配置时按路由生成，避免刷新后配置丢失
+  if (!mergedOptions.id) {
+    const routeKey = route.name
+      ? String(route.name)
+      : route.path.replaceAll('/', '_') || 'anonymous';
+    mergedOptions.id = `vxe-grid-${routeKey}`;
+  }
+  // storage 要求每列有 field；操作列等常只写 title，这里补默认 field 消除告警
+  if (Array.isArray(mergedOptions.columns)) {
+    mergedOptions.columns = ensureColumnFields(mergedOptions.columns);
+  }
   return mergedOptions;
 });
+
+/** 为缺少 field 且非 type 列补唯一 field（供 customConfig.storage 使用） */
+function ensureColumnFields(
+  columns: VxeGridPropTypes.Columns,
+  path = '',
+): VxeGridPropTypes.Columns {
+  return columns.map((col, index) => {
+    if (!col || typeof col !== 'object') {
+      return col;
+    }
+    const next: any = { ...col };
+    const keyPath = path ? `${path}_${index}` : String(index);
+    if ((!next.field || next.field === '') && !next.type) {
+      if (next.slots?.default === 'actions' || next.title === '操作') {
+        next.field = 'actions';
+      } else {
+        next.field = `_col_${keyPath}`;
+      }
+    }
+    if (Array.isArray(next.children) && next.children.length > 0) {
+      next.children = ensureColumnFields(next.children, keyPath);
+    }
+    return next;
+  });
+}
 
 function onToolbarToolClick(event: VxeGridDefines.ToolbarToolClickEventParams) {
   if (event.code === 'search') {

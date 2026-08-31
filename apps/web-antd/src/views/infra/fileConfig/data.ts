@@ -94,10 +94,10 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'config.username',
-      label: '用户名',
+      label: '用户账号',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入用户名',
+        placeholder: '请输入用户账号',
       },
       rules: 'required',
       dependencies: {

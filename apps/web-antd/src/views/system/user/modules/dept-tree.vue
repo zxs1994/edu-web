@@ -31,9 +31,13 @@ function handleSearch(e: any) {
   expandedKeys.value = deptTree.value.map((node) => node.id!);
 }
 
-/** 选中部门 */
-function handleSelect(_selectedKeys: any[], info: any) {
-  emit('select', info.node.dataRef);
+/** 选中部门（再次点击同一节点为取消选中） */
+function handleSelect(selectedKeys: (number | string)[], info: any) {
+  if (!selectedKeys.length || !info.selected) {
+    emit('select', undefined);
+    return;
+  }
+  emit('select', info.node?.dataRef ?? info.node);
 }
 
 /** 初始化 */

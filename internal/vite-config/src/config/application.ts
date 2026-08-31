@@ -23,6 +23,11 @@ function defineApplicationConfig(userConfigPromise?: DefineApplicationOptions) {
     const root = process.cwd();
     const isBuild = command === 'build';
     const env = loadEnv(mode, root);
+    // loadEnv 默认只加载 VITE_ 前缀；LAUNCH_EDITOR 需单独读取
+    const allEnv = loadEnv(mode, root, '');
+    if (allEnv.LAUNCH_EDITOR) {
+      process.env.LAUNCH_EDITOR = allEnv.LAUNCH_EDITOR;
+    }
 
     const plugins = await loadApplicationPlugins({
       archiver: true,

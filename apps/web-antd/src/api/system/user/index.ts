@@ -84,11 +84,26 @@ export function updateUserStatus(id: number, status: number) {
 }
 
 /** 获取用户精简信息列表 */
-export function getSimpleUserList() {
-  return requestClient.get<SystemUserApi.User[]>('/system/user/simple-list');
+export function getSimpleUserList(options?: {
+  excludeRoleCode?: string;
+  includeRoleCodes?: string;
+}) {
+  const params: Record<string, string> = {};
+  if (options?.excludeRoleCode) {
+    params.excludeRoleCode = options.excludeRoleCode;
+  }
+  if (options?.includeRoleCodes) {
+    params.includeRoleCodes = options.includeRoleCodes;
+  }
+  return requestClient.get<SystemUserApi.User[]>('/system/user/simple-list', {
+    params: Object.keys(params).length > 0 ? params : undefined,
+  });
 }
 
 /** 获取用户下拉列表（别名，用于选择器） */
-export function getUserSelectList() {
-  return getSimpleUserList();
+export function getUserSelectList(options?: {
+  excludeRoleCode?: string;
+  includeRoleCodes?: string;
+}) {
+  return getSimpleUserList(options);
 }

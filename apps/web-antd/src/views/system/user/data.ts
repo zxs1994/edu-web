@@ -15,8 +15,31 @@ import { getSimplePostList } from '#/api/system/post';
 import { getSimpleRoleList } from '#/api/system/role';
 import { getRangePickerDefaultProps } from '#/utils';
 
+/** 是否为学生/教培身份账号 */
+export function isFixedIdentityUser(
+  roleIds: (number | string)[] | undefined,
+  roleList?: SystemRoleApi.Role[],
+) {
+  const ids = (roleIds ?? []).map(Number);
+  if (ids.length === 0 || !roleList?.length) {
+    return false;
+  }
+  return roleList.some(
+    (role) =>
+      ids.includes(Number(role.id)) &&
+      (role.code === 'student' || role.code === 'teacher'),
+  );
+}
+
+export interface UserFormSchemaOptions {
+  /** 编辑学生/教培用户时为 true */
+  isFixedIdentity?: boolean;
+}
+
 /** 新增/修改的表单 */
-export function useFormSchema(): VbenFormSchema[] {
+export function useFormSchema(options?: UserFormSchemaOptions): VbenFormSchema[] {
+  const isFixedIdentity = options?.isFixedIdentity ?? false;
+
   return [
     {
       component: 'Input',
@@ -28,12 +51,20 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'username',
-      label: '用户名称',
+      label: '用户账号',
       component: 'Input',
-      componentProps: {
-        placeholder: '请输入用户名称',
-      },
       rules: 'required',
+      dependencies: {
+        triggerFields: ['id'],
+        componentProps() {
+          return {
+            placeholder: isFixedIdentity
+              ? '账号由档案维护，不可修改'
+              : '请输入用户账号',
+            disabled: isFixedIdentity,
+          };
+        },
+      },
     },
     {
       label: '用户密码',
@@ -97,6 +128,15 @@ export function useFormSchema(): VbenFormSchema[] {
       component: 'Input',
       componentProps: {
         placeholder: '请输入手机号码',
+      },
+      dependencies: {
+        triggerFields: ['id'],
+        rules() {
+          if (isFixedIdentity) {
+            return 'mobileRequired';
+          }
+          return z.string().optional();
+        },
       },
     },
     {
@@ -205,7 +245,7 @@ export function useAssignRoleFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'username',
-      label: '用户名称',
+      label: '用户账号',
       component: 'Input',
       componentProps: {
         disabled: true,
@@ -224,7 +264,12 @@ export function useAssignRoleFormSchema(): VbenFormSchema[] {
       label: '角色',
       component: 'ApiSelect',
       componentProps: {
-        api: getSimpleRoleList,
+        api: async () => {
+          const list = await getSimpleRoleList();
+          return list.filter(
+            (role) => role.code !== 'student' && role.code !== 'teacher',
+          );
+        },
         labelField: 'name',
         valueField: 'id',
         mode: 'multiple',
@@ -263,10 +308,10 @@ export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
       fieldName: 'username',
-      label: '用户名称',
+      label: '用户账号',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入用户名称',
+        placeholder: '请输入用户账号',
         allowClear: true,
       },
     },
@@ -310,7 +355,7 @@ export function useGridColumns(
     { type: 'checkbox', width: 40 },
     {
       field: 'username',
-      title: '用户名称',
+      title: '用户账号',
       minWidth: 120,
     },
     {

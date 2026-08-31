@@ -65,7 +65,12 @@ async function loadCommonPlugins(
 
     {
       condition: !isBuild && devtools,
-      plugins: () => [viteVueDevTools()],
+      plugins: () => [
+        viteVueDevTools({
+          // 优先读环境变量；未配置时默认 Cursor（勿回退到 code/VS Code）
+          launchEditor: process.env.LAUNCH_EDITOR || 'cursor',
+        }),
+      ],
     },
     {
       condition: injectMetadata,

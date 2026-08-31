@@ -136,9 +136,6 @@ export const useAuthStore = defineStore('auth', () => {
     authPermissionInfo = await getAuthPermissionInfoApi();
     // 兜底：当后端未返回公司名称时，使用组织列表第一级作为默认所属单位
     const user = { ...authPermissionInfo.user };
-    if (!user.companyName) {
-      user.companyName = '中国引航协会';
-    }
     // userStore
     userStore.setUserInfo(user);
     userStore.setUserRoles(authPermissionInfo.roles);
