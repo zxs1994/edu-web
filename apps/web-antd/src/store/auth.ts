@@ -8,6 +8,7 @@ import { useRouter } from 'vue-router';
 import { LOGIN_PATH } from '@vben/constants';
 import { preferences } from '@vben/preferences';
 import { resetAllStores, useAccessStore, useUserStore } from '@vben/stores';
+import { resetStaticRoutes } from '@vben/utils';
 
 import { notification } from 'ant-design-vue';
 import { defineStore } from 'pinia';
@@ -21,6 +22,7 @@ import {
   socialLogin,
 } from '#/api';
 import { $t } from '#/locales';
+import { routes } from '#/router/routes';
 
 export const useAuthStore = defineStore('auth', () => {
   const accessStore = useAccessStore();
@@ -28,6 +30,16 @@ export const useAuthStore = defineStore('auth', () => {
   const router = useRouter();
 
   const loginLoading = ref(false);
+
+  /** 切换账号登录前重置动态路由与权限缓存，避免菜单残留 */
+  function resetAccessState() {
+    resetStaticRoutes(router, routes);
+    accessStore.setIsAccessChecked(false);
+    accessStore.setAccessMenus([]);
+    accessStore.setAccessRoutes([]);
+    userStore.setUserInfo(null);
+    userStore.setUserRoles([]);
+  }
 
   /**
    * 异步处理登录操作
@@ -70,24 +82,23 @@ export const useAuthStore = defineStore('auth', () => {
         accessStore.setAccessToken(accessToken);
         accessStore.setRefreshToken(refreshToken);
 
-        // 获取用户信息并存储到 userStore、accessStore 中
-        // TODO @芋艿：清理掉 accessCodes 相关的逻辑
-        // const [fetchUserInfoResult, accessCodes] = await Promise.all([
-        //   fetchUserInfo(),
-        //   // getAccessCodesApi(),
-        // ]);
+        // 切换账号时清除上一账号的路由/菜单缓存，登录后由路由守卫重新生成
+        resetAccessState();
+
         const fetchUserInfoResult = await fetchUserInfo();
 
         userInfo = fetchUserInfoResult.user;
 
         if (accessStore.loginExpired) {
           accessStore.setLoginExpired(false);
+        } else if (onSuccess) {
+          await onSuccess?.();
         } else {
-          onSuccess
-            ? await onSuccess?.()
-            : await router.push(
-                userInfo.homePath || preferences.app.defaultHomePath,
-              );
+          // 硬跳转触发整页重载，避免切换账号后动态路由/侧边栏菜单残留
+          const target =
+            userInfo.homePath || preferences.app.defaultHomePath;
+          window.location.replace(router.resolve(target).href);
+          return { userInfo };
         }
 
         if (userInfo?.nickname) {
@@ -116,6 +127,7 @@ export const useAuthStore = defineStore('auth', () => {
     } catch {
       // 不做任何处理
     }
+    resetStaticRoutes(router, routes);
     resetAllStores();
     accessStore.setLoginExpired(false);
 

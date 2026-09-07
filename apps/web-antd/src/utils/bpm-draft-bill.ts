@@ -1,3 +1,5 @@
+import { deleteActivity } from '#/api/edu/activity';
+import { deleteActivityPayment } from '#/api/edu/activity-payment';
 import { deleteEmployeeEntryBill } from '#/api/hrm/employee-entry';
 import { deleteEmployeeRegularBill } from '#/api/hrm/employee-regular';
 import { deleteEmployeeResignationBill } from '#/api/hrm/employee-resignation';
@@ -5,12 +7,14 @@ import { deleteEmployeeTransferBill } from '#/api/hrm/employee-transfer';
 
 type DraftBillDeleteHandler = (id: number) => Promise<unknown>;
 
-/** 流程定义 key → 业务单删除接口（OA 业务已移除，仅保留 HRM） */
+/** 流程定义 key → 业务单删除接口 */
 const DRAFT_BILL_DELETE_MAP: Record<string, DraftBillDeleteHandler> = {
   hr_employee_entry_bill: deleteEmployeeEntryBill,
   hr_employee_regular_bill: deleteEmployeeRegularBill,
   hr_employee_transfer_bill: deleteEmployeeTransferBill,
   hr_employee_resignation_bill: deleteEmployeeResignationBill,
+  edu_activity: deleteActivity,
+  edu_activity_payment_request: deleteActivityPayment,
 };
 
 export async function deleteDraftBill(

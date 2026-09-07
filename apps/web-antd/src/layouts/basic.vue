@@ -39,6 +39,7 @@ import { getSimpleTenantList } from '#/api/system/tenant';
 import { $t } from '#/locales';
 import { router } from '#/router';
 import { useAuthStore } from '#/store';
+import { resolveActivityEnrollAction } from '#/utils/notify-enroll';
 import LoginForm from '#/views/_core/authentication/login.vue';
 
 const userStore = useUserStore();
@@ -107,14 +108,21 @@ async function handleNotificationGetUnreadCount() {
 /** 获得消息列表 */
 async function handleNotificationGetList() {
   const list = await getUnreadNotifyMessageList();
-  notifications.value = list.map((item) => ({
-    avatar: preferences.app.defaultAvatar,
-    date: formatDateTime(item.createTime) as string,
-    isRead: false,
-    id: item.id,
-    message: item.templateContent,
-    title: item.templateNickname,
-  }));
+  notifications.value = list.map((item) => {
+    console.log(preferences.app.defaultAvatar);
+    const enroll = resolveActivityEnrollAction(item);
+    return {
+      avatar: preferences.app.defaultAvatar,
+      date: formatDateTime(item.createTime) as string,
+      isRead: false,
+      id: item.id,
+      message: item.templateContent,
+      title: item.templateNickname,
+      link: enroll?.link,
+      query: enroll?.query,
+      actionText: enroll?.actionText,
+    };
+  });
 }
 
 /** 跳转我的站内信 */
@@ -234,17 +242,17 @@ watch(
         @logout="handleLogout"
       />
     </template>
-<!--    <template #notification>-->
-<!--      <Notification-->
-<!--        :dot="showDot"-->
-<!--        :notifications="notifications"-->
-<!--        @clear="handleNotificationClear"-->
-<!--        @make-all="handleNotificationMakeAll"-->
-<!--        @view-all="handleNotificationViewAll"-->
-<!--        @open="handleNotificationOpen"-->
-<!--        @read="handleNotificationRead"-->
-<!--      />-->
-<!--    </template>-->
+    <template #notification>
+      <Notification
+        :dot="showDot"
+        :notifications="notifications"
+        @clear="handleNotificationClear"
+        @make-all="handleNotificationMakeAll"
+        @view-all="handleNotificationViewAll"
+        @open="handleNotificationOpen"
+        @read="handleNotificationRead"
+      />
+    </template>
 <!--    <template #header-right-1>-->
 <!--      <div v-if="tenantEnable && false">-->
 <!--        <TenantDropdown-->

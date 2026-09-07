@@ -4,12 +4,12 @@ import { LOGIN_PATH } from '@vben/constants';
 import { $t } from '@vben/locales';
 import { preferences } from '@vben/preferences';
 import { useAccessStore, useDictStore, useUserStore } from '@vben/stores';
-import { startProgress, stopProgress } from '@vben/utils';
+import { resetStaticRoutes, startProgress, stopProgress } from '@vben/utils';
 
 import { message } from 'ant-design-vue';
 
 import { getSimpleDictDataList } from '#/api/system/dict/data';
-import { accessRoutes, coreRouteNames } from '#/router/routes';
+import { accessRoutes, coreRouteNames, routes } from '#/router/routes';
 import { useAuthStore } from '#/store';
 
 import { generateAccess } from './access';
@@ -90,9 +90,16 @@ function setupAccessGuard(router: Router) {
       return to;
     }
 
-    // 是否已经生成过动态路由
-    if (accessStore.isAccessChecked) {
+    // 是否已经生成过动态路由（从登录页进入时强制重新生成，避免切换账号菜单残留）
+    const fromLogin = from.path === LOGIN_PATH;
+    if (accessStore.isAccessChecked && !fromLogin) {
       return true;
+    }
+    if (fromLogin) {
+      resetStaticRoutes(router, routes);
+      accessStore.setIsAccessChecked(false);
+      accessStore.setAccessMenus([]);
+      accessStore.setAccessRoutes([]);
     }
 
     // 加载字典数据（不阻塞加载）

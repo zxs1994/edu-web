@@ -5,7 +5,7 @@ import { useRoute } from 'vue-router';
 
 import { preferences, updatePreferences, usePreferences } from '@vben/preferences';
 import { useAccessStore } from '@vben/stores';
-import { findRootMenuByPath } from '@vben/utils';
+import { findMenuByPath, findRootMenuByPath } from '@vben/utils';
 
 import { useNavigation } from './use-navigation';
 
@@ -66,6 +66,10 @@ function useMixedMenu() {
    * 侧边菜单激活路径
    */
   const sidebarActive = computed(() => {
+    const queryMenuPath = route.query.menuActivePath;
+    if (typeof queryMenuPath === 'string' && queryMenuPath) {
+      return queryMenuPath;
+    }
     return (route?.meta?.activePath as string) ?? route.path;
   });
 
@@ -127,19 +131,59 @@ function useMixedMenu() {
   };
 
   /**
+   * 混合导航下，根据路径找到顶栏对应的一级菜单（含子菜单列表）
+   * hideInMenu 详情页仅能通过 activePath 命中叶子菜单，需向上找到顶栏根节点
+   */
+  function findHeaderRootMenu(path: string) {
+    for (const menu of menus.value) {
+      if (menu.path === path) {
+        return menu;
+      }
+      if (menu.children?.length && findMenuByPath(menu.children, path)) {
+        return menu;
+      }
+    }
+    return undefined;
+  }
+
+  /** 混合导航下用于计算左侧菜单的路径（优先 query 传入的菜单上下文） */
+  function resolveMenuContextPath(path: string = route.path) {
+    const queryMenuPath = route.query.menuActivePath;
+    if (typeof queryMenuPath === 'string' && queryMenuPath) {
+      return queryMenuPath;
+    }
+    return (route.meta?.activePath as string) ?? (route.meta?.link as string) ?? path;
+  }
+
+  /**
    * 计算侧边菜单
    * @param path 路由路径
    */
   function calcSideMenus(path: string = route.path) {
-    let { rootMenu } = findRootMenuByPath(menus.value, path);
+    const prevSplitSideMenus = splitSideMenus.value;
+    const prevRootMenuPath = rootMenuPath.value;
+
+    let rootMenu = findHeaderRootMenu(path);
     if (!rootMenu) {
-      rootMenu = menus.value.find((item) => item.path === path);
+      const found = findRootMenuByPath(menus.value, path);
+      rootMenu =
+        found.rootMenu ?? menus.value.find((item) => item.path === path);
     }
     const result = findRootMenuByPath(rootMenu?.children || [], path, 1);
     mixedRootMenuPath.value = result.rootMenuPath ?? '';
     mixExtraMenus.value = result.rootMenu?.children ?? [];
     rootMenuPath.value = rootMenu?.path ?? '';
     splitSideMenus.value = rootMenu?.children ?? [];
+
+    // hideInMenu 详情页 activePath 未命中菜单树时，保留上一页侧边栏（如从业务列表进 BPM 详情）
+    if (
+      splitSideMenus.value.length === 0 &&
+      route.meta?.hideInMenu &&
+      prevSplitSideMenus.length > 0
+    ) {
+      splitSideMenus.value = prevSplitSideMenus;
+      rootMenuPath.value = prevRootMenuPath;
+    }
   }
 
   watch(
@@ -158,7 +202,7 @@ function useMixedMenu() {
         updatePreferences({ sidebar: { hidden: false } });
       }
 
-      const currentPath = route?.meta?.activePath ?? route?.meta?.link ?? path;
+      const currentPath = resolveMenuContextPath(path);
       if (willOpenedByWindow(currentPath)) {
         return;
       }
@@ -169,9 +213,18 @@ function useMixedMenu() {
     { immediate: true },
   );
 
+  // 切换账号后 accessMenus 更新但 route 未变时，重新计算侧边栏
+  watch(
+    () => accessStore.accessMenus,
+    () => {
+      calcSideMenus(resolveMenuContextPath(route.path));
+    },
+    { deep: true },
+  );
+
   // 初始化计算侧边菜单
   onBeforeMount(() => {
-    calcSideMenus(route.meta?.activePath || route.path);
+    calcSideMenus(resolveMenuContextPath());
   });
 
   return {

@@ -104,20 +104,24 @@ async function generateAccessible(
             // 移除旧的，添加合并后的新路由
             root.children.splice(pathIndex, 1, route);
           } else {
-            // 旧路由 children 更多，把新路由的独有子路由合并到旧路由
-            if (route.children?.length && existingRoute.children) {
-              const existingChildNames = new Set(
-                existingRoute.children
+            // 权限缩减时以新路由菜单为准，但保留旧路由中 hideInMenu 的静态子路由（如流程详情页）
+            if (existingRoute.children?.length) {
+              const newChildNames = new Set(
+                (route.children || [])
                   .map((c: RouteRecordRaw) => c.name)
                   .filter(Boolean),
               );
-              for (const child of route.children) {
-                if (child.name && !existingChildNames.has(child.name)) {
-                  existingRoute.children.push(child);
+              for (const child of existingRoute.children) {
+                if (
+                  child.name &&
+                  !newChildNames.has(child.name) &&
+                  child.meta?.hideInMenu
+                ) {
+                  (route.children ||= []).push(child);
                 }
               }
             }
-            // 旧路由已包含所有子路由，无需替换
+            root.children.splice(pathIndex, 1, route);
           }
         } else {
           root.children?.push(route);

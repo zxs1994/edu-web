@@ -1,7 +1,14 @@
 <script lang="ts" setup>
+import type { ActivityInstanceApi } from '#/api/edu/activity-instance';
+
 import { computed, nextTick, onActivated, onBeforeUnmount, onMounted, ref } from 'vue';
 
-import { Badge, message, Modal, Table, Tabs } from 'ant-design-vue';
+import { DICT_TYPE } from '@vben/constants';
+import { getDictLabel } from '@vben/hooks';
+import { useUserStore } from '@vben/stores';
+import { formatDateTime as formatDateTimeUtil } from '@vben/utils';
+
+import { Badge, message, Modal, Table, Tabs, Tag } from 'ant-design-vue';
 
 import { ACTION_ICON, TableAction } from '#/adapter/vxe-table';
 import {
@@ -15,10 +22,15 @@ import {
   getWorkbenchUnreadCounts,
   markWorkbenchTabAsRead,
 } from '#/api/bpm/task';
+import {
+  enrollActivityInstance,
+  getMyEnrollableInstancePage,
+} from '#/api/edu/activity-instance';
+import TaskBillStatusTag from '#/components/task-bill-status-tag/task-bill-status-tag.vue';
 import { router } from '#/router';
 import { isBillDeleted } from '#/utils/bpm-bill-status';
 import { getPresidentCorrectionResubmitTodoRoute } from '#/utils/bpm-correction-resubmit-todo';
-import TaskBillStatusTag from '#/components/task-bill-status-tag/task-bill-status-tag.vue';
+import { ACTIVITY_INSTANCE_ENROLL_PATH } from '#/utils/notify-enroll';
 
 interface Props {
   maxRecordNum?: number;
@@ -28,14 +40,24 @@ const props = withDefaults(defineProps<Props>(), {
   maxRecordNum: 10,
 });
 
+const userStore = useUserStore();
+
+/** 学生角色（角色编码 student） */
+const isStudent = computed(() =>
+  (userStore.userRoles ?? []).includes('student'),
+);
+
 // Tab类型定义
-type TabKey = 'copy' | 'done' | 'myBill' | 'todo';
+type TabKey = 'copy' | 'done' | 'enroll' | 'myBill' | 'todo';
 
 // 当前激活的Tab
 const activeTab = ref<TabKey>('todo');
 
 // 加载状态
 const loading = ref(false);
+
+// 报名操作 loading
+const enrollActionLoadingId = ref<number>();
 
 // 数据列表
 const taskList = ref<any[]>([]);
@@ -46,23 +68,35 @@ const statistics = ref({
   todo: 0,
   done: 0,
   copy: 0,
+  enroll: 0,
 });
 
-// 各 Tab 未读数量（来自后端水位线接口，持久化）
+// 各 Tab 未读数量（来自后端水位线接口，持久化）；enroll 为可报名数量
 const unreadCounts = ref<Record<string, number>>({
   todo: 0,
   myBill: 0,
   done: 0,
   copy: 0,
+  enroll: 0,
 });
 
 // Tab配置
-const tabs = computed(() => [
-  { key: 'todo', label: '待办任务', count: unreadCounts.value.todo },
-  // { key: 'myBill', label: '我的单据', count: unreadCounts.value.myBill },
-  { key: 'done', label: '已办任务', count: unreadCounts.value.done },
-  { key: 'copy', label: '抄送我的', count: unreadCounts.value.copy },
-]);
+const tabs = computed(() => {
+  const list: { key: TabKey; label: string; count: number | undefined }[] = [
+    { key: 'todo', label: '待办任务', count: unreadCounts.value.todo },
+    // { key: 'myBill', label: '我的单据', count: unreadCounts.value.myBill },
+    { key: 'done', label: '已办任务', count: unreadCounts.value.done },
+    { key: 'copy', label: '抄送我的', count: unreadCounts.value.copy },
+  ];
+  if (isStudent.value) {
+    list.push({
+      key: 'enroll',
+      label: '活动报名',
+      count: unreadCounts.value.enroll,
+    });
+  }
+  return list;
+});
 
 // 格式化摘要
 function formatSummary(summary: any) {
@@ -85,9 +119,90 @@ function formatDateTime(text: any) {
   return text ? new Date(text).toLocaleString('zh-CN') : '-';
 }
 
+const BILL_STATUS_LABEL: Record<number, string> = {
+  [-2]: '跳过',
+  [-1]: '未提交',
+  0: '待审批',
+  1: '审批中',
+  2: '已通过',
+  3: '未通过',
+  4: '已取消',
+  5: '已退回',
+  7: '审批通过中',
+  10: '已撤回',
+};
+
+function formatBillStatus(status: unknown) {
+  if (typeof status !== 'number') {
+    return '-';
+  }
+  return BILL_STATUS_LABEL[status] ?? '-';
+}
+
 // 获取列定义
 const columns = computed(() => {
   const tab = activeTab.value;
+
+  if (tab === 'enroll') {
+    return [
+      // {
+      //   title: '实例编号',
+      //   dataIndex: 'instanceCode',
+      //   key: 'instanceCode',
+      //   width: 160,
+      //   ellipsis: true,
+      // },
+      {
+        title: '活动名称',
+        dataIndex: 'activityName',
+        key: 'activityName',
+        width: 120,
+        ellipsis: true,
+      },
+      {
+        title: '期次',
+        dataIndex: 'periodNo',
+        key: 'periodNo',
+        width: 50,
+      },
+      {
+        title: '活动类型',
+        dataIndex: 'activityType',
+        key: 'activityType',
+        width: 60,
+        customRender: ({ text }: any) =>
+          getDictLabel(DICT_TYPE.EDU_ACTIVITY_TYPE, text) || text || '-',
+      },
+      {
+        title: '报名开始',
+        dataIndex: 'enrollStartTime',
+        key: 'enrollStartTime',
+        width: 80,
+        customRender: ({ text }: any) =>
+          (formatDateTimeUtil(text) as string) || '-',
+      },
+      {
+        title: '报名结束',
+        dataIndex: 'enrollEndTime',
+        key: 'enrollEndTime',
+        width: 80,
+        customRender: ({ text }: any) =>
+          (formatDateTimeUtil(text) as string) || '-',
+      },
+      {
+        title: '我的报名',
+        dataIndex: 'enrolled',
+        key: 'enrolled',
+        width: 50,
+      },
+      {
+        title: '操作',
+        key: 'action',
+        width: 50,
+        fixed: 'right' as const,
+      },
+    ];
+  }
 
   const companyColumn = {
     title: '所属公司',
@@ -158,8 +273,8 @@ const columns = computed(() => {
           key: 'taskName',
           width: 120,
         },
-        companyColumn,
-        deptColumn,
+        // companyColumn,
+        // deptColumn,
       );
       restSpecialColumns.push({
         title: '审批建议',
@@ -171,7 +286,7 @@ const columns = computed(() => {
       break;
     }
     case 'myBill': {
-      prefixColumns.push(companyColumn, deptColumn);
+      // prefixColumns.push(companyColumn, deptColumn);
       restSpecialColumns.push({
         title: '发起时间',
         dataIndex: 'createTime',
@@ -196,8 +311,8 @@ const columns = computed(() => {
           key: 'taskName',
           width: 120,
         },
-        companyColumn,
-        deptColumn,
+        // companyColumn,
+        // deptColumn,
       );
       break;
     }
@@ -274,6 +389,8 @@ const columns = computed(() => {
         return record.processInstance?.startUser?.nickname || '-';
       },
     },
+    companyColumn,
+    deptColumn,
   ];
 
   // 操作列
@@ -314,6 +431,17 @@ async function loadData(tab: TabKey) {
         statistics.value.done = response.total || 0;
         break;
       }
+      case 'enroll': {
+        response = await getMyEnrollableInstancePage({
+          pageNo: 1,
+          pageSize,
+          canEnroll: true,
+        });
+        taskList.value = response.list || [];
+        statistics.value.enroll = response.total || 0;
+        unreadCounts.value.enroll = response.total || 0;
+        break;
+      }
       case 'myBill': {
         response = await getProcessInstanceMyPage({ pageNo: 1, pageSize });
         taskList.value = response.list || [];
@@ -340,13 +468,15 @@ async function loadData(tab: TabKey) {
 // Tab切换事件
 function handleTabChange(key: number | string) {
   activeTab.value = String(key) as TabKey;
-  // 立即清零该 Tab 的未读徽标（先更新 UI，再持久化）
-  unreadCounts.value[activeTab.value] = 0;
+  if (activeTab.value !== 'enroll') {
+    // 立即清零该 Tab 的未读徽标（先更新 UI，再持久化）
+    unreadCounts.value[activeTab.value] = 0;
+    // 异步调用后端标记该 Tab 为已读（更新水位线）
+    markWorkbenchTabAsRead(activeTab.value).catch((error) => {
+      console.error('标记 Tab 已读失败:', error);
+    });
+  }
   loadData(activeTab.value);
-  // 异步调用后端标记该 Tab 为已读（更新水位线）
-  markWorkbenchTabAsRead(activeTab.value).catch((error) => {
-    console.error('标记 Tab 已读失败:', error);
-  });
 }
 
 // 单据编号点击
@@ -500,9 +630,41 @@ function handleDeleteBill(record: any) {
   });
 }
 
+/** 工作台活动报名 */
+async function handleEnroll(
+  record: ActivityInstanceApi.EnrollableInstance,
+) {
+  if (!record.id || !record.canEnroll) return;
+  enrollActionLoadingId.value = record.id;
+  try {
+    await enrollActivityInstance(record.id);
+    message.success('报名成功');
+    await loadData('enroll');
+  } catch (error) {
+    console.error('报名失败:', error);
+  } finally {
+    enrollActionLoadingId.value = undefined;
+  }
+}
+
+/** 跳转到我的活动报名页 */
+function handleOpenEnrollPage(record?: ActivityInstanceApi.EnrollableInstance) {
+  router.push({
+    path: ACTIVITY_INSTANCE_ENROLL_PATH,
+    query:
+      record?.instanceCode != null && String(record.instanceCode).length > 0
+        ? { instanceCode: String(record.instanceCode) }
+        : undefined,
+  });
+}
+
 // 查看更多
 function handleViewMore() {
-  const routeNameMap: Record<TabKey, string> = {
+  if (activeTab.value === 'enroll') {
+    handleOpenEnrollPage();
+    return;
+  }
+  const routeNameMap: Record<Exclude<TabKey, 'enroll'>, string> = {
     myBill: 'BpmProcessInstanceMy',
     todo: 'BpmTodoTask',
     done: 'BpmDoneTask',
@@ -515,6 +677,26 @@ function handleViewMore() {
   }
 }
 
+/** 刷新学生可报名徽标（不依赖当前 Tab） */
+async function refreshEnrollBadge() {
+  if (!isStudent.value) {
+    unreadCounts.value.enroll = 0;
+    return;
+  }
+  try {
+    const response = await getMyEnrollableInstancePage({
+      pageNo: 1,
+      pageSize: 1,
+      canEnroll: true,
+    });
+    unreadCounts.value.enroll = response.total || 0;
+    statistics.value.enroll = response.total || 0;
+  } catch (error) {
+    console.error('加载活动报名统计失败:', error);
+    unreadCounts.value.enroll = 0;
+  }
+}
+
 // 加载所有数据（当前tab数据 + 其他tab统计 + 各tab未读数）
 async function loadAllData() {
   const currentTab = activeTab.value;
@@ -523,9 +705,9 @@ async function loadAllData() {
   await loadData(currentTab);
 
   // 并行加载其他tab的统计数据
-  const otherTabs: TabKey[] = ['myBill', 'todo', 'done', 'copy'].filter(
-    (tab) => tab !== currentTab,
-  ) as TabKey[];
+  const otherTabs: TabKey[] = (
+    ['myBill', 'todo', 'done', 'copy'] as TabKey[]
+  ).filter((tab) => tab !== currentTab);
 
   try {
     const promises = otherTabs.map((tab) => {
@@ -552,6 +734,7 @@ async function loadAllData() {
     const [results, unreadResult] = await Promise.all([
       Promise.all(promises),
       getWorkbenchUnreadCounts().catch(() => null),
+      refreshEnrollBadge(),
     ]);
 
     // 更新其他tab的统计数据
@@ -559,9 +742,10 @@ async function loadAllData() {
       statistics.value[tab] = results[index]?.total || 0;
     });
 
-    // 更新各 Tab 未读数
+    // 更新各 Tab 未读数（保留 enroll 徽标）
     if (unreadResult) {
       unreadCounts.value = {
+        ...unreadCounts.value,
         todo: unreadResult.todo ?? 0,
         myBill: unreadResult.myBill ?? 0,
         done: unreadResult.done ?? 0,
@@ -622,15 +806,13 @@ onActivated(() => {
         class="flex-1"
         @change="handleTabChange"
       >
-        <template v-for="tab in tabs" :key="tab.key">
-          <Tabs.TabPane>
-            <template #tab>
-              <Badge :count="tab.count" :overflow-count="99" :offset="[10, 0]">
-                <span class="px-2">{{ tab.label }}</span>
-              </Badge>
-            </template>
-          </Tabs.TabPane>
-        </template>
+        <Tabs.TabPane v-for="tab in tabs" :key="tab.key">
+          <template #tab>
+            <Badge :count="tab.count" :overflow-count="99" :offset="[10, 0]">
+              <span class="px-2">{{ tab.label }}</span>
+            </Badge>
+          </template>
+        </Tabs.TabPane>
       </Tabs>
       <a
         class="cursor-pointer pb-6 text-sm text-primary hover:underline"
@@ -652,7 +834,12 @@ onActivated(() => {
         row-key="id"
       >
         <template #bodyCell="{ column, record }">
-          <template v-if="column.key === 'billCode'">
+          <template v-if="column.key === 'enrolled'">
+            <Tag :color="record.enrolled ? 'success' : 'default'">
+              {{ record.enrolled ? '已报名' : '未报名' }}
+            </Tag>
+          </template>
+          <template v-else-if="column.key === 'billCode'">
             <a
               v-if="
                 !isBillDeleted(record) &&
@@ -692,7 +879,10 @@ onActivated(() => {
           <template
             v-else-if="column.key === 'status' && activeTab !== 'myBill'"
           >
-            <TaskBillStatusTag :record="record" :tab="activeTab" />
+            <TaskBillStatusTag
+              :record="record"
+              :tab="activeTab === 'enroll' ? 'todo' : activeTab"
+            />
           </template>
           <template
             v-else-if="column.key === 'status' && activeTab === 'myBill'"
@@ -718,19 +908,32 @@ onActivated(() => {
             </template>
             <!-- 其他状态：正常显示状态文字 -->
             <template v-else>
-              {{
-                {
-                  [-1]: '未提交',
-                  1: '审批中',
-                  2: '已通过',
-                  3: '未通过',
-                  4: '已取消',
-                }[record.status] ?? '-'
-              }}
+              {{ formatBillStatus(record.status) }}
             </template>
           </template>
           <template v-else-if="column.key === 'action'">
-            <template v-if="isBillDeleted(record)">
+            <template v-if="activeTab === 'enroll'">
+              <TableAction
+                :actions="[
+                  {
+                    label: '报名',
+                    type: 'link',
+                    icon: ACTION_ICON.ADD,
+                    disabled: enrollActionLoadingId === record.id,
+                    ifShow: !!record.canEnroll,
+                    onClick: () => handleEnroll(record),
+                  },
+                  {
+                    label: '查看',
+                    type: 'link',
+                    icon: ACTION_ICON.VIEW,
+                    ifShow: !record.canEnroll,
+                    onClick: () => handleOpenEnrollPage(record),
+                  },
+                ]"
+              />
+            </template>
+            <template v-else-if="isBillDeleted(record)">
               <span class="text-gray-400">-</span>
             </template>
             <!-- 待办任务：显示办理按钮 -->

@@ -82,6 +82,22 @@ const coreRoutes: RouteRecordRaw[] = [
     name: 'BpmMobileFormPreview',
     path: '/bpm/mobile/form-preview',
   },
+  /**
+   * 专项活动学生 H5 报名短链（短信，免登录）
+   * 例：/e/Ab3xK9
+   */
+  {
+    component: () => import('#/views/edu/activity-enroll/h5/index.vue'),
+    meta: {
+      hideInBreadcrumb: true,
+      hideInMenu: true,
+      hideInTab: true,
+      ignoreAccess: true,
+      title: '活动报名',
+    },
+    name: 'EduActivityH5Enroll',
+    path: '/e/:c',
+  },
 ];
 
 export { coreRoutes, fallbackNotFoundRoute };

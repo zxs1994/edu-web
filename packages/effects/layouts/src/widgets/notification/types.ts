@@ -12,6 +12,8 @@ interface NotificationItem {
   link?: string;
   query?: Record<string, any>;
   state?: Record<string, any>;
+  /** 操作按钮文案，有 link 时展示 */
+  actionText?: string;
 }
 
 export type { NotificationItem };

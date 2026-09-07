@@ -18,6 +18,8 @@ async function initSetupVbenForm() {
       // 一些组件是 v-model:checked 或者 v-model:fileList
       modelPropNameMap: {
         Checkbox: 'checked',
+        ParticipantSelectField: 'modelValue',
+        ActivityAttachmentField: 'modelValue',
         Radio: 'checked',
         Switch: 'checked',
         Upload: 'fileList',

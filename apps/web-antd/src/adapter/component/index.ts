@@ -43,6 +43,8 @@ import HelpInput from '#/components/help-input/index.vue';
 import InputAmount from '#/components/input-amount/index.vue';
 import { Tinymce as RichTextarea } from '#/components/tinymce';
 import { FileUpload, ImageUpload } from '#/components/upload';
+import ActivityAttachmentField from '#/views/edu/activity/components/activity-attachment-field.vue';
+import ParticipantSelectField from '#/views/edu/activity/components/participant-select-field.vue';
 
 const AutoComplete = defineAsyncComponent(
   () => import('ant-design-vue/es/auto-complete'),
@@ -529,6 +531,8 @@ export type ComponentType =
   | 'InputNumber'
   | 'InputPassword'
   | 'Mentions'
+  | 'ParticipantSelectField'
+  | 'ActivityAttachmentField'
   | 'PrimaryButton'
   | 'Radio'
   | 'RadioGroup'
@@ -637,6 +641,8 @@ async function initComponentAdapter() {
     FileUpload,
     ImageUpload,
     HelpInput: withDefaultPlaceholder(HelpInput, 'input'),
+    ParticipantSelectField,
+    ActivityAttachmentField,
   };
 
   // 将组件注册到全局共享状态中

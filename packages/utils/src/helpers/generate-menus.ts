@@ -152,8 +152,8 @@ function convertServerMenuToRouteRecordStringComponent(
       menu.component = '';
     }
 
-    // path
-    if (parent) {
+    // path：已是绝对路径时不再拼接父级，便于侧栏分组目录且保持原路由（如 BPM 表单路径）
+    if (parent && menu.path && !String(menu.path).startsWith('/')) {
       menu.path = `${parent}/${menu.path}`;
     }
 

@@ -11,7 +11,7 @@ export namespace TeacherApi {
     sex?: number;
     title?: string;
     mobile?: string;
-    rewardStandard?: string;
+    rewardStandard?: null | number;
     userId?: number;
     userGenerated?: boolean;
     remark?: string;
@@ -22,7 +22,7 @@ export namespace TeacherApi {
     username?: string;
     name?: string;
     title?: string;
-    rewardStandard?: string;
+    rewardStandard?: null | number;
     mobile?: string;
     createTime?: Date[];
   }
@@ -44,6 +44,13 @@ export function getTeacherPage(params: TeacherApi.TeacherPageReqVO) {
 /** 查询教培档案详情 */
 export function getTeacher(id: number) {
   return requestClient.get<TeacherApi.Teacher>(`/edu/teacher/get?id=${id}`);
+}
+
+/** 按关联用户ID查询教培档案 */
+export function getTeacherByUserId(userId: number) {
+  return requestClient.get<TeacherApi.Teacher>(
+    `/edu/teacher/get-by-user-id?userId=${userId}`,
+  );
 }
 
 /** 新增教培档案 */

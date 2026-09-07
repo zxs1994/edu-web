@@ -45,7 +45,7 @@ const routes: RouteRecordRaw[] = [
         name: 'BpmProcessInstanceDetail',
         meta: {
           title: '流程详情',
-          activePath: '/bpm/task/my',
+          activePath: '/workspace/my',
           icon: 'ant-design:history-outlined',
           keepAlive: false,
           hideInMenu: true,
@@ -64,7 +64,7 @@ const routes: RouteRecordRaw[] = [
         name: 'BpmProcessInstanceTodoDetail',
         meta: {
           title: '待办详情',
-          activePath: '/bpm/task/todo',
+          activePath: '/workspace',
           icon: 'ant-design:history-outlined',
           keepAlive: false,
           hideInMenu: true,

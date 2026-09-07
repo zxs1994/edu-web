@@ -55,12 +55,10 @@ export function useGridFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'startDate',
-      label: '开始日期',
+      label: '活动开始时间',
       component: 'RangePicker',
       componentProps: {
         ...getRangePickerDefaultProps(),
-        format: 'YYYY-MM-DD',
-        valueFormat: 'YYYY-MM-DD',
       },
     },
     {
@@ -117,12 +115,13 @@ export function useGridColumns(): VxeTableGridOptions<ActivityApi.Activity>['col
     },
     {
       field: 'startDate',
-      title: '开始日期',
-      minWidth: 120,
+      title: '活动开始时间',
+      minWidth: 170,
+      formatter: 'formatDateTime',
     },
     {
       field: 'ownerUserNames',
-      title: '负责人',
+      title: '活动负责人',
       minWidth: 140,
     },
     {
@@ -146,12 +145,12 @@ export function useGridColumns(): VxeTableGridOptions<ActivityApi.Activity>['col
       minWidth: 160,
       formatter: 'formatDateTime',
     },
-    {
-      title: '操作',
-      field: 'actions',
-      fixed: 'right',
-      width: 120,
-      slots: { default: 'actions' },
-    },
+    // {
+    //   title: '操作',
+    //   field: 'actions',
+    //   fixed: 'right',
+    //   width: 120,
+    //   slots: { default: 'actions' },
+    // },
   ];
 }

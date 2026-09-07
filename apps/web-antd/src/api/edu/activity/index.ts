@@ -30,8 +30,8 @@ export namespace ActivityApi {
     content?: string;
     cycleType?: string;
     startDate?: string;
-    enrollStartTime?: string;
-    enrollEndTime?: string;
+    enrollStartTime?: Date | number | number[] | string;
+    enrollEndTime?: Date | number | number[] | string;
     budgetAmount?: number;
     deptId?: number;
     deptName?: string;
@@ -46,6 +46,13 @@ export namespace ActivityApi {
     participantUserIds?: number[];
     participantNames?: string;
     feeStandards?: FeeStandard[];
+    /** 附件（非必填），与活动记录一致：fileName + fileUrl */
+    attachments?: Attachment[];
+  }
+
+  export interface Attachment {
+    fileName: string;
+    fileUrl: string;
   }
 
   export interface ActivityPageReqVO extends PageParam {

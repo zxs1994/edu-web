@@ -73,7 +73,12 @@ async function loadData(newId?: string | number) {
   try {
     const data = await getStudent(Number(id));
     formData.value = data;
-    await basicFormApi.setValues(data);
+    await basicFormApi.setValues({
+      ...data,
+      // DatePicker year + valueFormat=YYYY 需要字符串，数字会被当成时间戳
+      enrollYear:
+        data.enrollYear != null ? String(data.enrollYear) : undefined,
+    } as StudentApi.Student);
     refreshSchema();
   } catch (error) {
     console.error('加载学生档案失败', error);
@@ -95,6 +100,11 @@ async function handleSave() {
     if (!values.birthday || values.birthday === '') {
       values.birthday = undefined;
     }
+    const enrollYearRaw = values.enrollYear as number | string | undefined | null;
+    values.enrollYear =
+      enrollYearRaw != null && String(enrollYearRaw) !== ''
+        ? Number(enrollYearRaw)
+        : undefined;
 
     if (formData.value.id) {
       values.id = formData.value.id;

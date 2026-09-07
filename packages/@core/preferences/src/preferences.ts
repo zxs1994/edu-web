@@ -24,7 +24,7 @@ const STORAGE_KEYS = {
 } as const;
 
 // 偏好设置迁移版本号，每次需要强制覆盖旧缓存中的默认值时递增
-const MIGRATION_VERSION = 6;
+const MIGRATION_VERSION = 7;
 
 class PreferenceManager {
   private cache: StorageManager;
@@ -92,9 +92,12 @@ class PreferenceManager {
       this.initialPreferences,
     );
 
-    // 应用名/公司名以项目 overrides（来自 VITE_APP_TITLE）为准，避免旧缓存一直显示旧标题
+    // 应用名/公司名/默认头像以项目 overrides 为准，避免旧缓存一直顶住
     if (overrides.app?.name) {
       mergedPreference.app.name = overrides.app.name;
+    }
+    if (overrides.app?.defaultAvatar) {
+      mergedPreference.app.defaultAvatar = overrides.app.defaultAvatar;
     }
     if (overrides.copyright?.companyName) {
       mergedPreference.copyright = {
@@ -112,6 +115,13 @@ class PreferenceManager {
         mergedPreference.navigation = {
           ...mergedPreference.navigation,
           expandAllMenus: defaultPreferences.navigation.expandAllMenus,
+        };
+      }
+      // v7: 开启顶栏站内信铃铛（覆盖历史「隐藏全部顶栏图标」缓存）
+      if (cachedVersion < 7) {
+        mergedPreference.widget = {
+          ...mergedPreference.widget,
+          notification: true,
         };
       }
       this.cache.setItem(STORAGE_KEYS.MIGRATION_VERSION, MIGRATION_VERSION);

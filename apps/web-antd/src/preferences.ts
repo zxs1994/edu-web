@@ -3,7 +3,7 @@ import { defineOverridesPreferences } from '@vben/preferences';
 /**
  * @description 项目配置文件
  * 只需要覆盖项目中的一部分配置，不需要的配置不用覆盖，会自动使用默认配置
- * !!! 更改配置后请清空缓存，否则可能不生效
+ * !!! 偏好会写入 localStorage；若某项被旧缓存压住不生效，在 packages/@core/preferences 递增 MIGRATION_VERSION 做强制迁移
  */
 export const overridesPreferences = defineOverridesPreferences({
   // overrides
@@ -17,6 +17,8 @@ export const overridesPreferences = defineOverridesPreferences({
     defaultHomePath: '/workspace',
     /** 隐藏偏好设置按钮 */
     enablePreferences: false,
+    /** 站内信/默认头像（与 Logo 同源；启动时强制覆盖 localStorage 旧值） */
+    defaultAvatar: `${import.meta.env.BASE_URL}static/imgs/logo.png`,
   },
   // 自定义应用 Logo（将图片放在 apps/web-antd/public/static/imgs/ 目录下）
   /* eslint-disable */
@@ -58,12 +60,12 @@ export const overridesPreferences = defineOverridesPreferences({
   navigation: {
     showIcon: true,
   },
-  // 隐藏顶栏头像左侧的所有图标（搜索、通知、主题切换、语言切换）
+  // 顶栏控件：仅开启站内信铃铛，其余图标保持隐藏
   widget: {
     fullscreen: false,
     globalSearch: false,
     languageToggle: false,
-    notification: false,
+    notification: true,
     themeToggle: false,
     timezone: false,
   },

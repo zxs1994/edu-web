@@ -3,6 +3,7 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { SystemNotifyMessageApi } from '#/api/system/notify/message';
 
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 import { Page, useVbenModal } from '@vben/common-ui';
 import { isEmpty } from '@vben/utils';
@@ -15,9 +16,12 @@ import {
   updateAllNotifyMessageRead,
   updateNotifyMessageRead,
 } from '#/api/system/notify/message';
+import { resolveActivityEnrollAction } from '#/utils/notify-enroll';
 
 import { useGridColumns, useGridFormSchema } from './data';
 import Detail from './modules/detail.vue';
+
+const router = useRouter();
 
 const [DetailModal, detailModalApi] = useVbenModal({
   connectedComponent: Detail,
@@ -32,6 +36,18 @@ function handleRefresh() {
 /** 查看站内信详情 */
 function handleDetail(row: SystemNotifyMessageApi.NotifyMessage) {
   detailModalApi.setData(row).open();
+}
+
+/** 去报名（活动实例站内信） */
+function handleGoEnroll(row: SystemNotifyMessageApi.NotifyMessage) {
+  const enrollAction = resolveActivityEnrollAction(row);
+  if (!enrollAction) {
+    return;
+  }
+  router.push({
+    path: enrollAction.link,
+    query: enrollAction.query,
+  });
 }
 
 /** 标记一条站内信已读 */
@@ -180,6 +196,12 @@ const [Grid, gridApi] = useVbenVxeGrid({
               ifShow: !row.readStatus,
               icon: ACTION_ICON.ADD,
               onClick: handleRead.bind(null, row),
+            },
+            {
+              label: '去报名',
+              type: 'link',
+              ifShow: !!resolveActivityEnrollAction(row),
+              onClick: handleGoEnroll.bind(null, row),
             },
           ]"
         />

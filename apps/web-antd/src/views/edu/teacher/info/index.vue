@@ -73,6 +73,9 @@ async function loadData(newId?: string | number) {
   loading.value = true;
   try {
     const data = await getTeacher(Number(id));
+    if (data.rewardStandard != null) {
+      data.rewardStandard = Number(data.rewardStandard);
+    }
     formData.value = data;
     await basicFormApi.setValues(data);
     refreshSchema();
@@ -93,6 +96,11 @@ async function handleSave() {
   loading.value = true;
   try {
     const values = (await basicFormApi.getValues()) as TeacherApi.Teacher;
+    // 允许清空报酬标准：未选时显式传 null，避免字段被省略导致后端不更新
+    values.rewardStandard =
+      values.rewardStandard == null || values.rewardStandard === ('' as any)
+        ? (null as any)
+        : Number(values.rewardStandard);
 
     if (formData.value.id) {
       values.id = formData.value.id;

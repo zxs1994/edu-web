@@ -13,7 +13,7 @@ export namespace SystemNotifyMessageApi {
     templateNickname: string;
     templateContent: string;
     templateType: number;
-    templateParams: string;
+    templateParams: string | Record<string, any>;
     readStatus: boolean;
     readTime: Date;
     createTime: Date;

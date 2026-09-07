@@ -5,6 +5,7 @@ import { computed, nextTick, onMounted, ref } from 'vue';
 
 import { IconifyIcon } from '@vben/icons';
 import { useAccessStore } from '@vben/stores';
+import { SystemMenuTypeEnum } from '@vben/constants';
 
 import { Empty, message, Popconfirm, Spin } from 'ant-design-vue';
 import Draggable from 'vuedraggable';
@@ -88,16 +89,30 @@ const menuOptions = computed(() => {
     if (!menu.path) {
       continue;
     }
+    // 只能添加「菜单」页面；目录/按钮不可加入（type 缺失时仍展示，避免映射漏字段导致全空）
+    const menuType = Number((menu as any).type);
+    if (
+      menuType === SystemMenuTypeEnum.DIR
+      || menuType === SystemMenuTypeEnum.BUTTON
+    ) {
+      continue;
+    }
 
     const icon = menu.icon || 'carbon:application';
     const name = menu.name || menu.path || '未命名菜单';
 
-    // 推导一级菜单名称：沿 parentId 向上找到根
-    let rootName = '发起流程';
+    // 推导一级菜单名称：沿 parentId 向上找到根；自身已是顶级则用自己的名称
+    // 注意：不可默认成「发起流程」，否则 parentId=0 的顶级目录会全部错分到发起流程
+    let rootName = name;
     let current = menuMap.get(id);
     const guardSet = new Set<number>();
-    while (current && current.parentId && !guardSet.has(current.id)) {
-      guardSet.add(current.id);
+    while (
+      current &&
+      current.parentId &&
+      Number(current.parentId) !== 0 &&
+      !guardSet.has(Number(current.id))
+    ) {
+      guardSet.add(Number(current.id));
       const parent = menuMap.get(Number(current.parentId));
       if (!parent) {
         // 父级不在应用中心列表里，用当前层作为一级名称
@@ -213,7 +228,7 @@ async function handleSelectApp(menuId: number) {
     await refreshAppList();
   } catch (error) {
     console.error('添加应用失败:', error);
-    message.error('添加应用失败，请重试');
+    // 全局拦截器已提示业务错误，这里不再重复弹「添加应用失败」
   }
 }
 
@@ -325,6 +340,7 @@ async function loadAppCenterMenus() {
       icon: m.icon || '',
       parentId: m.parentId,
       managed: m.managed,
+      type: m.type,
     }));
   } catch (error) {
     console.error('加载应用中心菜单失败:', error);

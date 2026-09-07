@@ -159,8 +159,10 @@ const [Grid, gridApi] = useVbenVxeGrid({
   separator: false,
   formOptions: {
     schema: useParticipantUserSelectFormSchema(),
-    submitOnChange: false,
-    collapsed: true,
+    submitOnChange: true,
+    collapsed: false,
+    // 筛选项每行列数：小屏 1 / 中屏 2 / 大屏 3（可按需改）
+    wrapperClass: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
   },
   gridOptions: {
     id: GRID_ID,
@@ -193,6 +195,8 @@ const [Grid, gridApi] = useVbenVxeGrid({
       highlight: true,
       range: true,
       reserve: false,
+      // 点击整行切换勾选
+      trigger: 'row',
     },
     pagerConfig: {
       enabled: true,
@@ -227,17 +231,17 @@ const [Modal, modalApi] = useVbenModal({
     }
   },
   async onConfirm() {
-    if (checkedUserIds.value.size === 0) {
-      message.warning('请至少选择一位参与人');
-      return false;
-    }
+    // if (checkedUserIds.value.size === 0) {
+    //   message.warning('请至少选择一位参与人');
+    //   return false;
+    // }
     const users = [...checkedUserIds.value]
       .map((id) => checkedUserMap.value.get(id))
       .filter((user): user is SystemUserApi.User => user != null);
-    if (users.length === 0) {
-      message.warning('请至少选择一位参与人');
-      return false;
-    }
+    // if (users.length === 0) {
+    //   message.warning('请至少选择一位参与人');
+    //   return false;
+    // }
     emit('select', users);
     resetCheckedState();
     await clearGridCheckboxState();

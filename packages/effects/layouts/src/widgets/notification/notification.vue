@@ -65,7 +65,9 @@ function handleClear() {
 function handleClick(item: NotificationItem) {
   // 如果通知项有链接，点击时跳转
   if (item.link) {
+    emit('read', item)
     navigateTo(item.link, item.query, item.state);
+    close();
   }
 }
 
@@ -140,7 +142,7 @@ function handleOpen() {
                   class="aspect-square h-full w-full object-cover"
                 />
               </span>
-              <div class="flex flex-col gap-1 leading-none">
+              <div class="flex min-w-0 flex-1 flex-col gap-1 leading-none pr-8">
                 <p class="font-semibold">{{ item.title }}</p>
                 <p class="text-muted-foreground my-1 line-clamp-2 text-xs">
                   {{ item.message }}
@@ -148,6 +150,15 @@ function handleOpen() {
                 <p class="text-muted-foreground line-clamp-2 text-xs">
                   {{ item.date }}
                 </p>
+                <div v-if="item.link && item.actionText" class="pt-1">
+                  <VbenButton
+                    size="sm"
+                    class="h-7 px-3 text-xs"
+                    @click.stop="handleClick(item)"
+                  >
+                    {{ item.actionText }}
+                  </VbenButton>
+                </div>
               </div>
               <div
                 class="absolute right-3 top-1/2 flex -translate-y-1/2 flex-col gap-2"

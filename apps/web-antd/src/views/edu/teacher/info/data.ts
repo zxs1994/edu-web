@@ -81,7 +81,7 @@ export function useBasicFormSchema(
       component: 'Select',
       componentProps: {
         placeholder: '请选择报酬/奖励标准（可选）',
-        options: getDictOptions(DICT_TYPE.EDU_TEACHER_REWARD, 'string'),
+        options: getDictOptions(DICT_TYPE.EDU_TEACHER_REWARD, 'number'),
         allowClear: true,
         disabled: readonly,
       },

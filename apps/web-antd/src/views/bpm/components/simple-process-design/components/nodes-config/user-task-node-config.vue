@@ -242,6 +242,16 @@ function handleExpressionSelected(row: any) {
   configForm.value.expression = row?.expression ?? '';
 }
 
+/** 下拉按 label 过滤（默认按 value=id 过滤会导致搜中文无效） */
+function filterLabelOption(input: string, option: any) {
+  const keyword = input.trim().toLowerCase();
+  if (!keyword) {
+    return true;
+  }
+  const label = String(option?.label ?? '').toLowerCase();
+  return label.includes(keyword);
+}
+
 /** 审批方式改变 */
 function approveMethodChanged() {
   configForm.value.rejectHandlerType = RejectHandlerType.FINISH_PROCESS;
@@ -698,8 +708,12 @@ onMounted(() => {
             >
               <Select
                 v-model:value="configForm.roleIds"
-                clearable
+                allow-clear
                 mode="multiple"
+                show-search
+                option-filter-prop="label"
+                :filter-option="filterLabelOption"
+                placeholder="请选择角色"
               >
                 <SelectOption
                   v-for="item in roleOptions"
@@ -745,8 +759,12 @@ onMounted(() => {
             >
               <Select
                 v-model:value="configForm.postIds"
-                clearable
+                allow-clear
                 mode="multiple"
+                show-search
+                option-filter-prop="label"
+                :filter-option="filterLabelOption"
+                placeholder="请选择岗位"
               >
                 <SelectOption
                   v-for="item in postOptions"
@@ -765,16 +783,20 @@ onMounted(() => {
             >
               <Select
                 v-model:value="configForm.userIds"
-                clearable
+                allow-clear
                 mode="multiple"
+                show-search
+                option-filter-prop="label"
+                :filter-option="filterLabelOption"
+                placeholder="请选择用户"
               >
                 <SelectOption
                   v-for="item in userOptions"
                   :key="item.id"
-                  :label="item.nickname"
+                  :label="`${item.nickname}(${item.username})`"
                   :value="item.id"
                 >
-                  {{ item.nickname }}
+                  {{ item.nickname }}({{ item.username }})
                 </SelectOption>
               </Select>
             </FormItem>
@@ -787,8 +809,12 @@ onMounted(() => {
             >
               <Select
                 v-model:value="configForm.userGroups"
-                clearable
+                allow-clear
                 mode="multiple"
+                show-search
+                option-filter-prop="label"
+                :filter-option="filterLabelOption"
+                placeholder="请选择用户组"
               >
                 <SelectOption
                   v-for="item in userGroupOptions"
@@ -1088,16 +1114,20 @@ onMounted(() => {
             >
               <Select
                 v-model:value="configForm.assignEmptyHandlerUserIds"
-                clearable
+                allow-clear
                 mode="multiple"
+                show-search
+                option-filter-prop="label"
+                :filter-option="filterLabelOption"
+                placeholder="请选择用户"
               >
                 <SelectOption
                   v-for="item in userOptions"
                   :key="item.id"
-                  :label="item.nickname"
+                  :label="`${item.nickname}(${item.username})`"
                   :value="item.id"
                 >
-                  {{ item.nickname }}
+                  {{ item.nickname }}({{ item.username }})
                 </SelectOption>
               </Select>
             </FormItem>

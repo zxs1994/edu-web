@@ -173,7 +173,7 @@ export function useSendNotifyFormSchema(): VbenFormSchema[] {
       componentProps: {
         options: getDictOptions(DICT_TYPE.USER_TYPE, 'number'),
       },
-      rules: z.number().default(UserTypeEnum.MEMBER),
+      rules: z.number().default(UserTypeEnum.ADMIN),
     },
     {
       fieldName: 'userId',

@@ -243,14 +243,20 @@ const HRM_DICT = {
 /** ========== EDU - 教培模块 ========== */
 const EDU_DICT = {
   EDU_STUDENT_STATUS: 'edu_student_status', // 学生在校状态
+  EDU_STUDENT_COLLEGE: 'edu_student_college', // 学生所属院系
+  EDU_STUDENT_MAJOR: 'edu_student_major', // 学生专业
   EDU_TEACHER_TITLE: 'edu_teacher_title', // 教培职称/职级
   EDU_TEACHER_REWARD: 'edu_teacher_reward', // 教培报酬/奖励标准
   EDU_ACTIVITY_TYPE: 'edu_activity_type', // 专项活动类型
   EDU_ACTIVITY_CYCLE: 'edu_activity_cycle', // 专项活动周期
+  EDU_ACTIVITY_INSTANCE_STATUS: 'edu_activity_instance_status', // 专项活动实例状态
   EDU_FEE_MODE: 'edu_fee_mode', // 专项活动计费模式
   EDU_FEE_SIDE: 'edu_fee_side', // 专项活动费用侧
   EDU_FEE_TYPE: 'edu_fee_type', // 专项活动费用类型
   EDU_FEE_CURRENCY: 'edu_fee_currency', // 专项活动费用币种
+  EDU_FEE_ITEM_STATUS: 'edu_fee_item_status', // 专项活动费用明细状态
+  EDU_REWARD_POOL_STATUS: 'edu_reward_pool_status', // 奖金池状态
+  EDU_REWARD_POOL_TXN_TYPE: 'edu_reward_pool_txn_type', // 奖金池流水类型
 } as const;
 
 /** 字典类型枚举 - 统一导出 */
