@@ -32,8 +32,26 @@ interface StatItem {
   icon: string;
   iconColor: string;
   iconBg: string;
-  value: number | null | undefined;
-  placeholder: boolean;
+  display: string;
+}
+
+const budgetTitle = computed(() => {
+  const name = overview.value.budgetPeriodName;
+  return name ? `${name} 执行率` : '预算执行率';
+});
+
+function formatCount(value: number | null | undefined) {
+  if (value === null || value === undefined) {
+    return '0';
+  }
+  return value.toLocaleString('zh-CN');
+}
+
+function formatRate(value: number | null | undefined) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) {
+    return '-';
+  }
+  return `${(Number(value) * 100).toFixed(2)}%`;
 }
 
 const items = computed<StatItem[]>(() => [
@@ -43,8 +61,7 @@ const items = computed<StatItem[]>(() => [
     icon: EDU_MENU_ICONS.student,
     iconColor: '#2563eb',
     iconBg: 'rgb(37 99 235 / 10%)',
-    value: overview.value.studentCount,
-    placeholder: false,
+    display: formatCount(overview.value.studentCount),
   },
   {
     key: 'teacher',
@@ -52,8 +69,7 @@ const items = computed<StatItem[]>(() => [
     icon: EDU_MENU_ICONS.teacher,
     iconColor: '#0d9488',
     iconBg: 'rgb(13 148 136 / 10%)',
-    value: overview.value.teacherCount,
-    placeholder: false,
+    display: formatCount(overview.value.teacherCount),
   },
   {
     key: 'activity',
@@ -61,26 +77,19 @@ const items = computed<StatItem[]>(() => [
     icon: EDU_MENU_ICONS.activity,
     iconColor: '#6366f1',
     iconBg: 'rgb(99 102 241 / 10%)',
-    value: overview.value.activityCount,
-    placeholder: false,
+    display: formatCount(overview.value.activityCount),
   },
   {
     key: 'budget',
-    title: '预算执行率',
+    title: budgetTitle.value,
     icon: EDU_MENU_ICONS.budget,
     iconColor: '#f97316',
     iconBg: 'rgb(249 115 22 / 10%)',
-    value: overview.value.budgetExecRate,
-    placeholder: true,
+    display: overview.value.budgetYear
+      ? formatRate(overview.value.budgetExecRate)
+      : '-',
   },
 ]);
-
-function formatCount(value: number | null | undefined, placeholder: boolean) {
-  if (value === null || value === undefined) {
-    return placeholder ? '-' : '0';
-  }
-  return value.toLocaleString('zh-CN');
-}
 
 async function loadOverview() {
   if (!canView.value) {
@@ -117,7 +126,7 @@ onMounted(() => {
       <div class="edu-info-overview__meta">
         <div class="edu-info-overview__title">{{ item.title }}</div>
         <div class="edu-info-overview__value">
-          {{ formatCount(item.value, item.placeholder) }}
+          {{ item.display }}
         </div>
       </div>
     </div>
@@ -183,5 +192,4 @@ onMounted(() => {
   font-weight: 700;
   line-height: 1.1;
 }
-
 </style>

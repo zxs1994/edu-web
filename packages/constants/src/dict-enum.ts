@@ -255,8 +255,7 @@ const EDU_DICT = {
   EDU_FEE_TYPE: 'edu_fee_type', // 专项活动费用类型
   EDU_FEE_CURRENCY: 'edu_fee_currency', // 专项活动费用币种
   EDU_FEE_ITEM_STATUS: 'edu_fee_item_status', // 专项活动费用明细状态
-  EDU_REWARD_POOL_STATUS: 'edu_reward_pool_status', // 奖金池状态
-  EDU_REWARD_POOL_TXN_TYPE: 'edu_reward_pool_txn_type', // 奖金池流水类型
+  EDU_REWARD_BUDGET_PERIOD_MODE: 'edu_reward_budget_period_mode', // 年度预算时段模式
 } as const;
 
 /** 字典类型枚举 - 统一导出 */
